@@ -77,29 +77,23 @@ export default function Footer() {
         {/* Map Location Card */}
         <div className="flex flex-col gap-4">
           <h4 className="font-title-md text-base font-bold text-surface-container-lowest mb-1">
-            Find Us on Map
+            Find Us
           </h4>
           <a
-            href="https://maps.google.com/?q=Gurukul+Sports+Whitefield+Bengaluru"
+            href="https://maps.app.goo.gl/5wQLkvAL4tY11cTH9"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full h-32 bg-surface-container-lowest/10 rounded-xl border border-surface-container-lowest/20 overflow-hidden relative group cursor-pointer flex items-center justify-center hover:border-[#2563EB] transition-all"
+            className="block w-full h-32 rounded-xl border border-surface-container-lowest/20 overflow-hidden relative group cursor-pointer"
           >
             <div
-              className="absolute inset-0 opacity-30"
+              className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
               style={{
-                backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)',
-                backgroundSize: '10px 10px',
+                backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuD7JH783SsmbgaoJQ-vmzQTAb6F3AOEpb8G07dllIi7AVo4TT2L_1BvVLLolekPOTlJ6W_0fvpm-6I_33csdps570aYGxFlzyQw4UjroZ7SJnDMoujVjKItCOHvdXLFdC-fXWLfNW-P9oHcaIrlvXk-hR0BQMLsL7BEFDeyHb2YsUPFZaWaO5sKZkhnb-Flf_fBBlSdQaauKJY0kGvpkxptcGw1FjEaEH-bhVAP-PzXuMogsOutq0Q")`,
               }}
             />
-            <div className="z-10 flex flex-col items-center gap-1 group-hover:scale-105 transition-transform">
-              <span className="material-symbols-outlined text-[32px] text-[#38BDF8]">
-                location_on
-              </span>
-              <span className="text-xs text-white font-semibold">Open in Google Maps</span>
-            </div>
-            <div className="absolute bottom-2 right-2 px-2 py-0.5 bg-surface-container-lowest/20 backdrop-blur-sm rounded text-[10px] text-surface-container-lowest font-label-sm">
-              Whitefield, BLR
+            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+            <div className="absolute bottom-2 right-2 px-2 py-1 bg-surface-container-lowest/20 backdrop-blur-sm rounded text-[10px] text-surface-container-lowest font-label-sm z-10">
+              Bengaluru
             </div>
           </a>
 

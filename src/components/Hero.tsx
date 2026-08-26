@@ -6,7 +6,7 @@ export default function Hero() {
         <div
           className="w-full h-full bg-cover bg-center"
           style={{
-            backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuCPryOrem3WuAqSwu-IGkOuC5ow3j63ybmm1KA1mnK3rzNvIBzNkrF8tm_Xo2h9LDtF1JlXsfiTzgvHqzItQRObcORsiwhbGlX5qnlCvnGDBiCvyLiuFd-ZI_T7Qqj0TnAfa-Qy6bT4OKTyxEZ_zxSUksI2sCYMHC4itgcZB6pL7aT5b7tBnvprbpCa2GFqV1yyc4yvRKJnsfRilMsZa7EfXQvXcFAdbR00JsakKvcfjfsu-ZPoPr0")`,
+            backgroundImage: `url("https://lh3.googleusercontent.com/aida/AEtjO1VDlE_DcLNH1UGi6GQVMlElmU3uNAaYielWzS_VdmCbdUQSU3fIzWG_MBF-EXkW2VILp7dJWAdbQrYn2xOOfoVz5zaYWpF9nMfbGzxqzFr4s7_OSSgoNY7BiuxtSsWeV7Z7ONqHETgCuZUBUG1N3pSopk3KYzzFUaUKp0FskF6zJD-t-0HRL2_08p3C4Os5YLDchvBByt7Mi0ebUrlYf50YTsGed4mtfsjzpnbdzMxQoS5ayQnRJJ00")`,
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-surface/95 via-surface/80 to-surface/30"></div>
