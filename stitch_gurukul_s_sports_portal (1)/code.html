@@ -1,17 +1,19 @@
-<!DOCTYPE html><html class="scroll-smooth" lang="en" style=""><head>
+<!DOCTYPE html><html class="scroll-smooth" lang="en" style="width: 1280px; height: 3247px; overflow: hidden; position: relative;"><head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Gurukul's Sports ® - Premier Badminton &amp; Sports Hub</title>
+<!-- Tailwind CSS with plugins -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Google Fonts & Material Icons -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
-<script id="tailwind-config">
+<!-- Tailwind Configuration -->
+<script data-purpose="tailwind-config" id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
-                    "colors": {
+                    colors: {
                         "inverse-surface": "#2d3133",
                         "tertiary-container": "#002113",
                         "on-primary-container": "#7c839b",
@@ -60,13 +62,13 @@
                         "on-tertiary-fixed-variant": "#005236",
                         "on-surface-variant": "#45464d"
                     },
-                    "borderRadius": {
+                    borderRadius: {
                         "DEFAULT": "0.25rem",
                         "lg": "0.5rem",
                         "xl": "0.75rem",
                         "full": "9999px"
                     },
-                    "spacing": {
+                    spacing: {
                         "container-max": "1280px",
                         "stack-md": "24px",
                         "margin-mobile": "16px",
@@ -76,7 +78,7 @@
                         "stack-lg": "48px",
                         "stack-sm": "12px"
                     },
-                    "fontFamily": {
+                    fontFamily: {
                         "label-md": ["Inter"],
                         "headline-lg-mobile": ["Plus Jakarta Sans"],
                         "title-md": ["Plus Jakarta Sans"],
@@ -86,21 +88,22 @@
                         "headline-lg": ["Plus Jakarta Sans"],
                         "body-lg": ["Inter"]
                     },
-                    "fontSize": {
-                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
-                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
-                        "title-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
-                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
-                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
-                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
-                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
-                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    fontSize: {
+                        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }],
+                        "headline-lg-mobile": ["24px", { lineHeight: "32px", fontWeight: "700" }],
+                        "title-md": ["20px", { lineHeight: "28px", fontWeight: "600" }],
+                        "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "800" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "700" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }]
                     }
                 }
             }
         }
     </script>
-<style>
+<!-- Custom CSS -->
+<style data-purpose="custom-utilities">
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
@@ -127,30 +130,29 @@
     </style>
 </head>
 <body class="bg-background text-on-background font-body-md text-body-md antialiased overflow-x-hidden">
-<!-- TopNavBar -->
+<!-- BEGIN: TopNavBar -->
 <nav class="fixed w-full top-0 z-50 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-on-surface-variant transition-all duration-300" id="navbar">
 <div class="flex justify-between items-center h-20 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
 <a class="flex items-center gap-2" href="#">
-<img alt="Gurukul's Sports Logo" class="h-10 w-10 object-contain rounded-md" data-alt="Gurukul's Sports Logo" src="../assets/logo.jpeg">
+<img alt="Gurukul's Sports Logo" class="h-10 w-10 object-contain rounded-md" src="../assets/logo.jpeg">
 <span class="text-title-md font-title-md font-bold text-on-surface dark:text-inverse-on-surface tracking-tight">Gurukul's Sports ®</span>
 </a>
 <div class="hidden md:flex items-center gap-8">
 <a class="nav-link text-secondary dark:text-secondary-fixed font-bold border-b-2 border-secondary pb-1 transition-colors duration-200" href="#about">About</a>
 <a class="nav-link text-on-surface-variant dark:text-surface-variant font-medium hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 pb-1 border-b-2 border-transparent" href="#courts">Courts</a>
 <a class="nav-link text-on-surface-variant dark:text-surface-variant font-medium hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 pb-1 border-b-2 border-transparent" href="#book-court">Book Court</a>
-
 </div>
-
 <button class="md:hidden text-on-surface p-2">
 <span class="material-symbols-outlined">menu</span>
 </button>
 </div>
 </nav>
+<!-- END: TopNavBar -->
 <main class="pt-20">
-<!-- Hero Section -->
+<!-- BEGIN: Hero Section -->
 <section class="relative w-full min-h-[90vh] flex items-center pt-stack-lg pb-stack-lg" id="about">
 <div class="absolute inset-0 z-0">
-<div class="w-full h-full bg-cover bg-center" data-alt="A striking wide shot of a massive, modern indoor sports arena focusing on pristine badminton courts. The space is illuminated by high-key, soft white LED lighting creating a bright, professional light-mode aesthetic. The floor features BWF-grade synthetic mats in vibrant green, contrasting elegantly with the deep blacks and pristine whites of the surrounding architecture and net structures. The mood is highly energetic, disciplined, and technologically advanced, typical of a premier athletic facility." style="background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuCPryOrem3WuAqSwu-IGkOuC5ow3j63ybmm1KA1mnK3rzNvIBzNkrF8tm_Xo2h9LDtF1JlXsfiTzgvHqzItQRObcORsiwhbGlX5qnlCvnGDBiCvyLiuFd-ZI_T7Qqj0TnAfa-Qy6bT4OKTyxEZ_zxSUksI2sCYMHC4itgcZB6pL7aT5b7tBnvprbpCa2GFqV1yyc4yvRKJnsfRilMsZa7EfXQvXcFAdbR00JsakKvcfjfsu-ZPoPr0&quot;);"></div>
+<div class="w-full h-full bg-cover bg-center" style="background-image: url(&quot;https://lh3.googleusercontent.com/aida/AEtjO1VDlE_DcLNH1UGi6GQVMlElmU3uNAaYielWzS_VdmCbdUQSU3fIzWG_MBF-EXkW2VILp7dJWAdbQrYn2xOOfoVz5zaYWpF9nMfbGzxqzFr4s7_OSSgoNY7BiuxtSsWeV7Z7ONqHETgCuZUBUG1N3pSopk3KYzzFUaUKp0FskF6zJD-t-0HRL2_08p3C4Os5YLDchvBByt7Mi0ebUrlYf50YTsGed4mtfsjzpnbdzMxQoS5ayQnRJJ00&quot;);"></div>
 <div class="absolute inset-0 bg-gradient-to-r from-surface/90 via-surface/70 to-transparent"></div>
 </div>
 <div class="relative z-10 w-full px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
@@ -198,7 +200,8 @@
 </div>
 </div>
 </section>
-<!-- Facilities Section -->
+<!-- END: Hero Section -->
+<!-- BEGIN: Facilities Section -->
 <section class="py-stack-lg px-margin-mobile md:px-margin-desktop bg-surface max-w-container-max mx-auto" id="courts">
 <div class="text-center mb-12">
 <h2 class="font-headline-lg text-headline-lg text-[#0F172A] mb-4">World-Class Facilities</h2>
@@ -214,7 +217,7 @@
 <div class="p-6 flex-1 flex flex-col">
 <div class="flex justify-between items-center mb-3">
 <h3 class="font-title-md text-title-md text-[#0F172A]">Badminton Courts</h3>
-<span class="px-2 py-1 bg-[#2563EB]/10 text-[#2563EB] text-[10px] font-bold rounded uppercase tracking-wider">10 Courts</span>
+
 </div>
 <p class="font-body-md text-body-md text-on-surface-variant mb-6 flex-1">Premium playing surfaces featuring both synthetic mats and shock-absorbing wooden flooring. Equipped with anti-glare LED lighting.</p>
 <a class="font-label-md text-label-md text-[#2563EB] flex items-center gap-1 hover:gap-2 transition-all mt-auto" href="#book-court">
@@ -231,7 +234,7 @@
 <div class="p-6 flex-1 flex flex-col">
 <div class="flex justify-between items-center mb-3">
 <h3 class="font-title-md text-title-md text-[#0F172A]">Swimming Pool</h3>
-<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant text-[10px] font-bold rounded uppercase tracking-wider">Olympic Std</span>
+
 </div>
 <p class="font-body-md text-body-md text-on-surface-variant flex-1">Temperature-controlled aquatic center with professional lane division, suitable for training and recreational swimming year-round.</p>
 </div>
@@ -240,19 +243,20 @@
 <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/50 overflow-hidden hover:shadow-[0_4px_20px_rgba(15,23,42,0.05)] transition-all duration-300 flex flex-col group">
 <div class="h-48 bg-surface-container-high relative overflow-hidden">
 <div class="absolute inset-0 bg-gradient-to-tr from-[#0F172A]/10 to-transparent"></div>
-<span class="material-symbols-outlined absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-[64px] text-[#2563EB]/20 group-hover:scale-110 transition-transform duration-500">sports_tennis</span> <!-- Fallback icon as TT might not exist -->
+<span class="material-symbols-outlined absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-[64px] text-[#2563EB]/20 group-hover:scale-110 transition-transform duration-500">sports_tennis</span>
 </div>
 <div class="p-6 flex-1 flex flex-col">
 <div class="flex justify-between items-center mb-3">
 <h3 class="font-title-md text-title-md text-[#0F172A]">Table Tennis</h3>
-<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant text-[10px] font-bold rounded uppercase tracking-wider">Premium</span>
+
 </div>
 <p class="font-body-md text-body-md text-on-surface-variant flex-1">Dedicated high-ceiling zone featuring premium ITTF approved tables with specialized grip flooring for optimal movement.</p>
 </div>
 </div>
 </div>
 </section>
-<!-- Booking Section -->
+<!-- END: Facilities Section -->
+<!-- BEGIN: Booking Section -->
 <section class="py-stack-lg bg-surface-container-low border-y border-outline-variant/30" id="book-court">
 <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
 <div class="mb-10">
@@ -263,44 +267,60 @@
 <!-- Left: Selection Controls -->
 <div class="lg:col-span-2 space-y-8">
 <!-- Date Selector -->
-<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50"><div class="flex items-center justify-between mb-4"><h3 class="font-title-md text-title-md text-[#0F172A]">1. Select Date</h3></div><div class="relative max-w-md"><label for="booking-date-picker" class="block font-label-sm text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider">Choose your preferred date</label><div class="relative"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">calendar_today</span><input type="date" id="booking-date-picker" value="2023-10-24" class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant/50 rounded-lg font-title-md text-[#0F172A] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all cursor-pointer"></div><p class="mt-2 font-label-sm text-label-sm text-on-surface-variant">Available slots will update based on your selection.</p></div></div><div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50">
-    <div class="flex items-center justify-between mb-4">
-        <h3 class="font-title-md text-title-md text-[#0F172A]">1.5. Recurring Booking</h3>
-    </div>
-    <div class="space-y-6">
-        <div class="flex flex-wrap gap-2"><button onclick="selectFrequency(this)" class="frequency-btn px-4 py-2 rounded-full bg-secondary text-on-secondary font-label-md text-label-md border border-secondary transition-colors">One-time</button><button onclick="selectFrequency(this)" class="frequency-btn px-4 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md border border-outline-variant/50 hover:border-secondary transition-colors">Daily</button><button onclick="selectFrequency(this)" class="frequency-btn px-4 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md border border-outline-variant/50 hover:border-secondary transition-colors">Weekly (Weekends only)</button><button onclick="selectFrequency(this)" class="frequency-btn px-4 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md border border-outline-variant/50 hover:border-secondary transition-colors">Weekly (Same day)</button></div>
-        <div class="pt-4 border-t border-outline-variant/30">
-            <label class="block font-label-sm text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider" for="end-date">Repeat Until (End Date)</label>
-            <div class="max-w-xs">
-                <input class="w-full bg-surface border border-outline-variant/50 rounded-lg px-3 py-2 font-body-md text-body-md text-[#0F172A] placeholder-outline" id="end-date" type="date" value="2023-10-31">
-            </div>
-            <p class="mt-2 font-label-sm text-label-sm text-on-surface-variant">Booking will repeat for the selected duration.</p>
-        </div>
-    </div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50">
+<div class="flex items-center justify-between mb-4"><h3 class="font-title-md text-title-md text-[#0F172A]">1. Select Date</h3></div>
+<div class="relative max-w-md">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider" for="booking-date-picker">Choose your preferred date</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">calendar_today</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant/50 rounded-lg font-title-md text-[#0F172A] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all cursor-pointer" id="booking-date-picker" type="date" value="2023-10-24">
+</div>
+<p class="mt-2 font-label-sm text-label-sm text-on-surface-variant">Available slots will update based on your selection.</p>
+</div>
+</div>
+<!-- Recurring Booking -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-title-md text-title-md text-[#0F172A]">1.5. Recurring Booking</h3>
+</div>
+<div class="space-y-6">
+<div class="flex flex-wrap gap-2">
+<button class="frequency-btn px-4 py-2 rounded-full bg-secondary text-on-secondary font-label-md text-label-md border border-secondary transition-colors" onclick="selectFrequency(this)">One-time</button>
+<button class="frequency-btn px-4 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md border border-outline-variant/50 hover:border-secondary transition-colors" onclick="selectFrequency(this)">Daily</button>
+<button class="frequency-btn px-4 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md border border-outline-variant/50 hover:border-secondary transition-colors" onclick="selectFrequency(this)">Weekly (Weekends only)</button>
+<button class="frequency-btn px-4 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md border border-outline-variant/50 hover:border-secondary transition-colors" onclick="selectFrequency(this)">Weekly (Same day)</button>
+</div>
+<div class="pt-4 border-t border-outline-variant/30">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider" for="end-date">Repeat Until (End Date)</label>
+<div class="max-w-xs">
+<input class="w-full bg-surface border border-outline-variant/50 rounded-lg px-3 py-2 font-body-md text-body-md text-[#0F172A] placeholder-outline" id="end-date" type="date" value="2023-10-31">
+</div>
+<p class="mt-2 font-label-sm text-label-sm text-on-surface-variant">Booking will repeat for the selected duration.</p>
+</div>
+</div>
 </div>
 <!-- Court Selector -->
 <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50">
 <div class="flex items-center justify-between mb-4">
 <h3 class="font-title-md text-title-md text-[#0F172A]">2. Select Court</h3>
-<div class="flex items-center gap-4">
-
-
-</div>
 </div>
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
 <button class="py-3 px-4 rounded-lg bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] flex flex-col items-center transition-colors">
 <span class="font-label-md text-label-md">Court 1</span>
-<span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span></button>
+<span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span>
+</button>
 <button class="py-3 px-4 rounded-lg bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] flex flex-col items-center transition-colors">
 <span class="font-label-md text-label-md">Court 2</span>
-
-<span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span></button>
+<span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span>
+</button>
 <button class="py-3 px-4 rounded-lg bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] flex flex-col items-center transition-colors">
 <span class="font-label-md text-label-md">Court 3</span>
-<span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span></button>
+<span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span>
+</button>
 <button class="py-3 px-4 rounded-lg bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] flex flex-col items-center transition-colors">
 <span class="font-label-md text-label-md">Court 4</span>
-<span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span></button>
+<span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span>
+</button>
 </div>
 </div>
 <!-- Time Slots -->
@@ -319,21 +339,21 @@
 <div class="flex flex-wrap gap-2">
 <button class="court-slot booked px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]">6:00 AM</button>
 <button class="court-slot booked px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]">7:00 AM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]">8:00 AM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]">9:00 AM</button>
-<button class="court-slot selected px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]">10:00 AM</button>
-<button class="court-slot selected px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]">11:00 AM</button>
+<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">8:00 AM</button>
+<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">9:00 AM</button>
+<button class="court-slot selected px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]" onclick="toggleSlot(this)">10:00 AM</button>
+<button class="court-slot selected px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]" onclick="toggleSlot(this)">11:00 AM</button>
 </div>
 </div>
 <div class="pt-2 border-t border-outline-variant/30">
 <h4 class="font-label-sm text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider">Afternoon / Evening</h4>
 <div class="flex flex-wrap gap-2">
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]">12:00 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]">1:00 PM</button>
+<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">12:00 PM</button>
+<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">1:00 PM</button>
 <button class="court-slot booked px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]">5:00 PM</button>
 <button class="court-slot booked px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]">6:00 PM</button>
 <button class="court-slot booked px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]">7:00 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]">8:00 PM</button>
+<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">8:00 PM</button>
 </div>
 </div>
 </div>
@@ -358,9 +378,10 @@
 </div>
 </div>
 <div class="flex justify-between items-center py-2 border-b border-outline-variant/10">
-    <span class="font-body-md text-body-md text-on-surface-variant">Frequency</span>
-    <span class="font-label-md text-label-md text-[#0F172A]">One-time</span>
-</div><div class="flex justify-between items-center py-2">
+<span class="font-body-md text-body-md text-on-surface-variant">Frequency</span>
+<span class="font-label-md text-label-md text-[#0F172A]">One-time</span>
+</div>
+<div class="flex justify-between items-center py-2">
 <span class="font-body-md text-body-md text-on-surface-variant">Court Fee (₹300/hr)</span>
 <span class="font-label-md text-label-md text-[#0F172A]">₹600</span>
 </div>
@@ -382,11 +403,10 @@
 </div>
 <button class="w-full mt-4 flex items-center justify-center gap-2 text-white font-label-md text-label-md py-3 px-4 rounded-lg transition-colors shadow-sm bg-[#0F172A] hover:opacity-90" type="button">
 <span class="material-symbols-outlined text-[18px]">chat</span> Confirm &amp; Book via WhatsApp
-                                    </button><button class="w-full mt-3 flex items-center justify-center gap-2 text-on-surface-variant font-label-md text-label-md py-3 px-4 rounded-lg border border-outline-variant/50 hover:bg-surface-container-high transition-colors" type="button">
-    <span class="material-symbols-outlined text-[18px]">cancel</span>
-    Cancel existing booking
-</button>
-
+                                    </button>
+<button class="w-full mt-3 flex items-center justify-center gap-2 text-on-surface-variant font-label-md text-label-md py-3 px-4 rounded-lg border border-outline-variant/50 hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">cancel</span> Cancel existing booking
+                                    </button>
 </form>
 </div>
 </div>
@@ -394,14 +414,15 @@
 </div>
 </div>
 </section>
+<!-- END: Booking Section -->
 </main>
-<!-- Footer / Location -->
+<!-- BEGIN: Footer -->
 <footer class="bg-inverse-surface dark:bg-surface-container-highest border-t border-outline-variant/10" id="location">
 <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter py-stack-lg px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
 <!-- Brand & Info -->
 <div class="flex flex-col gap-4">
 <a class="flex items-center gap-2 mb-2" href="#">
-<img alt="Gurukul's Sports Logo" class="h-8 w-8 object-contain rounded-md bg-white p-0.5" data-alt="Gurukul's Sports Logo" src="../assets/logo.jpeg">
+<img alt="Gurukul's Sports Logo" class="h-8 w-8 object-contain rounded-md bg-white p-0.5" src="../assets/logo.jpeg">
 <span class="text-headline-lg font-headline-lg text-surface-container-lowest tracking-tight">Gurukul's Sports ®</span>
 </a>
 <p class="font-body-md text-body-md text-surface-dim dark:text-on-surface-variant max-w-sm">
@@ -437,12 +458,11 @@
 <!-- Map Placeholder & Quick Links -->
 <div class="flex flex-col gap-4">
 <h4 class="font-title-md text-title-md text-surface-container-lowest mb-2">Find Us</h4>
-<div class="w-full h-32 bg-surface-container-lowest/10 rounded-lg border border-surface-container-lowest/20 overflow-hidden relative group cursor-pointer flex items-center justify-center">
-<!-- Placeholder map background -->
-<div class="absolute inset-0 opacity-30" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 10px 10px;"></div>
-<span class="material-symbols-outlined text-[32px] text-surface-container-lowest relative z-10 group-hover:scale-110 transition-transform">map</span>
-<div class="absolute bottom-2 right-2 px-2 py-1 bg-surface-container-lowest/20 backdrop-blur-sm rounded text-[10px] text-surface-container-lowest font-label-sm">Bengaluru</div>
-</div>
+<a href="https://maps.app.goo.gl/5wQLkvAL4tY11cTH9" target="_blank" class="block w-full h-32 rounded-lg border border-surface-container-lowest/20 overflow-hidden relative group">
+  <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD7JH783SsmbgaoJQ-vmzQTAb6F3AOEpb8G07dllIi7AVo4TT2L_1BvVLLolekPOTlJ6W_0fvpm-6I_33csdps570aYGxFlzyQw4UjroZ7SJnDMoujVjKItCOHvdXLFdC-fXWLfNW-P9oHcaIrlvXk-hR0BQMLsL7BEFDeyHb2YsUPFZaWaO5sKZkhnb-Flf_fBBlSdQaauKJY0kGvpkxptcGw1FjEaEH-bhVAP-PzXuMogsOutq0Q')"></div>
+  <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+  <div class="absolute bottom-2 right-2 px-2 py-1 bg-surface-container-lowest/20 backdrop-blur-sm rounded text-[10px] text-surface-container-lowest font-label-sm z-10">Bengaluru</div>
+</a>
 <div class="flex gap-4 mt-2">
 <a class="font-label-sm text-label-sm text-surface-dim dark:text-on-surface-variant hover:text-secondary-fixed-dim dark:hover:text-secondary transition-colors" href="#">Privacy Policy</a>
 <a class="font-label-sm text-label-sm text-surface-dim dark:text-on-surface-variant hover:text-secondary-fixed-dim dark:hover:text-secondary transition-colors" href="#">Terms of Service</a>
@@ -455,14 +475,14 @@
             </p>
 </div>
 </footer>
-<script>
-        // Simple scroll spy for active nav state
+<!-- END: Footer -->
+<!-- Interactive Scripts -->
+<script data-purpose="scroll-spy">
         document.addEventListener('DOMContentLoaded', () => {
             const sections = document.querySelectorAll('section, footer');
             const navLinks = document.querySelectorAll('.nav-link');
             const navbar = document.getElementById('navbar');
             
-            // Navbar scroll effect
             window.addEventListener('scroll', () => {
                 if (window.scrollY > 20) {
                     navbar.classList.add('shadow-md');
@@ -487,7 +507,6 @@
                 });
             });
 
-            // Smooth scrolling for anchor links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     e.preventDefault();
@@ -497,12 +516,34 @@
                 });
             });
             
-            // Initial trigger to set correct active state on load
             window.dispatchEvent(new Event('scroll'));
         });
     </script>
+<script data-purpose="frequency-selector">
+        function selectFrequency(btn) { 
+            const buttons = document.querySelectorAll('.frequency-btn'); 
+            buttons.forEach(b => { 
+                b.classList.remove('bg-secondary', 'text-on-secondary', 'border-secondary'); 
+                b.classList.add('bg-surface-container-high', 'text-on-surface-variant', 'border-outline-variant/50'); 
+            }); 
+            btn.classList.add('bg-secondary', 'text-on-secondary', 'border-secondary'); 
+            btn.classList.remove('bg-surface-container-high', 'text-on-surface-variant', 'border-outline-variant/50'); 
+        }
+    </script>
 
 
+<script data-purpose="slot-toggle-logic" class="">
+        function toggleSlot(btn) {
+            if (btn.classList.contains('booked')) return;
+            
+            if (btn.classList.contains('available')) {
+                btn.classList.remove('available', 'hover:bg-[#10B981]/20');
+                btn.classList.add('selected');
+            } else if (btn.classList.contains('selected')) {
+                btn.classList.remove('selected');
+                btn.classList.add('available', 'hover:bg-[#10B981]/20');
+            }
+        }
+    </script>
 
-
-<script>function selectFrequency(btn) { const buttons = document.querySelectorAll('.frequency-btn'); buttons.forEach(b => { b.classList.remove('bg-secondary', 'text-on-secondary', 'border-secondary'); b.classList.add('bg-surface-container-high', 'text-on-surface-variant', 'border-outline-variant/50'); }); btn.classList.add('bg-secondary', 'text-on-secondary', 'border-secondary'); btn.classList.remove('bg-surface-container-high', 'text-on-surface-variant', 'border-outline-variant/50'); }</script></body></html>
+</body></html>
