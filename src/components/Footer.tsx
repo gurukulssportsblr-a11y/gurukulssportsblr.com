@@ -7,8 +7,8 @@ export default function Footer() {
           <a className="flex items-center gap-3 mb-2" href="#about">
             <img
               alt="Gurukul's Sports Logo"
-              className="h-9 w-9 object-contain rounded-md grayscale brightness-200"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiYoVGed0fXMy8vFkpDCD10eJ44I_VPDLGFRRpTDW9WTUpDRRa8rmtKd4MF5P-fQaUus055ieKlMlDDEuis4-qsAHRU7cSi2nvJ_7kM7znp5nvGJPG0HqDRq1dh40UnJdFmIe4kvcSQjNK4dhdNug0ziEAh9zk9bPbHLlhqIwo6oF4HJ929plC1LI3Edwb0Z-3c9VoENfPOFU9jomxLut-nSIBGA4qdmFS8mdjViTTuFN5zrofULc"
+              className="h-9 w-9 object-contain rounded-md bg-white p-0.5"
+              src="/logo.jpeg"
             />
             <span className="text-title-md font-title-md font-bold text-surface-container-lowest tracking-tight">
               Gurukul's Sports ®
