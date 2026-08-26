@@ -27,23 +27,9 @@ export default function Facilities() {
                 10 Courts
               </span>
             </div>
-            <p className="font-body-md text-body-md text-on-surface-variant mb-4 flex-1">
+            <p className="font-body-md text-body-md text-on-surface-variant mb-6 flex-1">
               Premium playing surfaces featuring both synthetic mats and shock-absorbing wooden flooring. Equipped with anti-glare LED lighting.
             </p>
-            <ul className="space-y-2 mb-6">
-              <li className="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
-                <span className="material-symbols-outlined text-[18px] text-[#10B981]">check_circle</span>
-                BWF Approved Surfaces (Synthetic & Wooden)
-              </li>
-              <li className="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
-                <span className="material-symbols-outlined text-[18px] text-[#10B981]">check_circle</span>
-                1000 Lux Anti-glare Arena Lighting
-              </li>
-              <li className="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
-                <span className="material-symbols-outlined text-[18px] text-[#10B981]">check_circle</span>
-                Spacious player lounge & shower facilities
-              </li>
-            </ul>
             <a
               className="font-label-md text-label-md text-[#2563EB] font-bold flex items-center gap-1 hover:gap-2 transition-all mt-auto"
               href="#book-court"
@@ -71,29 +57,9 @@ export default function Facilities() {
                 Olympic Std
               </span>
             </div>
-            <p className="font-body-md text-body-md text-on-surface-variant mb-4 flex-1">
+            <p className="font-body-md text-body-md text-on-surface-variant flex-1">
               Temperature-controlled aquatic center with professional lane division, suitable for training and recreational swimming year-round.
             </p>
-            <ul className="space-y-2 mb-6">
-              <li className="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
-                <span className="material-symbols-outlined text-[18px] text-[#10B981]">check_circle</span>
-                Temperature Controlled Water
-              </li>
-              <li className="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
-                <span className="material-symbols-outlined text-[18px] text-[#10B981]">check_circle</span>
-                Multi-stage UV Filtration System
-              </li>
-              <li className="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
-                <span className="material-symbols-outlined text-[18px] text-[#10B981]">check_circle</span>
-                Dedicated coaching lanes & lifeguards
-              </li>
-            </ul>
-            <a
-              className="font-label-md text-label-md text-[#0F172A] font-semibold flex items-center gap-1 hover:gap-2 transition-all mt-auto"
-              href="#location"
-            >
-              Enquire at Reception <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-            </a>
           </div>
         </div>
 
@@ -115,29 +81,9 @@ export default function Facilities() {
                 Premium
               </span>
             </div>
-            <p className="font-body-md text-body-md text-on-surface-variant mb-4 flex-1">
+            <p className="font-body-md text-body-md text-on-surface-variant flex-1">
               Dedicated high-ceiling zone featuring premium ITTF approved tables with specialized grip flooring for optimal movement.
             </p>
-            <ul className="space-y-2 mb-6">
-              <li className="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
-                <span className="material-symbols-outlined text-[18px] text-[#10B981]">check_circle</span>
-                ITTF Approved Stag Professional Tables
-              </li>
-              <li className="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
-                <span className="material-symbols-outlined text-[18px] text-[#10B981]">check_circle</span>
-                Anti-slip Shock Absorbing Floor
-              </li>
-              <li className="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
-                <span className="material-symbols-outlined text-[18px] text-[#10B981]">check_circle</span>
-                Robot practice & Multi-ball coaching
-              </li>
-            </ul>
-            <a
-              className="font-label-md text-label-md text-[#0F172A] font-semibold flex items-center gap-1 hover:gap-2 transition-all mt-auto"
-              href="#location"
-            >
-              Enquire at Reception <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-            </a>
           </div>
         </div>
       </div>
