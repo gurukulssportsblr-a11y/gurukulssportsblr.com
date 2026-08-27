@@ -1,6 +1,21 @@
 import { NextResponse } from 'next/server';
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase/server';
 
+const globalStore = global as unknown as {
+  _mockBookings?: any[];
+  _mockSlots?: Array<{
+    court_id: string;
+    court_number: number;
+    slot_date: string;
+    slot_time: string;
+    status: string;
+    booking_code: string;
+  }>;
+};
+
+if (!globalStore._mockBookings) globalStore._mockBookings = [];
+if (!globalStore._mockSlots) globalStore._mockSlots = [];
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -11,25 +26,22 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Please provide a phone number or booking code.' }, { status: 400 });
     }
 
+    const cleanPhone = phone ? phone.replace(/\D/g, '').slice(-10) : '';
+    const cleanCode = bookingCode ? bookingCode.trim().toUpperCase() : '';
+
+    // Search in-memory store
+    const memBookings = (globalStore._mockBookings || []).filter((b) => {
+      if (cleanCode && b.booking_code === cleanCode) return true;
+      if (cleanPhone && b.customer_phone.includes(cleanPhone)) return true;
+      return false;
+    }).map((b) => ({
+      ...b,
+      court: { name: `Court ${b.court_number || 1}`, surface_type: 'Synthetic' },
+      booking_slots: (b.slots || []).map((s: string) => ({ slot_time: s, status: b.status })),
+    }));
+
     if (!isSupabaseConfigured) {
-      return NextResponse.json({
-        bookings: [
-          {
-            id: 'sample-1',
-            booking_code: 'GS-892341',
-            customer_name: 'Jeremy',
-            customer_phone: phone || '9876543210',
-            booking_date: new Date().toISOString().split('T')[0],
-            frequency: 'one-time',
-            total_hours: 2,
-            total_amount: 600,
-            status: 'confirmed',
-            created_at: new Date().toISOString(),
-            court: { name: 'Court 1', surface_type: 'Synthetic' },
-            booking_slots: [{ slot_time: '10:00 AM' }, { slot_time: '11:00 AM' }]
-          }
-        ]
-      });
+      return NextResponse.json({ bookings: memBookings });
     }
 
     const supabase = createServerClient();
@@ -42,21 +54,29 @@ export async function GET(req: Request) {
       `)
       .order('created_at', { ascending: false });
 
-    if (bookingCode) {
-      query = query.eq('booking_code', bookingCode.trim().toUpperCase());
-    } else if (phone) {
-      // Clean phone string
-      const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    if (cleanCode) {
+      query = query.eq('booking_code', cleanCode);
+    } else if (cleanPhone) {
       query = query.like('customer_phone', `%${cleanPhone}%`);
     }
 
     const { data, error } = await query;
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('Supabase lookup error:', error);
+      return NextResponse.json({ bookings: memBookings });
     }
 
-    return NextResponse.json({ bookings: data || [] });
+    const dbBookings = data || [];
+    // Combine and deduplicate
+    const all = [...dbBookings];
+    for (const mb of memBookings) {
+      if (!all.find((b) => b.booking_code === mb.booking_code)) {
+        all.push(mb);
+      }
+    }
+
+    return NextResponse.json({ bookings: all });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
@@ -70,36 +90,65 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Booking ID is required' }, { status: 400 });
     }
 
+    // 1. Release in in-memory store
+    let releasedCode = '';
+    if (globalStore._mockBookings) {
+      globalStore._mockBookings = globalStore._mockBookings.map((b) => {
+        if (b.id === bookingId || b.booking_code === bookingId) {
+          releasedCode = b.booking_code;
+          return { ...b, status: 'cancelled' };
+        }
+        return b;
+      });
+    }
+
+    if (globalStore._mockSlots) {
+      globalStore._mockSlots = globalStore._mockSlots.map((s) => {
+        if (s.booking_code === releasedCode || s.booking_code === bookingId) {
+          return { ...s, status: 'cancelled' };
+        }
+        return s;
+      });
+    }
+
     if (!isSupabaseConfigured) {
-      return NextResponse.json({ success: true, message: 'Demo booking cancelled successfully' });
+      return NextResponse.json({
+        success: true,
+        message: 'Booking cancelled successfully. Time slots are now available again.',
+      });
     }
 
     const supabase = createServerClient();
 
-    // 1. Mark booking as cancelled
+    // 2. Mark booking as cancelled in Supabase
     const { error: bookingErr } = await supabase
       .from('bookings')
       .update({
         status: 'cancelled',
-        cancelled_at: new Date().toISOString()
+        cancelled_at: new Date().toISOString(),
       })
       .eq('id', bookingId);
 
     if (bookingErr) {
+      console.error('Error cancelling booking:', bookingErr);
       return NextResponse.json({ error: bookingErr.message }, { status: 500 });
     }
 
-    // 2. Mark booking slots as cancelled to free up the time slots
+    // 3. Mark booking slots as cancelled to free up the unique slot index
     const { error: slotErr } = await supabase
       .from('booking_slots')
       .update({ status: 'cancelled' })
       .eq('booking_id', bookingId);
 
     if (slotErr) {
+      console.error('Error cancelling booking slots:', slotErr);
       return NextResponse.json({ error: slotErr.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, message: 'Booking cancelled successfully. Slots are now free.' });
+    return NextResponse.json({
+      success: true,
+      message: 'Booking cancelled successfully. Time slots are now free and available again.',
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

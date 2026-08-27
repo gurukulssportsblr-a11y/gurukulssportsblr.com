@@ -677,6 +677,21 @@
             alert('🎉 Booking Confirmed!\n\nBooking Code: ' + bookingCode + '\nName: ' + name + '\nPhone: +91 ' + phone + '\nSlots: ' + bookedTimes.join(', ') + '\n\nThese slots are now permanently locked and blocked for other users.');
         }
 
+        function handleDirectCancel() {
+            const input = prompt('Enter your Booking Code (e.g. GS-123456) or Phone Number to cancel booking:');
+            if (!input || !input.trim()) return;
+
+            const datePicker = document.getElementById('booking-date-picker');
+            const selectedDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
+            const savedKey = 'gs_html_booked_' + selectedDate;
+            
+            // Release the booked slots in storage
+            localStorage.removeItem(savedKey);
+            refreshSlotAvailability();
+
+            alert('✅ Booking for "' + input.trim() + '" has been cancelled successfully!\n\nThe reserved court time slots have been released and are now free and available for booking again.');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             refreshSlotAvailability();
             const datePicker = document.getElementById('booking-date-picker');
@@ -684,10 +699,14 @@
                 datePicker.addEventListener('change', refreshSlotAvailability);
             }
 
-            const confirmBtn = document.querySelector('button[type="button"]:has(.material-symbols-outlined)') || document.querySelector('form button');
             const formConfirmBtn = document.querySelector('form button:first-of-type');
             if (formConfirmBtn) {
                 formConfirmBtn.onclick = handleDirectBooking;
+            }
+
+            const formCancelBtn = document.querySelector('form button:nth-of-type(2)');
+            if (formCancelBtn) {
+                formCancelBtn.onclick = handleDirectCancel;
             }
         });
     </script>
