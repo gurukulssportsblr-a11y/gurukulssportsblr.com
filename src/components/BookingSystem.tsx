@@ -25,6 +25,7 @@ export default function BookingSystem() {
   // Modals
   const [successModalData, setSuccessModalData] = useState<any | null>(null);
   const [cancelModalOpen, setCancelModalOpen] = useState<boolean>(false);
+  const [lookupMode, setLookupMode] = useState<'view' | 'cancel'>('view');
 
   // Surface filter
   const [surfaceFilter, setSurfaceFilter] = useState<'ALL' | 'Synthetic' | 'Wooden'>('ALL');
@@ -536,10 +537,27 @@ export default function BookingSystem() {
                     )}
                   </button>
 
+                  {/* View Bookings Button */}
                   <button
-                    className="w-full mt-2 flex items-center justify-center gap-2 text-on-surface-variant font-label-md text-xs py-2.5 px-4 rounded-lg border border-outline-variant/50 hover:bg-surface-container-high hover:text-[#BA1A1A] transition-colors"
+                    className="w-full mt-2.5 flex items-center justify-center gap-2 text-[#2563EB] bg-[#2563EB]/10 hover:bg-[#2563EB]/20 font-label-md text-xs py-2.5 px-4 rounded-lg border border-[#2563EB]/30 transition-all font-semibold"
                     type="button"
-                    onClick={() => setCancelModalOpen(true)}
+                    onClick={() => {
+                      setLookupMode('view');
+                      setCancelModalOpen(true);
+                    }}
+                  >
+                    <span className="material-symbols-outlined text-[18px]">receipt_long</span>
+                    View My Bookings
+                  </button>
+
+                  {/* Cancel Existing Booking Button */}
+                  <button
+                    className="w-full mt-2 flex items-center justify-center gap-2 text-on-surface-variant font-label-md text-xs py-2 px-4 rounded-lg border border-outline-variant/50 hover:bg-[#BA1A1A]/10 hover:text-[#BA1A1A] hover:border-[#BA1A1A]/30 transition-colors"
+                    type="button"
+                    onClick={() => {
+                      setLookupMode('cancel');
+                      setCancelModalOpen(true);
+                    }}
                   >
                     <span className="material-symbols-outlined text-[16px]">cancel</span>
                     Cancel existing booking
@@ -558,11 +576,12 @@ export default function BookingSystem() {
         bookingData={successModalData}
       />
 
-      {/* Cancel Existing Booking Modal */}
+      {/* Lookup / Cancel Booking Modal */}
       <CancelBookingModal
         isOpen={cancelModalOpen}
         onClose={() => setCancelModalOpen(false)}
         onBookingCancelled={fetchBookedSlots}
+        initialMode={lookupMode}
       />
     </section>
   );

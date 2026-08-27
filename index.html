@@ -408,12 +408,15 @@
 <input class="flex-1 bg-surface border border-outline-variant/50 rounded-r-lg px-3 py-2 font-body-md text-body-md text-[#0F172A] placeholder-outline" id="phone" placeholder="10-digit number" type="tel">
 </div>
 </div>
-<button class="w-full mt-4 flex items-center justify-center gap-2 text-white font-label-md text-label-md py-3 px-4 rounded-lg transition-colors shadow-sm bg-[#0F172A] hover:opacity-90" type="button">
-<span class="material-symbols-outlined text-[18px]">chat</span> Confirm &amp; Book via WhatsApp
-                                    </button>
-<button class="w-full mt-3 flex items-center justify-center gap-2 text-on-surface-variant font-label-md text-label-md py-3 px-4 rounded-lg border border-outline-variant/50 hover:bg-surface-container-high transition-colors" type="button">
+<button class="w-full mt-4 flex items-center justify-center gap-2 text-white font-label-md text-label-md py-3 px-4 rounded-lg transition-colors shadow-sm bg-[#0F172A] hover:bg-[#2563EB]" type="button">
+<span class="material-symbols-outlined text-[18px]">sports_tennis</span> Confirm &amp; Book Court
+</button>
+<button class="w-full mt-2.5 flex items-center justify-center gap-2 text-[#2563EB] bg-[#2563EB]/10 hover:bg-[#2563EB]/20 font-label-md text-label-md py-2.5 px-4 rounded-lg border border-[#2563EB]/30 transition-colors font-semibold" type="button">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span> View Bookings
+</button>
+<button class="w-full mt-2 flex items-center justify-center gap-2 text-on-surface-variant font-label-md text-label-md py-2 px-4 rounded-lg border border-outline-variant/50 hover:bg-surface-container-high hover:text-[#BA1A1A] transition-colors" type="button">
 <span class="material-symbols-outlined text-[18px]">cancel</span> Cancel existing booking
-                                    </button>
+</button>
 </form>
 </div>
 </div>
@@ -642,6 +645,22 @@
             alert('🎉 Booking Confirmed!\n\nBooking Code: ' + bookingCode + '\nName: ' + name + '\nPhone: +91 ' + phone + '\nSlots: ' + bookedTimes.join(', ') + '\n\n⚠️ IMPORTANT RULE: If you are late by 10 minutes, your booking will be forfeited and you will lose your reserved slot.\n\nThese slots are now permanently locked and blocked for other users.');
         }
 
+        function handleDirectViewBookings() {
+            const input = prompt('Enter your 10-digit Phone Number or Booking Code (e.g. GS-123456) to view your bookings:');
+            if (!input || !input.trim()) return;
+
+            const datePicker = document.getElementById('booking-date-picker');
+            const selectedDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
+            const savedKey = 'gs_html_booked_' + selectedDate;
+            const localBooked = JSON.parse(localStorage.getItem(savedKey) || '[]');
+
+            if (localBooked.length === 0) {
+                alert('ℹ️ No active bookings found for ' + selectedDate + ' under "' + input.trim() + '".');
+            } else {
+                alert('🏸 Active Bookings Found for ' + selectedDate + ':\n\n' + localBooked.map(s => '• ' + s + ' (Court 1 - Synthetic)').join('\n') + '\n\nPlayer: ' + input.trim() + '\nStatus: Confirmed');
+            }
+        }
+
         function handleDirectCancel() {
             const input = prompt('Enter your Booking Code (e.g. GS-123456) or Phone Number to cancel booking:');
             if (!input || !input.trim()) return;
@@ -664,12 +683,17 @@
                 datePicker.addEventListener('change', refreshSlotAvailability);
             }
 
-            const formConfirmBtn = document.querySelector('form button:first-of-type');
+            const formConfirmBtn = document.querySelector('form button:nth-of-type(1)');
             if (formConfirmBtn) {
                 formConfirmBtn.onclick = handleDirectBooking;
             }
 
-            const formCancelBtn = document.querySelector('form button:nth-of-type(2)');
+            const formViewBtn = document.querySelector('form button:nth-of-type(2)');
+            if (formViewBtn) {
+                formViewBtn.onclick = handleDirectViewBookings;
+            }
+
+            const formCancelBtn = document.querySelector('form button:nth-of-type(3)');
             if (formCancelBtn) {
                 formCancelBtn.onclick = handleDirectCancel;
             }

@@ -6,12 +6,14 @@ interface CancelBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onBookingCancelled?: () => void;
+  initialMode?: 'view' | 'cancel';
 }
 
 export default function CancelBookingModal({
   isOpen,
   onClose,
   onBookingCancelled,
+  initialMode = 'view',
 }: CancelBookingModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,6 +23,8 @@ export default function CancelBookingModal({
   const [successMsg, setSuccessMsg] = useState('');
 
   if (!isOpen) return null;
+
+  const isViewMode = initialMode === 'view';
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,10 +105,17 @@ export default function CancelBookingModal({
       <div className="bg-surface-container-lowest rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-outline-variant max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center pb-4 border-b border-outline-variant/40 mb-5">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#BA1A1A]">cancel</span>
-            <h3 className="font-title-md text-title-md font-bold text-[#0F172A]">
-              Lookup &amp; Cancel Booking
-            </h3>
+            <span className={`material-symbols-outlined ${isViewMode ? 'text-[#2563EB]' : 'text-[#BA1A1A]'}`}>
+              {isViewMode ? 'receipt_long' : 'cancel'}
+            </span>
+            <div>
+              <h3 className="font-title-md text-title-md font-bold text-[#0F172A]">
+                {isViewMode ? 'View Bookings & Receipts' : 'Lookup & Cancel Booking'}
+              </h3>
+              <p className="text-xs text-on-surface-variant">
+                {isViewMode ? 'Search your confirmed court bookings and timings' : 'Find your reservation to cancel and release slots'}
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -218,13 +229,21 @@ export default function CancelBookingModal({
                     </div>
 
                     {!isCancelled && (
-                      <div className="pt-2 mt-1 border-t border-outline-variant/30 flex justify-end">
+                      <div className="pt-2 mt-1 border-t border-outline-variant/30 flex items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={() => window.print()}
+                          className="px-2.5 py-1 text-xs text-[#2563EB] hover:bg-[#2563EB]/10 rounded font-medium flex items-center gap-1"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">print</span>
+                          Print Receipt
+                        </button>
                         <button
                           onClick={() => handleCancel(booking.id)}
                           disabled={cancellingId === booking.id}
                           className="px-3 py-1.5 bg-[#BA1A1A] hover:bg-[#93000A] text-white text-xs font-semibold rounded-md transition-colors flex items-center gap-1 disabled:opacity-60"
                         >
-                          {cancellingId === booking.id ? 'Cancelling...' : 'Cancel This Booking'}
+                          {cancellingId === booking.id ? 'Cancelling...' : 'Cancel Booking'}
                         </button>
                       </div>
                     )}
