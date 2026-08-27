@@ -285,27 +285,7 @@
 <p class="mt-2 font-label-sm text-label-sm text-on-surface-variant">Available slots will update based on your selection.</p>
 </div>
 </div>
-<!-- Recurring Booking -->
-<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50">
-<div class="flex items-center justify-between mb-4">
-<h3 class="font-title-md text-title-md text-[#0F172A]">1.5. Recurring Booking</h3>
-</div>
-<div class="space-y-6">
-<div class="flex flex-wrap gap-2">
-<button class="frequency-btn px-4 py-2 rounded-full bg-secondary text-on-secondary font-label-md text-label-md border border-secondary transition-colors" onclick="selectFrequency(this)">One-time</button>
-<button class="frequency-btn px-4 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md border border-outline-variant/50 hover:border-secondary transition-colors" onclick="selectFrequency(this)">Daily</button>
-<button class="frequency-btn px-4 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md border border-outline-variant/50 hover:border-secondary transition-colors" onclick="selectFrequency(this)">Weekly (Weekends only)</button>
-<button class="frequency-btn px-4 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md border border-outline-variant/50 hover:border-secondary transition-colors" onclick="selectFrequency(this)">Weekly (Same day)</button>
-</div>
-<div class="pt-4 border-t border-outline-variant/30">
-<label class="block font-label-sm text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider" for="end-date">Repeat Until (End Date)</label>
-<div class="max-w-xs">
-<input class="w-full bg-surface border border-outline-variant/50 rounded-lg px-3 py-2 font-body-md text-body-md text-[#0F172A] placeholder-outline" id="end-date" type="date" value="2023-10-31">
-</div>
-<p class="mt-2 font-label-sm text-label-sm text-on-surface-variant">Booking will repeat for the selected duration.</p>
-</div>
-</div>
-</div>
+
 <!-- Court Selector -->
 <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50">
 <div class="flex items-center justify-between mb-4">
@@ -395,7 +375,7 @@
 <div class="bg-surface-container-lowest rounded-xl border border-[#2563EB]/20 shadow-[0_8px_30px_rgba(37,99,235,0.08)] sticky top-28 overflow-hidden">
 <div class="bg-[#0F172A] p-6 text-white">
 <h3 class="font-title-md text-title-md mb-1">Booking Summary</h3>
-<p class="font-label-sm text-label-sm opacity-80">Review your selection • One-time booking</p>
+<p class="font-label-sm text-label-sm opacity-80">Review your court &amp; schedule</p>
 </div>
 <div class="p-6 space-y-4">
 <div class="flex justify-between items-start pb-4 border-b border-outline-variant/30">
@@ -407,10 +387,6 @@
 <p class="font-label-md text-label-md text-[#0F172A]">10:00 AM - 12:00 PM</p>
 <p class="font-label-sm text-label-sm text-[#2563EB] font-bold">2 Hours</p>
 </div>
-</div>
-<div class="flex justify-between items-center py-2 border-b border-outline-variant/10">
-<span class="font-body-md text-body-md text-on-surface-variant">Frequency</span>
-<span class="font-label-md text-label-md text-[#0F172A]">One-time</span>
 </div>
 <div class="flex justify-between items-center py-2">
 <span class="font-body-md text-body-md text-on-surface-variant">Court Fee (₹300/hr)</span>
@@ -549,17 +525,6 @@
             
             window.dispatchEvent(new Event('scroll'));
         });
-    </script>
-<script data-purpose="frequency-selector">
-        function selectFrequency(btn) { 
-            const buttons = document.querySelectorAll('.frequency-btn'); 
-            buttons.forEach(b => { 
-                b.classList.remove('bg-secondary', 'text-on-secondary', 'border-secondary'); 
-                b.classList.add('bg-surface-container-high', 'text-on-surface-variant', 'border-outline-variant/50'); 
-            }); 
-            btn.classList.add('bg-secondary', 'text-on-secondary', 'border-secondary'); 
-            btn.classList.remove('bg-surface-container-high', 'text-on-surface-variant', 'border-outline-variant/50'); 
-        }
     </script>
 
 

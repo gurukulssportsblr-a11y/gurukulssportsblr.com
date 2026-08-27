@@ -6,17 +6,12 @@ import { MORNING_SLOTS, AFTERNOON_EVENING_SLOTS, DEFAULT_COURTS, DefaultCourt, i
 import BookingSuccessModal from './BookingSuccessModal';
 import CancelBookingModal from './CancelBookingModal';
 
-type FrequencyType = 'one-time' | 'daily' | 'weekly_weekends' | 'weekly_sameday';
-
 export default function BookingSystem() {
   const todayStr = useMemo(() => format(new Date(), 'yyyy-MM-dd'), []);
-  const defaultEndDateStr = useMemo(() => format(addDays(new Date(), 7), 'yyyy-MM-dd'), []);
 
   const [courts, setCourts] = useState<DefaultCourt[]>(DEFAULT_COURTS);
   const [selectedCourtId, setSelectedCourtId] = useState<string>(DEFAULT_COURTS[0].id);
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
-  const [frequency, setFrequency] = useState<FrequencyType>('one-time');
-  const [endDate, setEndDate] = useState<string>(defaultEndDateStr);
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState<boolean>(false);
@@ -87,32 +82,8 @@ export default function BookingSystem() {
     return courts.filter((c) => c.surface_type === surfaceFilter);
   }, [courts, surfaceFilter]);
 
-  // Calculate repeat occurrences
-  const recurrenceCount = useMemo(() => {
-    if (frequency === 'one-time') return 1;
-    try {
-      const start = parseISO(selectedDate);
-      const end = parseISO(endDate);
-      if (end < start) return 1;
-
-      let count = 0;
-      let curr = start;
-      while (curr <= end) {
-        const day = curr.getDay();
-        if (frequency === 'daily') count++;
-        else if (frequency === 'weekly_weekends' && (day === 0 || day === 6)) count++;
-        else if (frequency === 'weekly_sameday' && day === start.getDay()) count++;
-        curr = addDays(curr, 1);
-      }
-      return Math.max(count, 1);
-    } catch {
-      return 1;
-    }
-  }, [selectedDate, endDate, frequency]);
-
   // Pricing calculation
-  const hoursPerDay = selectedSlots.length;
-  const totalHours = hoursPerDay * recurrenceCount;
+  const totalHours = selectedSlots.length;
   const pricePerHour = currentCourt.price_per_hour || 300;
   const totalAmount = totalHours * pricePerHour;
 
@@ -163,8 +134,8 @@ export default function BookingSystem() {
         customerPhone: cleanPhone,
         bookingDate: selectedDate,
         selectedSlots,
-        frequency,
-        repeatUntil: frequency !== 'one-time' ? endDate : null,
+        frequency: 'one-time',
+        repeatUntil: null,
         pricePerHour,
         totalAmount,
       };
@@ -292,88 +263,7 @@ export default function BookingSystem() {
               </div>
             </div>
 
-            {/* Step 1.5: Recurring Booking */}
-            <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-title-md text-title-md font-bold text-[#0F172A] flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-full bg-[#0F172A] text-white text-xs flex items-center justify-center font-bold">1.5</span>
-                  Recurring Booking
-                </h3>
-              </div>
 
-              <div className="space-y-6">
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setFrequency('one-time')}
-                    className={`frequency-btn px-4 py-2 rounded-full font-label-md text-label-md transition-colors ${
-                      frequency === 'one-time'
-                        ? 'bg-[#2563EB] text-white border border-[#2563EB] shadow-sm'
-                        : 'bg-surface-container-high text-on-surface-variant border border-outline-variant/50 hover:border-[#2563EB]'
-                    }`}
-                  >
-                    One-time
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFrequency('daily')}
-                    className={`frequency-btn px-4 py-2 rounded-full font-label-md text-label-md transition-colors ${
-                      frequency === 'daily'
-                        ? 'bg-[#2563EB] text-white border border-[#2563EB] shadow-sm'
-                        : 'bg-surface-container-high text-on-surface-variant border border-outline-variant/50 hover:border-[#2563EB]'
-                    }`}
-                  >
-                    Daily
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFrequency('weekly_weekends')}
-                    className={`frequency-btn px-4 py-2 rounded-full font-label-md text-label-md transition-colors ${
-                      frequency === 'weekly_weekends'
-                        ? 'bg-[#2563EB] text-white border border-[#2563EB] shadow-sm'
-                        : 'bg-surface-container-high text-on-surface-variant border border-outline-variant/50 hover:border-[#2563EB]'
-                    }`}
-                  >
-                    Weekly (Weekends only)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFrequency('weekly_sameday')}
-                    className={`frequency-btn px-4 py-2 rounded-full font-label-md text-label-md transition-colors ${
-                      frequency === 'weekly_sameday'
-                        ? 'bg-[#2563EB] text-white border border-[#2563EB] shadow-sm'
-                        : 'bg-surface-container-high text-on-surface-variant border border-outline-variant/50 hover:border-[#2563EB]'
-                    }`}
-                  >
-                    Weekly (Same day)
-                  </button>
-                </div>
-
-                {frequency !== 'one-time' && (
-                  <div className="pt-4 border-t border-outline-variant/30 animate-in fade-in">
-                    <label
-                      className="block font-label-sm text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider font-semibold"
-                      htmlFor="end-date"
-                    >
-                      Repeat Until (End Date)
-                    </label>
-                    <div className="max-w-xs">
-                      <input
-                        className="w-full bg-surface border border-outline-variant/50 rounded-lg px-3 py-2 font-body-md text-body-md text-[#0F172A] placeholder-outline font-semibold"
-                        id="end-date"
-                        type="date"
-                        min={selectedDate}
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                      />
-                    </div>
-                    <p className="mt-2 font-label-sm text-label-sm text-[#2563EB] font-medium">
-                      Booking will repeat across {recurrenceCount} session{recurrenceCount > 1 ? 's' : ''}.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
 
             {/* Step 2: Court Selector */}
             <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50 shadow-sm">
@@ -567,14 +457,7 @@ export default function BookingSystem() {
                   </div>
                 </div>
 
-                {/* Frequency */}
-                <div className="flex justify-between items-center py-2 border-b border-outline-variant/10 text-sm">
-                  <span className="text-on-surface-variant">Frequency</span>
-                  <span className="font-semibold text-[#0F172A] capitalize">
-                    {frequency.replace('_', ' ')}
-                    {frequency !== 'one-time' && ` (${recurrenceCount} days)`}
-                  </span>
-                </div>
+
 
                 {/* Court Fee */}
                 <div className="flex justify-between items-center py-2 text-sm">
