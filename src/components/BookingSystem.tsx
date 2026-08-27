@@ -371,46 +371,14 @@ export default function BookingSystem() {
                   Select Court
                 </h3>
 
-                {/* Surface Filter Tabs */}
-                <div className="flex items-center gap-1.5 p-1 bg-surface-container rounded-lg text-xs font-semibold">
-                  <button
-                    type="button"
-                    onClick={() => setSurfaceFilter('ALL')}
-                    className={`px-3 py-1 rounded-md transition-colors ${
-                      surfaceFilter === 'ALL'
-                        ? 'bg-white text-[#0F172A] shadow-sm'
-                        : 'text-on-surface-variant hover:text-[#0F172A]'
-                    }`}
-                  >
-                    All Courts (10)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSurfaceFilter('Synthetic')}
-                    className={`px-3 py-1 rounded-md transition-colors ${
-                      surfaceFilter === 'Synthetic'
-                        ? 'bg-white text-[#0F172A] shadow-sm'
-                        : 'text-on-surface-variant hover:text-[#0F172A]'
-                    }`}
-                  >
-                    Synthetic (₹300/hr)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSurfaceFilter('Wooden')}
-                    className={`px-3 py-1 rounded-md transition-colors ${
-                      surfaceFilter === 'Wooden'
-                        ? 'bg-white text-[#0F172A] shadow-sm'
-                        : 'text-on-surface-variant hover:text-[#0F172A]'
-                    }`}
-                  >
-                    Wooden (₹350/hr)
-                  </button>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-container rounded-lg text-xs font-semibold text-[#0F172A]">
+                  <span className="w-2 h-2 rounded-full bg-[#10B981]"></span>
+                  10 BWF Synthetic Courts • ₹300/hr
                 </div>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                {filteredCourts.map((court) => {
+                {courts.map((court) => {
                   const isSelected = court.id === selectedCourtId;
                   return (
                     <button
@@ -431,15 +399,13 @@ export default function BookingSystem() {
                         className={`text-[10px] uppercase tracking-wider mt-1 px-1.5 py-0.5 rounded font-semibold ${
                           isSelected
                             ? 'bg-white/20 text-white'
-                            : court.surface_type === 'Wooden'
-                            ? 'bg-[#F59E0B]/15 text-[#B45309]'
                             : 'bg-[#2563EB]/15 text-[#2563EB]'
                         }`}
                       >
-                        {court.surface_type}
+                        Synthetic
                       </span>
                       <span className={`text-[11px] mt-1 font-semibold ${isSelected ? 'text-white/80' : 'text-on-surface-variant'}`}>
-                        ₹{court.price_per_hour}/hr
+                        ₹{court.price_per_hour || 300}/hr
                       </span>
                     </button>
                   );

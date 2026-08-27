@@ -28,7 +28,7 @@ export default function Facilities() {
               </span>
             </div>
             <p className="font-body-md text-body-md text-on-surface-variant mb-6 flex-1">
-              Premium playing surfaces featuring both synthetic mats and shock-absorbing wooden flooring. Equipped with anti-glare LED lighting.
+              Premium BWF-grade synthetic mat surfaces equipped with professional anti-glare LED lighting.
             </p>
             <a
               className="font-label-md text-label-md text-[#2563EB] font-bold flex items-center gap-1 hover:gap-2 transition-all mt-auto"

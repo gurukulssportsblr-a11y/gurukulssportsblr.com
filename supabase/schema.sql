@@ -112,10 +112,12 @@ VALUES
     (2, 'Court 2', 'Synthetic', 300.00, true, 2),
     (3, 'Court 3', 'Synthetic', 300.00, true, 3),
     (4, 'Court 4', 'Synthetic', 300.00, true, 4),
-    (5, 'Court 5', 'Wooden', 350.00, true, 5),
-    (6, 'Court 6', 'Wooden', 350.00, true, 6),
+    (5, 'Court 5', 'Synthetic', 300.00, true, 5),
+    (6, 'Court 6', 'Synthetic', 300.00, true, 6),
     (7, 'Court 7', 'Synthetic', 300.00, true, 7),
     (8, 'Court 8', 'Synthetic', 300.00, true, 8),
     (9, 'Court 9', 'Synthetic', 300.00, true, 9),
     (10, 'Court 10', 'Synthetic', 300.00, true, 10)
-ON CONFLICT (court_number) DO NOTHING;
+ON CONFLICT (court_number) DO UPDATE 
+SET surface_type = EXCLUDED.surface_type,
+    price_per_hour = EXCLUDED.price_per_hour;
