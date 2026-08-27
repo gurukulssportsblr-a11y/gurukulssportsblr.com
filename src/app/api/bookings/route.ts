@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import { format, addDays, isBefore, isEqual, parseISO } from 'date-fns';
+import { isSlotPassed } from '@/lib/constants';
 
 function generateDatesForFrequency(startDateStr: string, frequency: string, endDateStr?: string | null): string[] {
   if (frequency === 'one-time' || !endDateStr) {
@@ -88,6 +89,21 @@ export async function POST(req: Request) {
 
     if (!courtId || !customerName || !customerPhone || !bookingDate || !selectedSlots || selectedSlots.length === 0) {
       return NextResponse.json({ error: 'Missing required booking fields.' }, { status: 400 });
+    }
+
+    // Validate that the booking date and slots are not in the past
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+    if (bookingDate < todayStr) {
+      return NextResponse.json({ error: 'Cannot book courts for past dates.' }, { status: 400 });
+    }
+
+    if (bookingDate === todayStr) {
+      const hasPassedSlot = selectedSlots.some((slot: string) => isSlotPassed(slot, bookingDate));
+      if (hasPassedSlot) {
+        return NextResponse.json({ error: 'One or more selected time slots have already passed today.' }, { status: 400 });
+      }
     }
 
     const bookingDates = generateDatesForFrequency(bookingDate, frequency, repeatUntil);

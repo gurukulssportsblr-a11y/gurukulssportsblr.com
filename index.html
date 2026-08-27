@@ -563,9 +563,9 @@
     </script>
 
 
-<script data-purpose="slot-toggle-logic" class="">
+    <script data-purpose="slot-toggle-logic">
         function toggleSlot(btn) {
-            if (btn.classList.contains('booked')) return;
+            if (btn.classList.contains('booked') || btn.classList.contains('cursor-not-allowed')) return;
             
             if (btn.classList.contains('available')) {
                 btn.classList.remove('available', 'hover:bg-[#10B981]/20');
@@ -575,7 +575,75 @@
                 btn.classList.add('available', 'hover:bg-[#10B981]/20');
             }
         }
-<script data-purpose="hero-carousel-logic">
+
+        function parseSlotToHour(slotText) {
+            const match = slotText.trim().match(/(\d+):(\d+)\s*(AM|PM)/i);
+            if (!match) return 0;
+            let hour = parseInt(match[1], 10);
+            const period = match[3].toUpperCase();
+            if (period === 'PM' && hour < 12) hour += 12;
+            if (period === 'AM' && hour === 12) hour = 0;
+            return hour;
+        }
+
+        function refreshSlotAvailability() {
+            const datePicker = document.getElementById('booking-date-picker');
+            if (!datePicker) return;
+
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
+            const currentHour = now.getHours();
+
+            // Set minimum date to today
+            datePicker.min = todayStr;
+            if (!datePicker.value || datePicker.value < todayStr) {
+                datePicker.value = todayStr;
+            }
+
+            const endDatePicker = document.getElementById('end-date');
+            if (endDatePicker) {
+                endDatePicker.min = datePicker.value || todayStr;
+            }
+
+            const selectedDate = datePicker.value;
+            const slotButtons = document.querySelectorAll('.court-slot');
+
+            slotButtons.forEach(btn => {
+                const slotText = btn.textContent.trim();
+                const slotHour = parseSlotToHour(slotText);
+                
+                const isPastDate = selectedDate < todayStr;
+                const isPastTime = selectedDate === todayStr && slotHour <= currentHour;
+
+                if (isPastDate || isPastTime) {
+                    btn.classList.remove('available', 'selected', 'hover:bg-[#10B981]/20');
+                    btn.classList.add('booked', 'opacity-40', 'cursor-not-allowed', 'line-through');
+                    btn.disabled = true;
+                    btn.title = "Time slot has passed";
+                } else {
+                    btn.classList.remove('booked', 'opacity-40', 'cursor-not-allowed', 'line-through');
+                    if (!btn.classList.contains('selected')) {
+                        btn.classList.add('available');
+                    }
+                    btn.disabled = false;
+                    btn.title = "Available for booking";
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshSlotAvailability();
+            const datePicker = document.getElementById('booking-date-picker');
+            if (datePicker) {
+                datePicker.addEventListener('change', refreshSlotAvailability);
+            }
+        });
+    </script>
+
+    <script data-purpose="hero-carousel-logic">
         // 10-Second Auto-Swiping Court Carousel
         document.addEventListener('DOMContentLoaded', () => {
             const slides = document.querySelectorAll('.hero-slide');

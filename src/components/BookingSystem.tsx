@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { format, addDays, parseISO } from 'date-fns';
-import { MORNING_SLOTS, AFTERNOON_EVENING_SLOTS, DEFAULT_COURTS, DefaultCourt } from '@/lib/constants';
+import { MORNING_SLOTS, AFTERNOON_EVENING_SLOTS, DEFAULT_COURTS, DefaultCourt, isSlotPassed } from '@/lib/constants';
 import BookingSuccessModal from './BookingSuccessModal';
 import CancelBookingModal from './CancelBookingModal';
 
@@ -118,6 +118,7 @@ export default function BookingSystem() {
 
   // Toggle slot selection
   const toggleSlot = (slot: string) => {
+    if (isSlotPassed(slot, selectedDate)) return;
     if (bookedSlots.includes(slot)) return;
     setErrorMessage('');
     setSelectedSlots((prev) =>
@@ -270,7 +271,13 @@ export default function BookingSystem() {
                     id="booking-date-picker"
                     min={todayStr}
                     value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
+                    onChange={(e) => {
+                      const newDate = e.target.value;
+                      if (newDate >= todayStr) {
+                        setSelectedDate(newDate);
+                        setSelectedSlots((prev) => prev.filter((s) => !isSlotPassed(s, newDate)));
+                      }
+                    }}
                     className="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant/50 rounded-lg font-title-md text-[#0F172A] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all cursor-pointer font-semibold"
                   />
                 </div>
@@ -422,7 +429,7 @@ export default function BookingSystem() {
                 </h3>
 
                 {/* Legend */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                   <div className="flex items-center gap-1.5 font-label-sm text-xs text-on-surface-variant font-medium">
                     <div className="w-3.5 h-3.5 rounded bg-[#10B981]/20 border border-[#10B981]/40"></div>
                     Available
@@ -432,8 +439,8 @@ export default function BookingSystem() {
                     Selected
                   </div>
                   <div className="flex items-center gap-1.5 font-label-sm text-xs text-on-surface-variant font-medium">
-                    <div className="w-3.5 h-3.5 rounded bg-[#F1F5F9] border border-[#E2E8F0]"></div>
-                    Booked
+                    <div className="w-3.5 h-3.5 rounded bg-[#F1F5F9] border border-[#E2E8F0] text-[10px] text-[#94A3B8] font-bold flex items-center justify-center">✕</div>
+                    Booked / Closed
                   </div>
                 </div>
               </div>
@@ -451,20 +458,28 @@ export default function BookingSystem() {
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {MORNING_SLOTS.map((slot) => {
+                        const isPassed = isSlotPassed(slot, selectedDate);
                         const isBooked = bookedSlots.includes(slot);
                         const isSelected = selectedSlots.includes(slot);
+                        const isDisabled = isPassed || isBooked;
 
                         let slotClass = 'court-slot available';
-                        if (isBooked) slotClass = 'court-slot booked';
-                        else if (isSelected) slotClass = 'court-slot selected';
+                        if (isPassed) {
+                          slotClass = 'court-slot booked opacity-40 cursor-not-allowed line-through bg-[#F1F5F9] text-[#94A3B8] border-[#E2E8F0]';
+                        } else if (isBooked) {
+                          slotClass = 'court-slot booked';
+                        } else if (isSelected) {
+                          slotClass = 'court-slot selected';
+                        }
 
                         return (
                           <button
                             key={slot}
                             type="button"
-                            disabled={isBooked}
+                            disabled={isDisabled}
                             onClick={() => toggleSlot(slot)}
-                            className={`${slotClass} px-3.5 py-2.5 rounded-lg font-label-md text-sm min-w-[85px] font-semibold text-center`}
+                            title={isPassed ? 'Slot time has passed' : isBooked ? 'Slot is already booked' : 'Click to select slot'}
+                            className={`${slotClass} px-3.5 py-2.5 rounded-lg font-label-md text-sm min-w-[85px] font-semibold text-center transition-all`}
                           >
                             {slot}
                           </button>
@@ -480,20 +495,28 @@ export default function BookingSystem() {
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {AFTERNOON_EVENING_SLOTS.map((slot) => {
+                        const isPassed = isSlotPassed(slot, selectedDate);
                         const isBooked = bookedSlots.includes(slot);
                         const isSelected = selectedSlots.includes(slot);
+                        const isDisabled = isPassed || isBooked;
 
                         let slotClass = 'court-slot available';
-                        if (isBooked) slotClass = 'court-slot booked';
-                        else if (isSelected) slotClass = 'court-slot selected';
+                        if (isPassed) {
+                          slotClass = 'court-slot booked opacity-40 cursor-not-allowed line-through bg-[#F1F5F9] text-[#94A3B8] border-[#E2E8F0]';
+                        } else if (isBooked) {
+                          slotClass = 'court-slot booked';
+                        } else if (isSelected) {
+                          slotClass = 'court-slot selected';
+                        }
 
                         return (
                           <button
                             key={slot}
                             type="button"
-                            disabled={isBooked}
+                            disabled={isDisabled}
                             onClick={() => toggleSlot(slot)}
-                            className={`${slotClass} px-3.5 py-2.5 rounded-lg font-label-md text-sm min-w-[85px] font-semibold text-center`}
+                            title={isPassed ? 'Slot time has passed' : isBooked ? 'Slot is already booked' : 'Click to select slot'}
+                            className={`${slotClass} px-3.5 py-2.5 rounded-lg font-label-md text-sm min-w-[85px] font-semibold text-center transition-all`}
                           >
                             {slot}
                           </button>

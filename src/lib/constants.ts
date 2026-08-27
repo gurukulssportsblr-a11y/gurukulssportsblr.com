@@ -44,3 +44,34 @@ export const DEFAULT_COURTS: DefaultCourt[] = [
   { id: 'c9', court_number: 9, name: 'Court 9', surface_type: 'Synthetic', price_per_hour: 300 },
   { id: 'c10', court_number: 10, name: 'Court 10', surface_type: 'Synthetic', price_per_hour: 300 },
 ];
+
+export function parseSlotToHour(slotStr: string): number {
+  const match = slotStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!match) return 0;
+  let hour = parseInt(match[1], 10);
+  const period = match[3].toUpperCase();
+  if (period === 'PM' && hour < 12) hour += 12;
+  if (period === 'AM' && hour === 12) hour = 0;
+  return hour;
+}
+
+export function isSlotPassed(slotStr: string, dateStr: string): boolean {
+  try {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+
+    if (dateStr < todayStr) return true;
+    if (dateStr > todayStr) return false;
+
+    // For today, compare current hour
+    const slotHour = parseSlotToHour(slotStr);
+    const currentHour = now.getHours();
+    return slotHour <= currentHour;
+  } catch {
+    return false;
+  }
+}
+
