@@ -44,9 +44,9 @@ export async function GET(req: Request) {
     }
 
     if (!isSupabaseConfigured) {
-      // Return sample dummy occupied slots when offline/unconfigured
+      // By default all slots are free and available until booked
       return NextResponse.json({
-        bookedSlots: ['06:00 AM', '07:00 AM', '05:00 PM', '06:00 PM', '07:00 PM'],
+        bookedSlots: [],
         isDemoMode: true
       });
     }

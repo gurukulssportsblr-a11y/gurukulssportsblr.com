@@ -152,10 +152,15 @@
 <!-- END: TopNavBar -->
 <main class="pt-20">
 <!-- BEGIN: Hero Section -->
-<section class="relative w-full min-h-[90vh] flex items-center pt-stack-lg pb-stack-lg" id="about">
-<div class="absolute inset-0 z-0">
-<div class="w-full h-full bg-cover bg-center" style="background-image: url(&quot;https://lh3.googleusercontent.com/aida/AEtjO1VDlE_DcLNH1UGi6GQVMlElmU3uNAaYielWzS_VdmCbdUQSU3fIzWG_MBF-EXkW2VILp7dJWAdbQrYn2xOOfoVz5zaYWpF9nMfbGzxqzFr4s7_OSSgoNY7BiuxtSsWeV7Z7ONqHETgCuZUBUG1N3pSopk3KYzzFUaUKp0FskF6zJD-t-0HRL2_08p3C4Os5YLDchvBByt7Mi0ebUrlYf50YTsGed4mtfsjzpnbdzMxQoS5ayQnRJJ00&quot;);"></div>
-<div class="absolute inset-0 bg-gradient-to-r from-surface/90 via-surface/70 to-transparent"></div>
+<section class="relative w-full min-h-[92vh] flex items-center pt-stack-lg pb-stack-lg overflow-hidden" id="about">
+<div class="absolute inset-0 z-0 bg-[#0F172A]" id="hero-carousel-container">
+<div class="hero-slide absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out opacity-100 scale-105" style="background-image: url('images/courts/court-1.jpg');"></div>
+<div class="hero-slide absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out opacity-0 scale-100" style="background-image: url('images/courts/court-2.jpg');"></div>
+<div class="hero-slide absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out opacity-0 scale-100" style="background-image: url('images/courts/court-3.jpg');"></div>
+<div class="hero-slide absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out opacity-0 scale-100" style="background-image: url('images/courts/court-4.jpg');"></div>
+<div class="hero-slide absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out opacity-0 scale-100" style="background-image: url('images/courts/court-5.jpg');"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-surface/95 via-surface/85 to-surface/40"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
 </div>
 <div class="relative z-10 w-full px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
 <div class="max-w-2xl">
@@ -363,12 +368,12 @@
 <div>
 <h4 class="font-label-sm text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider">Morning</h4>
 <div class="flex flex-wrap gap-2">
-<button class="court-slot booked px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]">6:00 AM</button>
-<button class="court-slot booked px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]">7:00 AM</button>
+<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">6:00 AM</button>
+<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">7:00 AM</button>
 <button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">8:00 AM</button>
 <button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">9:00 AM</button>
-<button class="court-slot selected px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]" onclick="toggleSlot(this)">10:00 AM</button>
-<button class="court-slot selected px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]" onclick="toggleSlot(this)">11:00 AM</button>
+<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">10:00 AM</button>
+<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">11:00 AM</button>
 </div>
 </div>
 <div class="pt-2 border-t border-outline-variant/30">
@@ -376,9 +381,9 @@
 <div class="flex flex-wrap gap-2">
 <button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">12:00 PM</button>
 <button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">1:00 PM</button>
-<button class="court-slot booked px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]">5:00 PM</button>
-<button class="court-slot booked px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]">6:00 PM</button>
-<button class="court-slot booked px-3 py-2 rounded-lg font-label-md text-label-md transition-colors min-w-[80px]">7:00 PM</button>
+<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">5:00 PM</button>
+<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">6:00 PM</button>
+<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">7:00 PM</button>
 <button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">8:00 PM</button>
 </div>
 </div>
@@ -570,8 +575,22 @@
                 btn.classList.add('available', 'hover:bg-[#10B981]/20');
             }
         }
+<script data-purpose="hero-carousel-logic">
+        // 10-Second Auto-Swiping Court Carousel
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.hero-slide');
+            if (slides.length <= 1) return;
+            
+            let currentSlide = 0;
+            setInterval(() => {
+                slides[currentSlide].classList.remove('opacity-100', 'scale-105');
+                slides[currentSlide].classList.add('opacity-0', 'scale-100');
+                
+                currentSlide = (currentSlide + 1) % slides.length;
+                
+                slides[currentSlide].classList.remove('opacity-0', 'scale-100');
+                slides[currentSlide].classList.add('opacity-100', 'scale-105');
+            }, 10000); // Swipes every 10 seconds
+        });
     </script>
-
-
-
 </body></html>

@@ -17,7 +17,7 @@ export default function BookingSystem() {
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
   const [frequency, setFrequency] = useState<FrequencyType>('one-time');
   const [endDate, setEndDate] = useState<string>(defaultEndDateStr);
-  const [selectedSlots, setSelectedSlots] = useState<string[]>(['10:00 AM', '11:00 AM']);
+  const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState<boolean>(false);
 
