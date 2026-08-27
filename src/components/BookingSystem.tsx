@@ -181,19 +181,24 @@ export default function BookingSystem() {
         throw new Error(data.error || 'Failed to complete booking');
       }
 
+      const bookedNow = [...selectedSlots];
+
+      // Instantly lock the booked slots in local UI state
+      setBookedSlots((prev) => Array.from(new Set([...prev, ...bookedNow])));
+
       // Success! Open confirmation modal
       setSuccessModalData({
         ...data.booking,
         courtName: currentCourt.name,
         surfaceType: currentCourt.surface_type,
-        slots: selectedSlots,
+        slots: bookedNow,
       });
 
-      // Refresh availability
-      fetchBookedSlots();
-
-      // Reset selection
+      // Reset selection and refresh from server
       setSelectedSlots([]);
+      setTimeout(() => {
+        fetchBookedSlots();
+      }, 300);
     } catch (err: any) {
       setErrorMessage(err.message || 'An error occurred while creating your booking.');
     } finally {

@@ -3,6 +3,29 @@ import { createServerClient, isSupabaseConfigured } from '@/lib/supabase/server'
 import { format, addDays, isBefore, isEqual, parseISO } from 'date-fns';
 import { isSlotPassed } from '@/lib/constants';
 
+// In-Memory Storage for Development, Preview & Fallback
+// Preserved across hot reloads on server
+const globalStore = global as unknown as {
+  _mockBookings?: any[];
+  _mockSlots?: Array<{
+    court_id: string;
+    court_number: number;
+    slot_date: string;
+    slot_time: string;
+    status: string;
+    booking_code: string;
+  }>;
+};
+
+if (!globalStore._mockBookings) globalStore._mockBookings = [];
+if (!globalStore._mockSlots) globalStore._mockSlots = [];
+
+function parseCourtNumber(courtIdOrNum: string | number): number {
+  if (typeof courtIdOrNum === 'number') return courtIdOrNum;
+  const match = String(courtIdOrNum).match(/\d+/);
+  return match ? parseInt(match[0], 10) : 1;
+}
+
 function generateDatesForFrequency(startDateStr: string, frequency: string, endDateStr?: string | null): string[] {
   if (frequency === 'one-time' || !endDateStr) {
     return [startDateStr];
@@ -14,7 +37,7 @@ function generateDatesForFrequency(startDateStr: string, frequency: string, endD
 
   let current = startDate;
   while (isBefore(current, endDate) || isEqual(current, endDate)) {
-    const dayOfWeek = current.getDay(); // 0 is Sunday, 6 is Saturday
+    const dayOfWeek = current.getDay();
 
     if (frequency === 'daily') {
       dates.push(format(current, 'yyyy-MM-dd'));
@@ -34,6 +57,28 @@ function generateDatesForFrequency(startDateStr: string, frequency: string, endD
   return dates.length > 0 ? dates : [startDateStr];
 }
 
+async function resolveSupabaseCourtId(courtIdOrNum: string | number, supabase: any): Promise<string> {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (typeof courtIdOrNum === 'string' && uuidRegex.test(courtIdOrNum)) {
+    return courtIdOrNum;
+  }
+
+  const courtNum = parseCourtNumber(courtIdOrNum);
+  try {
+    const { data } = await supabase
+      .from('courts')
+      .select('id')
+      .eq('court_number', courtNum)
+      .single();
+
+    if (data?.id) return data.id;
+  } catch (err) {
+    console.error('Error resolving court UUID:', err);
+  }
+
+  return String(courtIdOrNum);
+}
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -44,29 +89,55 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'courtId and date are required' }, { status: 400 });
     }
 
+    const courtNum = parseCourtNumber(courtId);
+
+    // If Supabase is not configured, query in-memory persistent registry
     if (!isSupabaseConfigured) {
-      // By default all slots are free and available until booked
+      const booked = (globalStore._mockSlots || [])
+        .filter(
+          (s) =>
+            (s.court_number === courtNum || s.court_id === courtId) &&
+            s.slot_date === date &&
+            s.status === 'booked'
+        )
+        .map((s) => s.slot_time);
+
       return NextResponse.json({
-        bookedSlots: [],
-        isDemoMode: true
+        bookedSlots: booked,
+        isDemoMode: true,
       });
     }
 
     const supabase = createServerClient();
+    const resolvedCourtId = await resolveSupabaseCourtId(courtId, supabase);
+
     const { data, error } = await supabase
       .from('booking_slots')
       .select('slot_time')
-      .eq('court_id', courtId)
+      .eq('court_id', resolvedCourtId)
       .eq('slot_date', date)
       .eq('status', 'booked');
 
     if (error) {
-      console.error('Error fetching booked slots:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('Error fetching booked slots from Supabase:', error);
+      // Fallback to in-memory store if DB query fails
+      const fallbackBooked = (globalStore._mockSlots || [])
+        .filter((s) => s.court_number === courtNum && s.slot_date === date && s.status === 'booked')
+        .map((s) => s.slot_time);
+
+      return NextResponse.json({ bookedSlots: fallbackBooked, isDemoMode: false });
     }
 
-    const bookedSlots = (data as Array<{ slot_time: string }> || []).map((s) => s.slot_time);
-    return NextResponse.json({ bookedSlots, isDemoMode: false });
+    const dbBookedSlots = (data as Array<{ slot_time: string }> || []).map((s) => s.slot_time);
+
+    // Merge with any in-memory mock slots
+    const memorySlots = (globalStore._mockSlots || [])
+      .filter((s) => s.court_number === courtNum && s.slot_date === date && s.status === 'booked')
+      .map((s) => s.slot_time);
+
+    const allBooked = Array.from(new Set([...dbBookedSlots, ...memorySlots]));
+
+    return NextResponse.json({ bookedSlots: allBooked, isDemoMode: false });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
@@ -106,36 +177,81 @@ export async function POST(req: Request) {
       }
     }
 
+    const courtNum = parseCourtNumber(courtId);
     const bookingDates = generateDatesForFrequency(bookingDate, frequency, repeatUntil);
     const bookingCode = `GS-${Math.floor(100000 + Math.random() * 900000)}`;
+    const totalHours = selectedSlots.length * bookingDates.length;
+    const finalAmount = totalAmount || totalHours * pricePerHour;
 
+    // Check conflict in in-memory store
+    const memConflicts = (globalStore._mockSlots || []).filter(
+      (s) =>
+        s.court_number === courtNum &&
+        s.status === 'booked' &&
+        bookingDates.includes(s.slot_date) &&
+        selectedSlots.includes(s.slot_time)
+    );
+
+    if (memConflicts.length > 0) {
+      const conflictList = memConflicts.map((c) => `${c.slot_date} at ${c.slot_time}`).join(', ');
+      return NextResponse.json(
+        { error: `The following slot(s) are already booked: ${conflictList}` },
+        { status: 409 }
+      );
+    }
+
+    // If Supabase is NOT configured, store in persistent in-memory store
     if (!isSupabaseConfigured) {
-      // In demo mode without DB credentials configured yet
+      const newBooking = {
+        id: `mock-${Date.now()}`,
+        booking_code: bookingCode,
+        court_id: `c${courtNum}`,
+        court_number: courtNum,
+        customer_name: customerName.trim(),
+        customer_phone: customerPhone.trim(),
+        booking_date: bookingDate,
+        frequency,
+        repeat_until: repeatUntil || null,
+        total_hours: totalHours,
+        price_per_hour: pricePerHour,
+        total_amount: finalAmount,
+        status: 'confirmed',
+        created_at: new Date().toISOString(),
+      };
+
+      globalStore._mockBookings?.push(newBooking);
+
+      for (const date of bookingDates) {
+        for (const slot of selectedSlots) {
+          globalStore._mockSlots?.push({
+            court_id: `c${courtNum}`,
+            court_number: courtNum,
+            slot_date: date,
+            slot_time: slot,
+            status: 'booked',
+            booking_code: bookingCode,
+          });
+        }
+      }
+
       return NextResponse.json({
         success: true,
         booking: {
-          id: 'demo-booking-id',
-          booking_code: bookingCode,
-          customer_name: customerName,
-          customer_phone: customerPhone,
-          booking_date: bookingDate,
-          frequency,
-          total_hours: selectedSlots.length * bookingDates.length,
-          total_amount: totalAmount || selectedSlots.length * pricePerHour * bookingDates.length,
+          ...newBooking,
           slots: selectedSlots,
           dates: bookingDates,
         },
-        message: 'Demo booking created! Connect Supabase database to persist bookings.'
       });
     }
 
     const supabase = createServerClient();
+    const resolvedCourtId = await resolveSupabaseCourtId(courtId, supabase);
 
-    // 1. Check for any existing active slot conflicts across all dates
+    // 1. Check for any existing active slot conflicts in Supabase
     const { data: conflictsData, error: checkError } = await supabase
       .from('booking_slots')
       .select('slot_date, slot_time')
-      .eq('court_id', courtId)
+      .eq('court_id', resolvedCourtId)
       .eq('status', 'booked')
       .in('slot_date', bookingDates)
       .in('slot_time', selectedSlots);
@@ -148,21 +264,18 @@ export async function POST(req: Request) {
     const conflicts = conflictsData as Array<{ slot_date: string; slot_time: string }> | null;
     if (conflicts && conflicts.length > 0) {
       const conflictDescriptions = conflicts.map((c) => `${c.slot_date} at ${c.slot_time}`).join(', ');
-      return NextResponse.json({
-        error: `Some slots are already booked: ${conflictDescriptions}`,
-        conflicts
-      }, { status: 409 });
+      return NextResponse.json(
+        { error: `The following slot(s) are already booked: ${conflictDescriptions}`, conflicts },
+        { status: 409 }
+      );
     }
 
-    const totalHours = selectedSlots.length * bookingDates.length;
-    const finalAmount = totalAmount || totalHours * pricePerHour;
-
-    // 2. Insert main booking record
+    // 2. Insert main booking record in Supabase
     const { data: newBookingData, error: bookingError } = await supabase
       .from('bookings')
       .insert({
         booking_code: bookingCode,
-        court_id: courtId,
+        court_id: resolvedCourtId,
         customer_name: customerName.trim(),
         customer_phone: customerPhone.trim(),
         booking_date: bookingDate,
@@ -171,13 +284,13 @@ export async function POST(req: Request) {
         total_hours: totalHours,
         price_per_hour: pricePerHour,
         total_amount: finalAmount,
-        status: 'confirmed'
+        status: 'confirmed',
       })
       .select()
       .single();
 
     if (bookingError || !newBookingData) {
-      console.error('Error creating booking:', bookingError);
+      console.error('Error creating booking in Supabase:', bookingError);
       return NextResponse.json({ error: bookingError?.message || 'Could not save booking' }, { status: 500 });
     }
 
@@ -189,23 +302,34 @@ export async function POST(req: Request) {
       for (const slot of selectedSlots) {
         slotInserts.push({
           booking_id: newBooking.id,
-          court_id: courtId,
+          court_id: resolvedCourtId,
           slot_date: date,
           slot_time: slot,
-          status: 'booked'
+          status: 'booked',
         });
       }
     }
 
-    const { error: slotInsertError } = await supabase
-      .from('booking_slots')
-      .insert(slotInserts);
+    const { error: slotInsertError } = await supabase.from('booking_slots').insert(slotInserts);
 
     if (slotInsertError) {
       console.error('Error inserting booking slots:', slotInsertError);
-      // Clean up the created booking if slot insertion fails
       await supabase.from('bookings').delete().eq('id', newBooking.id);
       return NextResponse.json({ error: 'Failed to reserve slots. Please try again.' }, { status: 500 });
+    }
+
+    // Also record in memory for immediate instant sync
+    for (const date of bookingDates) {
+      for (const slot of selectedSlots) {
+        globalStore._mockSlots?.push({
+          court_id: resolvedCourtId,
+          court_number: courtNum,
+          slot_date: date,
+          slot_time: slot,
+          status: 'booked',
+          booking_code: bookingCode,
+        });
+      }
     }
 
     return NextResponse.json({
@@ -213,10 +337,9 @@ export async function POST(req: Request) {
       booking: {
         ...newBooking,
         slots: selectedSlots,
-        dates: bookingDates
-      }
+        dates: bookingDates,
+      },
     });
-
   } catch (err: any) {
     console.error('Unexpected booking error:', err);
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });

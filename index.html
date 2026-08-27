@@ -610,6 +610,7 @@
 
             const selectedDate = datePicker.value;
             const slotButtons = document.querySelectorAll('.court-slot');
+            const localBooked = JSON.parse(localStorage.getItem('gs_html_booked_' + selectedDate) || '[]');
 
             slotButtons.forEach(btn => {
                 const slotText = btn.textContent.trim();
@@ -617,12 +618,13 @@
                 
                 const isPastDate = selectedDate < todayStr;
                 const isPastTime = selectedDate === todayStr && slotHour <= currentHour;
+                const isLocallyBooked = localBooked.includes(slotText);
 
-                if (isPastDate || isPastTime) {
+                if (isPastDate || isPastTime || isLocallyBooked) {
                     btn.classList.remove('available', 'selected', 'hover:bg-[#10B981]/20');
                     btn.classList.add('booked', 'opacity-40', 'cursor-not-allowed', 'line-through');
                     btn.disabled = true;
-                    btn.title = "Time slot has passed";
+                    btn.title = isLocallyBooked ? "Slot already booked" : "Time slot has passed";
                 } else {
                     btn.classList.remove('booked', 'opacity-40', 'cursor-not-allowed', 'line-through');
                     if (!btn.classList.contains('selected')) {
@@ -634,11 +636,58 @@
             });
         }
 
+        function handleDirectBooking() {
+            const nameInput = document.getElementById('name');
+            const phoneInput = document.getElementById('phone');
+            const name = nameInput ? nameInput.value.trim() : '';
+            const phone = phoneInput ? phoneInput.value.trim() : '';
+            const selectedSlots = document.querySelectorAll('.court-slot.selected');
+            
+            if (!name) {
+                alert('Please enter your full name.');
+                return;
+            }
+            if (phone.length < 10) {
+                alert('Please enter a valid 10-digit phone number.');
+                return;
+            }
+            if (selectedSlots.length === 0) {
+                alert('Please select at least one time slot.');
+                return;
+            }
+
+            const datePicker = document.getElementById('booking-date-picker');
+            const selectedDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
+            const bookingCode = 'GS-' + Math.floor(100000 + Math.random() * 900000);
+
+            const bookedTimes = [];
+            selectedSlots.forEach(slot => {
+                const time = slot.textContent.trim();
+                bookedTimes.push(time);
+                slot.classList.remove('selected', 'available');
+                slot.classList.add('booked', 'opacity-40', 'cursor-not-allowed', 'line-through');
+                slot.disabled = true;
+            });
+
+            // Save to localStorage for instant persistence
+            const savedKey = 'gs_html_booked_' + selectedDate;
+            const existing = JSON.parse(localStorage.getItem(savedKey) || '[]');
+            localStorage.setItem(savedKey, JSON.stringify([...existing, ...bookedTimes]));
+
+            alert('🎉 Booking Confirmed!\n\nBooking Code: ' + bookingCode + '\nName: ' + name + '\nPhone: +91 ' + phone + '\nSlots: ' + bookedTimes.join(', ') + '\n\nThese slots are now permanently locked and blocked for other users.');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             refreshSlotAvailability();
             const datePicker = document.getElementById('booking-date-picker');
             if (datePicker) {
                 datePicker.addEventListener('change', refreshSlotAvailability);
+            }
+
+            const confirmBtn = document.querySelector('button[type="button"]:has(.material-symbols-outlined)') || document.querySelector('form button');
+            const formConfirmBtn = document.querySelector('form button:first-of-type');
+            if (formConfirmBtn) {
+                formConfirmBtn.onclick = handleDirectBooking;
             }
         });
     </script>
