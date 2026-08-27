@@ -99,6 +99,24 @@ export default function BookingSuccessModal({
           </div>
         </div>
 
+        {/* 10-Minute Late Forfeiture Warning */}
+        <div className="p-4 rounded-xl bg-[#FFFBEB] border border-[#F59E0B]/50 mb-6 flex items-start gap-3 text-left shadow-sm">
+          <div className="p-1.5 bg-[#FEF3C7] rounded-lg text-[#D97706] shrink-0 mt-0.5">
+            <span className="material-symbols-outlined text-[20px] block">warning</span>
+          </div>
+          <div className="text-xs leading-relaxed text-[#92400E]">
+            <p className="font-bold text-sm text-[#78350F] mb-1 flex items-center gap-1.5">
+              ⚠️ Strict 10-Minute Arrival Rule
+            </p>
+            <p>
+              Please arrive at the arena at least 5 minutes before your slot starts.
+              <span className="font-bold text-[#B45309] block mt-1">
+                If you are late by 10 minutes, your booking is forfeited and you will lose your slot.
+              </span>
+            </p>
+          </div>
+        </div>
+
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3">
           <button

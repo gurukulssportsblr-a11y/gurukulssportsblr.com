@@ -639,7 +639,7 @@
             const existing = JSON.parse(localStorage.getItem(savedKey) || '[]');
             localStorage.setItem(savedKey, JSON.stringify([...existing, ...bookedTimes]));
 
-            alert('🎉 Booking Confirmed!\n\nBooking Code: ' + bookingCode + '\nName: ' + name + '\nPhone: +91 ' + phone + '\nSlots: ' + bookedTimes.join(', ') + '\n\nThese slots are now permanently locked and blocked for other users.');
+            alert('🎉 Booking Confirmed!\n\nBooking Code: ' + bookingCode + '\nName: ' + name + '\nPhone: +91 ' + phone + '\nSlots: ' + bookedTimes.join(', ') + '\n\n⚠️ IMPORTANT RULE: If you are late by 10 minutes, your booking will be forfeited and you will lose your reserved slot.\n\nThese slots are now permanently locked and blocked for other users.');
         }
 
         function handleDirectCancel() {
