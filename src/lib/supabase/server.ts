@@ -19,11 +19,16 @@ export const isSupabaseConfigured = Boolean(
   !supabaseUrl.includes('placeholder')
 );
 
+class NoopWebSocket {}
+
 export function createServerClient() {
   return createSupabaseClient(supabaseUrl, supabaseServiceKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
+    },
+    realtime: {
+      transport: NoopWebSocket as any,
     },
   });
 }
