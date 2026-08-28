@@ -669,6 +669,9 @@ export default function BookingSystem() {
         <CancelBookingModal
           initialMode={lookupMode}
           isOpen={cancelModalOpen}
+          onBookingCancelled={() => {
+            fetchBookedSlots();
+          }}
           onClose={() => {
             setCancelModalOpen(false);
             fetchBookedSlots();

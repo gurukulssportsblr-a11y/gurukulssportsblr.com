@@ -106,50 +106,44 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Booking ID is required' }, { status: 400 });
     }
 
+    const cleanId = String(bookingId).trim();
+
     // 1. Release in in-memory store
-    cancelMockBooking(bookingId);
+    cancelMockBooking(cleanId);
 
-    if (!isSupabaseConfigured) {
-      return NextResponse.json({
-        success: true,
-        message: 'Booking cancelled successfully. Time slots are now available again.',
-      });
-    }
+    if (isSupabaseConfigured) {
+      const supabase = createServerClient();
 
-    const supabase = createServerClient();
+      let bookingUUID = cleanId;
 
-    // 2. Find booking UUID if booking code was passed
-    let targetId = bookingId;
-    const isBookingCode = String(bookingId).startsWith('GS-');
-    if (isBookingCode) {
-      const { data } = await supabase.from('bookings').select('id').eq('booking_code', bookingId).limit(1);
-      if (data && data.length > 0) {
-        targetId = data[0].id;
+      // Check if it is a booking_code (e.g. GS-123456)
+      if (cleanId.startsWith('GS-')) {
+        const { data } = await supabase.from('bookings').select('id').eq('booking_code', cleanId).limit(1);
+        if (data && data.length > 0) {
+          bookingUUID = data[0].id;
+        }
+      } else {
+        // Check if cleanId is a slot ID
+        const { data: slotData } = await supabase.from('booking_slots').select('booking_id').eq('id', cleanId).limit(1);
+        if (slotData && slotData.length > 0 && slotData[0].booking_id) {
+          bookingUUID = slotData[0].booking_id;
+        }
       }
-    }
 
-    // 3. Mark booking as cancelled in Supabase
-    const { error: bookingErr } = await supabase
-      .from('bookings')
-      .update({
-        status: 'cancelled',
-        cancelled_at: new Date().toISOString(),
-      })
-      .or(`id.eq.${targetId},booking_code.eq.${bookingId}`);
+      // Mark booking as cancelled in Supabase
+      await supabase
+        .from('bookings')
+        .update({
+          status: 'cancelled',
+          cancelled_at: new Date().toISOString(),
+        })
+        .or(`id.eq.${bookingUUID},booking_code.eq.${cleanId}`);
 
-    if (bookingErr) {
-      console.error('Error cancelling booking:', bookingErr);
-      return NextResponse.json({ error: bookingErr.message }, { status: 500 });
-    }
-
-    // 4. Mark booking slots as cancelled to free up the slot
-    const { error: slotErr } = await supabase
-      .from('booking_slots')
-      .update({ status: 'cancelled' })
-      .eq('booking_id', targetId);
-
-    if (slotErr) {
-      console.error('Error cancelling booking slots:', slotErr);
+      // Mark all associated booking slots as cancelled
+      await supabase
+        .from('booking_slots')
+        .update({ status: 'cancelled' })
+        .or(`booking_id.eq.${bookingUUID},id.eq.${cleanId}`);
     }
 
     return NextResponse.json({
