@@ -56,20 +56,26 @@ export function parseSlotToHour(slotStr: string): number {
   return hour;
 }
 
+export function getNowInIST(): Date {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  return new Date(utc + 3600000 * 5.5);
+}
+
 export function isSlotPassed(slotStr: string, dateStr: string): boolean {
   try {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
+    const istNow = getNowInIST();
+    const year = istNow.getFullYear();
+    const month = String(istNow.getMonth() + 1).padStart(2, '0');
+    const day = String(istNow.getDate()).padStart(2, '0');
     const todayStr = `${year}-${month}-${day}`;
 
     if (dateStr < todayStr) return true;
     if (dateStr > todayStr) return false;
 
-    // For today, compare current hour
+    // For today, compare current hour in IST
     const slotHour = parseSlotToHour(slotStr);
-    const currentHour = now.getHours();
+    const currentHour = istNow.getHours();
     return slotHour <= currentHour;
   } catch {
     return false;

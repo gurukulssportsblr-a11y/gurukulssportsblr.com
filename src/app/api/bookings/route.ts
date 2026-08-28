@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase/server';
-import { isSlotPassed, ALL_TIME_SLOTS, parseSlotToHour } from '@/lib/constants';
+import { isSlotPassed, ALL_TIME_SLOTS, parseSlotToHour, getNowInIST, DEFAULT_COURTS } from '@/lib/constants';
 import {
   getPricingRules,
   getBlockedSlots,
@@ -31,6 +31,32 @@ async function resolveSupabaseCourtId(courtIdOrNum: string | number, supabase: a
       .single();
 
     if (data?.id) return data.id;
+
+    // Self-healing: Insert court row if table is empty or missing court
+    const defaultCourt = DEFAULT_COURTS.find((c) => c.court_number === courtNum) || {
+      court_number: courtNum,
+      name: `Court ${courtNum}`,
+      surface_type: 'Synthetic',
+      price_per_hour: 300,
+    };
+
+    const { data: inserted } = await supabase
+      .from('courts')
+      .upsert(
+        {
+          court_number: courtNum,
+          name: defaultCourt.name,
+          surface_type: defaultCourt.surface_type,
+          price_per_hour: defaultCourt.price_per_hour,
+          is_active: true,
+          display_order: courtNum,
+        },
+        { onConflict: 'court_number' }
+      )
+      .select('id')
+      .single();
+
+    if (inserted?.id) return inserted.id;
   } catch (err) {
     console.error('Error resolving court UUID:', err);
   }
@@ -167,9 +193,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required booking fields.' }, { status: 400 });
     }
 
-    // Prevent past date bookings
-    const now = new Date();
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    // Prevent past date bookings in Indian Standard Time (IST)
+    const istNow = getNowInIST();
+    const todayStr = `${istNow.getFullYear()}-${String(istNow.getMonth() + 1).padStart(2, '0')}-${String(istNow.getDate()).padStart(2, '0')}`;
 
     if (bookingDate < todayStr) {
       return NextResponse.json({ error: 'Cannot book courts for past dates.' }, { status: 400 });

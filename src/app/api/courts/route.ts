@@ -23,11 +23,27 @@ export async function GET() {
       return NextResponse.json({ courts: DEFAULT_COURTS, isConfigured: true, error: error.message }, { status: 500 });
     }
 
-    const courts = (data as any[]) || [];
+    let courts = (data as any[]) || [];
+
+    if (courts.length === 0) {
+      const seedInserts = DEFAULT_COURTS.map((c) => ({
+        court_number: c.court_number,
+        name: c.name,
+        surface_type: c.surface_type,
+        price_per_hour: c.price_per_hour,
+        is_active: true,
+        display_order: c.court_number,
+      }));
+      const { data: seeded } = await supabase
+        .from('courts')
+        .upsert(seedInserts, { onConflict: 'court_number' })
+        .select();
+      if (seeded && seeded.length > 0) courts = seeded;
+    }
 
     return NextResponse.json({
       courts: courts.length > 0 ? courts : DEFAULT_COURTS,
-      isConfigured: true
+      isConfigured: true,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message, courts: DEFAULT_COURTS }, { status: 500 });
