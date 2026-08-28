@@ -97,7 +97,7 @@ export default function Footer() {
             </div>
           </a>
 
-          <div className="flex gap-4 mt-2">
+          <div className="flex items-center gap-3 mt-2">
             <a
               className="font-label-sm text-xs text-surface-dim hover:text-white transition-colors"
               href="#"
@@ -110,6 +110,15 @@ export default function Footer() {
               href="#"
             >
               Terms of Service
+            </a>
+            <span className="text-surface-dim/40">•</span>
+            <a
+              className="font-label-sm text-xs text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1 font-semibold"
+              href="/admin.html"
+              title="Host Operations & Admin Portal"
+            >
+              <span className="material-symbols-outlined text-[14px]">lock</span>
+              Host Portal
             </a>
           </div>
         </div>
