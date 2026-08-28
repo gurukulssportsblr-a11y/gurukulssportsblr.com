@@ -42,13 +42,27 @@ export interface BookingSlotRecord {
   price?: number;
 }
 
+export interface BookingRecord {
+  id: string;
+  booking_code: string;
+  court_number: number;
+  court_id: string;
+  customer_name: string;
+  customer_phone: string;
+  booking_date: string;
+  slots: string[];
+  total_amount: number;
+  status: 'confirmed' | 'cancelled';
+  created_at: string;
+}
+
 // Global in-memory singleton preserved across Next.js API route invocations
 const globalStore = global as unknown as {
   _gsPricingRules?: PricingRule[];
   _gsBlockedSlots?: BlockedSlot[];
   _gsPromoBanner?: PromoBannerSettings;
   _gsMockSlots?: BookingSlotRecord[];
-  _gsMockBookings?: any[];
+  _gsMockBookings?: BookingRecord[];
 };
 
 if (!globalStore._gsPricingRules) {
@@ -90,7 +104,7 @@ export async function getPricingRules(): Promise<PricingRule[]> {
         return data as PricingRule[];
       }
     } catch (err) {
-      console.warn('Supabase pricing rules read error, falling back to memory store:', err);
+      console.warn('Supabase pricing rules read error:', err);
     }
   }
   return globalStore._gsPricingRules || [];
@@ -107,7 +121,6 @@ export async function savePricingRule(rule: Omit<PricingRule, 'id'> & { id?: str
     is_active: rule.is_active !== undefined ? rule.is_active : true,
   };
 
-  // Update in memory
   if (!globalStore._gsPricingRules) globalStore._gsPricingRules = [];
   const existingIdx = globalStore._gsPricingRules.findIndex((r) => r.id === newRule.id);
   if (existingIdx >= 0) {
@@ -176,7 +189,7 @@ export async function getBlockedSlots(date?: string): Promise<BlockedSlot[]> {
       const supabase = createServerClient();
       let query = supabase.from('blocked_slots').select('*');
       if (date) {
-        query = query.eq('block_date', date);
+        query = query.or(`block_date.eq.${date},block_date.eq.ALL`);
       }
       const { data, error } = await query;
       if (!error && data) {
@@ -187,10 +200,7 @@ export async function getBlockedSlots(date?: string): Promise<BlockedSlot[]> {
       console.warn('Supabase blocked slots read error:', err);
     }
   }
-
-  const allBlocks = globalStore._gsBlockedSlots || [];
-  if (!date) return allBlocks;
-  return allBlocks.filter((b) => b.block_date === date || b.block_date === 'ALL');
+  return globalStore._gsBlockedSlots || [];
 }
 
 export async function addBlockedSlot(block: Omit<BlockedSlot, 'id'>): Promise<BlockedSlot> {
@@ -206,15 +216,14 @@ export async function addBlockedSlot(block: Omit<BlockedSlot, 'id'>): Promise<Bl
     try {
       const supabase = createServerClient();
       await supabase.from('blocked_slots').insert({
-        id: newBlock.id,
         court_number: newBlock.court_number,
-        block_date: newBlock.block_date,
+        block_date: newBlock.block_date === 'ALL' ? '2099-12-31' : newBlock.block_date,
         start_hour: newBlock.start_hour,
         end_hour: newBlock.end_hour,
         reason: newBlock.reason,
       });
     } catch (err) {
-      console.warn('Supabase block insert error:', err);
+      console.warn('Supabase blocked slot save error:', err);
     }
   }
 
@@ -230,7 +239,7 @@ export async function removeBlockedSlot(id: string): Promise<boolean> {
       const supabase = createServerClient();
       await supabase.from('blocked_slots').delete().eq('id', id);
     } catch (err) {
-      console.warn('Supabase block delete error:', err);
+      console.warn('Supabase blocked slot delete error:', err);
     }
   }
   return true;
@@ -243,7 +252,7 @@ export function isSlotBlocked(
   hour: number
 ): { isBlocked: boolean; reason: string } {
   for (const b of blocks) {
-    const dateMatches = b.block_date === date || b.block_date === 'ALL';
+    const dateMatches = b.block_date === date || b.block_date === 'ALL' || b.block_date === '2099-12-31';
     const courtMatches = b.court_number === 0 || b.court_number === courtNumber;
     const hourMatches = hour >= b.start_hour && hour < b.end_hour;
 
@@ -314,7 +323,7 @@ export async function savePromoBanner(banner: Partial<PromoBannerSettings>): Pro
 }
 
 // ==============================================================================
-// MOCK SLOTS / IN-MEMORY BOOKING REPO
+// IN-MEMORY / HYBRID REPOSITORY FOR BOOKINGS & SLOTS
 // ==============================================================================
 export function getMockSlots(): BookingSlotRecord[] {
   return globalStore._gsMockSlots || [];
@@ -330,4 +339,32 @@ export function cancelMockSlot(courtNumber: number, date: string, slotTime: stri
   globalStore._gsMockSlots = globalStore._gsMockSlots.filter(
     (s) => !(s.court_number === courtNumber && s.slot_date === date && s.slot_time === slotTime)
   );
+}
+
+export function getMockBookings(): BookingRecord[] {
+  return globalStore._gsMockBookings || [];
+}
+
+export function addMockBooking(booking: BookingRecord) {
+  if (!globalStore._gsMockBookings) globalStore._gsMockBookings = [];
+  globalStore._gsMockBookings.push(booking);
+}
+
+export function cancelMockBooking(idOrCode: string) {
+  if (globalStore._gsMockBookings) {
+    globalStore._gsMockBookings = globalStore._gsMockBookings.map((b) => {
+      if (b.id === idOrCode || b.booking_code === idOrCode) {
+        return { ...b, status: 'cancelled' };
+      }
+      return b;
+    });
+  }
+  if (globalStore._gsMockSlots) {
+    globalStore._gsMockSlots = globalStore._gsMockSlots.map((s) => {
+      if (s.booking_code === idOrCode || s.booking_id === idOrCode) {
+        return { ...s, status: 'cancelled' };
+      }
+      return s;
+    });
+  }
 }

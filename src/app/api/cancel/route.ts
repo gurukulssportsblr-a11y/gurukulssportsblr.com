@@ -1,20 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase/server';
-
-const globalStore = global as unknown as {
-  _mockBookings?: any[];
-  _mockSlots?: Array<{
-    court_id: string;
-    court_number: number;
-    slot_date: string;
-    slot_time: string;
-    status: string;
-    booking_code: string;
-  }>;
-};
-
-if (!globalStore._mockBookings) globalStore._mockBookings = [];
-if (!globalStore._mockSlots) globalStore._mockSlots = [];
+import { getMockBookings, cancelMockBooking } from '@/lib/server-store';
 
 export async function GET(req: Request) {
   try {
@@ -30,12 +16,18 @@ export async function GET(req: Request) {
     const cleanCode = bookingCode ? bookingCode.trim().toUpperCase() : '';
 
     // Search in-memory store
-    const memBookings = (globalStore._mockBookings || []).filter((b) => {
-      if (cleanCode && b.booking_code === cleanCode) return true;
-      if (cleanPhone && b.customer_phone.includes(cleanPhone)) return true;
+    const memBookings = getMockBookings().filter((b) => {
+      if (cleanCode && b.booking_code.toUpperCase() === cleanCode) return true;
+      if (cleanPhone && b.customer_phone.replace(/\D/g, '').includes(cleanPhone)) return true;
       return false;
     }).map((b) => ({
-      ...b,
+      id: b.id,
+      booking_code: b.booking_code,
+      customer_name: b.customer_name,
+      customer_phone: b.customer_phone,
+      booking_date: b.booking_date,
+      total_amount: b.total_amount,
+      status: b.status,
       court: { name: `Court ${b.court_number || 1}`, surface_type: 'Synthetic' },
       booking_slots: (b.slots || []).map((s: string) => ({ slot_time: s, status: b.status })),
     }));
@@ -45,12 +37,26 @@ export async function GET(req: Request) {
     }
 
     const supabase = createServerClient();
+    
+    // Fetch courts map
+    const { data: courtsList } = await supabase.from('courts').select('id, court_number, name, surface_type');
+    const courtMap = new Map<string, { name: string; surface_type: string }>();
+    courtsList?.forEach((c: any) => courtMap.set(c.id, { name: c.name, surface_type: c.surface_type }));
+
     let query = supabase
       .from('bookings')
       .select(`
-        *,
-        court:courts(name, surface_type),
-        booking_slots(slot_date, slot_time, status)
+        id,
+        booking_code,
+        court_id,
+        customer_name,
+        customer_phone,
+        booking_date,
+        total_hours,
+        price_per_hour,
+        total_amount,
+        status,
+        booking_slots (id, slot_date, slot_time, status)
       `)
       .order('created_at', { ascending: false });
 
@@ -67,7 +73,14 @@ export async function GET(req: Request) {
       return NextResponse.json({ bookings: memBookings });
     }
 
-    const dbBookings = data || [];
+    const dbBookings = (data || []).map((b: any) => {
+      const courtInfo = courtMap.get(b.court_id) || { name: 'Court 1', surface_type: 'Synthetic' };
+      return {
+        ...b,
+        court: courtInfo,
+      };
+    });
+
     // Combine and deduplicate
     const all = [...dbBookings];
     for (const mb of memBookings) {
@@ -91,25 +104,7 @@ export async function POST(req: Request) {
     }
 
     // 1. Release in in-memory store
-    let releasedCode = '';
-    if (globalStore._mockBookings) {
-      globalStore._mockBookings = globalStore._mockBookings.map((b) => {
-        if (b.id === bookingId || b.booking_code === bookingId) {
-          releasedCode = b.booking_code;
-          return { ...b, status: 'cancelled' };
-        }
-        return b;
-      });
-    }
-
-    if (globalStore._mockSlots) {
-      globalStore._mockSlots = globalStore._mockSlots.map((s) => {
-        if (s.booking_code === releasedCode || s.booking_code === bookingId) {
-          return { ...s, status: 'cancelled' };
-        }
-        return s;
-      });
-    }
+    cancelMockBooking(bookingId);
 
     if (!isSupabaseConfigured) {
       return NextResponse.json({
@@ -120,29 +115,38 @@ export async function POST(req: Request) {
 
     const supabase = createServerClient();
 
-    // 2. Mark booking as cancelled in Supabase
+    // 2. Find booking UUID if booking code was passed
+    let targetId = bookingId;
+    const isBookingCode = String(bookingId).startsWith('GS-');
+    if (isBookingCode) {
+      const { data } = await supabase.from('bookings').select('id').eq('booking_code', bookingId).limit(1);
+      if (data && data.length > 0) {
+        targetId = data[0].id;
+      }
+    }
+
+    // 3. Mark booking as cancelled in Supabase
     const { error: bookingErr } = await supabase
       .from('bookings')
       .update({
         status: 'cancelled',
         cancelled_at: new Date().toISOString(),
       })
-      .eq('id', bookingId);
+      .or(`id.eq.${targetId},booking_code.eq.${bookingId}`);
 
     if (bookingErr) {
       console.error('Error cancelling booking:', bookingErr);
       return NextResponse.json({ error: bookingErr.message }, { status: 500 });
     }
 
-    // 3. Mark booking slots as cancelled to free up the unique slot index
+    // 4. Mark booking slots as cancelled to free up the slot
     const { error: slotErr } = await supabase
       .from('booking_slots')
       .update({ status: 'cancelled' })
-      .eq('booking_id', bookingId);
+      .eq('booking_id', targetId);
 
     if (slotErr) {
       console.error('Error cancelling booking slots:', slotErr);
-      return NextResponse.json({ error: slotErr.message }, { status: 500 });
     }
 
     return NextResponse.json({
