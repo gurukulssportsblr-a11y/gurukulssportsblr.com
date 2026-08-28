@@ -27,13 +27,6 @@ export default function Footer() {
             >
               <span className="material-symbols-outlined text-[18px]">location_on</span>
             </a>
-            <a
-              className="w-9 h-9 rounded-full bg-surface-container-lowest/10 flex items-center justify-center text-surface-container-lowest hover:bg-[#10B981] transition-colors"
-              href="tel:+919482156333"
-              title="Call Us: +91 9482156333"
-            >
-              <span className="material-symbols-outlined text-[18px]">call</span>
-            </a>
           </div>
         </div>
 
