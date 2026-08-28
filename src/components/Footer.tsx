@@ -67,9 +67,9 @@ export default function Footer() {
             </span>
             <a
               className="font-body-md text-sm text-surface-dim hover:text-[#38BDF8] transition-colors"
-              href="mailto:contact@gurukulsports.com"
+              href="mailto:gurukulssportsblr@gmail.com"
             >
-              contact@gurukulsports.com
+              gurukulssportsblr@gmail.com
             </a>
           </div>
         </div>
