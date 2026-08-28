@@ -20,10 +20,10 @@ export default function Footer() {
           <div className="flex items-center gap-3 mt-2">
             <a
               className="w-9 h-9 rounded-full bg-surface-container-lowest/10 flex items-center justify-center text-surface-container-lowest hover:bg-[#2563EB] transition-colors"
-              href="https://maps.google.com"
+              href="https://maps.app.goo.gl/5wQLkvAL4tY11cTH9"
               target="_blank"
               rel="noopener noreferrer"
-              title="Google Maps"
+              title="Open Google Maps Location"
             >
               <span className="material-symbols-outlined text-[18px]">location_on</span>
             </a>
@@ -42,16 +42,22 @@ export default function Footer() {
           <h4 className="font-title-md text-base font-bold text-surface-container-lowest mb-1">
             Location &amp; Contact
           </h4>
-          <div className="flex items-start gap-3 group">
-            <span className="material-symbols-outlined text-surface-dim mt-0.5 text-[20px]">
+          <a
+            href="https://maps.app.goo.gl/5wQLkvAL4tY11cTH9"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-start gap-3 group hover:opacity-90 transition-opacity"
+            title="Open in Google Maps"
+          >
+            <span className="material-symbols-outlined text-surface-dim group-hover:text-[#38BDF8] mt-0.5 text-[20px] transition-colors">
               location_on
             </span>
-            <p className="font-body-md text-sm text-surface-dim leading-relaxed">
+            <p className="font-body-md text-sm text-surface-dim group-hover:text-white leading-relaxed transition-colors">
               Varthur Main Road,<br />
               near Kapoor's Cafe,<br />
               Whitefield, Bengaluru, Karnataka 560066
             </p>
-          </div>
+          </a>
           <div className="flex items-start gap-3 group mt-1">
             <span className="material-symbols-outlined text-surface-dim mt-0.5 text-[20px]">
               schedule
