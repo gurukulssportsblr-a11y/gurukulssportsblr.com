@@ -24,15 +24,17 @@ async function resolveSupabaseCourtId(courtIdOrNum: string | number, supabase: a
 
   const courtNum = parseCourtNumber(courtIdOrNum);
   try {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('courts')
       .select('id')
       .eq('court_number', courtNum)
-      .single();
+      .limit(1);
 
-    if (data?.id) return data.id;
+    if (!error && data && data.length > 0 && data[0]?.id) {
+      return data[0].id;
+    }
 
-    // Self-healing: Insert court row if table is empty or missing court
+    // Insert if missing
     const defaultCourt = DEFAULT_COURTS.find((c) => c.court_number === courtNum) || {
       court_number: courtNum,
       name: `Court ${courtNum}`,
@@ -40,7 +42,7 @@ async function resolveSupabaseCourtId(courtIdOrNum: string | number, supabase: a
       price_per_hour: 300,
     };
 
-    const { data: inserted } = await supabase
+    const { data: inserted, error: insertErr } = await supabase
       .from('courts')
       .upsert(
         {
@@ -56,7 +58,7 @@ async function resolveSupabaseCourtId(courtIdOrNum: string | number, supabase: a
       .select('id')
       .single();
 
-    if (inserted?.id) return inserted.id;
+    if (!insertErr && inserted?.id) return inserted.id;
   } catch (err) {
     console.error('Error resolving court UUID:', err);
   }
@@ -117,7 +119,16 @@ export async function GET(req: Request) {
         const supabase = createServerClient();
         let query = supabase
           .from('booking_slots')
-          .select('id, booking_id, court_id, slot_date, slot_time, status, bookings(id, booking_code, customer_name, customer_phone, total_amount)')
+          .select(`
+            id,
+            booking_id,
+            court_id,
+            slot_date,
+            slot_time,
+            status,
+            courts:court_id (court_number, name),
+            bookings:booking_id (id, booking_code, customer_name, customer_phone, total_amount)
+          `)
           .eq('slot_date', date)
           .eq('status', 'booked');
 
@@ -128,9 +139,9 @@ export async function GET(req: Request) {
 
         const { data, error } = await query;
         if (!error && data) {
-          allBookingsList = data.map((item: any) => {
-            const courtNumber = item.court_id.startsWith('c') ? parseCourtNumber(item.court_id) : parseCourtNumber(item.court_id);
-            return {
+          data.forEach((item: any) => {
+            const courtNumber = item.courts?.court_number || parseCourtNumber(item.court_id);
+            allBookingsList.push({
               id: item.id,
               booking_id: item.booking_id,
               court_number: courtNumber,
@@ -139,31 +150,37 @@ export async function GET(req: Request) {
               customer_name: item.bookings?.customer_name || 'Booked Player',
               customer_phone: item.bookings?.customer_phone || '',
               booking_code: item.bookings?.booking_code || '',
-            };
-          });
+            });
 
-          bookedSlots = data.map((s: any) => s.slot_time);
+            if (!bookedSlots.includes(item.slot_time)) {
+              bookedSlots.push(item.slot_time);
+            }
+          });
+        } else if (error) {
+          console.warn('Supabase query error:', error);
         }
       } catch (err) {
         console.warn('Supabase bookings query error:', err);
       }
     }
 
-    // Merge in memory slots
+    // Merge in-memory slots
     memorySlots.forEach((ms) => {
       if (!bookedSlots.includes(ms.slot_time)) {
         bookedSlots.push(ms.slot_time);
       }
-      allBookingsList.push({
-        id: ms.id || `mock-${Date.now()}`,
-        booking_id: ms.booking_id || 'mock-bid',
-        court_number: ms.court_number,
-        slot_time: ms.slot_time,
-        slot_date: ms.slot_date,
-        customer_name: ms.customer_name || 'Walk-in Player',
-        customer_phone: ms.customer_phone || '9876543210',
-        booking_code: ms.booking_code || 'GS-WALKIN',
-      });
+      if (!allBookingsList.some((b) => b.court_number === ms.court_number && b.slot_time === ms.slot_time)) {
+        allBookingsList.push({
+          id: ms.id || `mock-${Date.now()}`,
+          booking_id: ms.booking_id || 'mock-bid',
+          court_number: ms.court_number,
+          slot_time: ms.slot_time,
+          slot_date: ms.slot_date,
+          customer_name: ms.customer_name || 'Walk-in Player',
+          customer_phone: ms.customer_phone || '9876543210',
+          booking_code: ms.booking_code || 'GS-WALKIN',
+        });
+      }
     });
 
     return NextResponse.json({
@@ -255,7 +272,7 @@ export async function POST(req: Request) {
 
     addMockSlots(mockSlotRecords);
 
-    // If Supabase is configured, also persist to database
+    // If Supabase is configured, persist to PostgreSQL database
     if (isSupabaseConfigured) {
       try {
         const supabase = createServerClient();
@@ -277,7 +294,12 @@ export async function POST(req: Request) {
           .select()
           .single();
 
-        if (!bookingErr && newBooking) {
+        if (bookingErr) {
+          console.error('Supabase booking insert error:', bookingErr);
+          return NextResponse.json({ error: `Database booking error: ${bookingErr.message}` }, { status: 500 });
+        }
+
+        if (newBooking) {
           const slotInserts = selectedSlots.map((slot: string) => ({
             booking_id: newBooking.id,
             court_id: resolvedCourtId,
@@ -285,10 +307,15 @@ export async function POST(req: Request) {
             slot_time: slot,
             status: 'booked',
           }));
-          await supabase.from('booking_slots').insert(slotInserts);
+          const { error: slotErr } = await supabase.from('booking_slots').insert(slotInserts);
+          if (slotErr) {
+            console.error('Supabase slot insert error:', slotErr);
+            return NextResponse.json({ error: `Database slot error: ${slotErr.message}` }, { status: 500 });
+          }
         }
-      } catch (dbErr) {
-        console.warn('Supabase booking save error:', dbErr);
+      } catch (dbErr: any) {
+        console.error('Supabase booking exception:', dbErr);
+        return NextResponse.json({ error: `Database error: ${dbErr?.message || 'Database error'}` }, { status: 500 });
       }
     }
 
