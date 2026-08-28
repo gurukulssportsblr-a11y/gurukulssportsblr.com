@@ -1,0 +1,343 @@
+import { createServerClient, isSupabaseConfigured } from '@/lib/supabase/server';
+
+export interface PricingRule {
+  id: string;
+  rule_name: string;
+  start_hour: number;
+  end_hour: number;
+  price_per_hour: number;
+  court_scope: 'ALL' | 'CUSTOM';
+  is_active: boolean;
+}
+
+export interface BlockedSlot {
+  id: string;
+  court_number: number; // 0 for ALL courts, 1-11 for specific court
+  block_date: string;   // 'YYYY-MM-DD' or 'ALL'
+  start_hour: number;   // e.g. 6 (6 AM)
+  end_hour: number;     // e.g. 15 (3 PM)
+  reason: string;
+}
+
+export interface PromoBannerSettings {
+  enabled: boolean;
+  badge: string;
+  headline: string;
+  message: string;
+  ctaText: string;
+  updated_at?: string;
+}
+
+export interface BookingSlotRecord {
+  id?: string;
+  booking_id?: string;
+  court_id: string;
+  court_number: number;
+  slot_date: string;
+  slot_time: string;
+  status: 'booked' | 'cancelled';
+  booking_code?: string;
+  customer_name?: string;
+  customer_phone?: string;
+  price?: number;
+}
+
+// Global in-memory singleton preserved across Next.js API route invocations
+const globalStore = global as unknown as {
+  _gsPricingRules?: PricingRule[];
+  _gsBlockedSlots?: BlockedSlot[];
+  _gsPromoBanner?: PromoBannerSettings;
+  _gsMockSlots?: BookingSlotRecord[];
+  _gsMockBookings?: any[];
+};
+
+if (!globalStore._gsPricingRules) {
+  globalStore._gsPricingRules = [
+    {
+      id: 'default-rule-1',
+      rule_name: 'Morning & Afternoon Happy Hours',
+      start_hour: 6,
+      end_hour: 15,
+      price_per_hour: 200,
+      court_scope: 'ALL',
+      is_active: true,
+    },
+  ];
+}
+
+if (!globalStore._gsBlockedSlots) {
+  globalStore._gsBlockedSlots = [];
+}
+
+if (!globalStore._gsPromoBanner) {
+  globalStore._gsPromoBanner = {
+    enabled: true,
+    badge: '🎉 SPECIAL HAPPY HOURS OFFER',
+    headline: 'Play Badminton for ₹200/hr from 6:00 AM to 3:00 PM!',
+    message: "Book any of our 11 BWF Synthetic courts during happy hours and enjoy instant ₹100 discount per hour. Limited slots available daily at Gurukul's Sports Academy Thubrahalli.",
+    ctaText: 'Claim Offer & Book Court',
+    updated_at: new Date().toISOString(),
+  };
+}
+
+if (!globalStore._gsMockSlots) globalStore._gsMockSlots = [];
+if (!globalStore._gsMockBookings) globalStore._gsMockBookings = [];
+
+// ==============================================================================
+// PRICING RULES HELPER FUNCTIONS
+// ==============================================================================
+export async function getPricingRules(): Promise<PricingRule[]> {
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createServerClient();
+      const { data, error } = await supabase
+        .from('pricing_rules')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (!error && data && data.length > 0) {
+        globalStore._gsPricingRules = data as PricingRule[];
+        return data as PricingRule[];
+      }
+    } catch (err) {
+      console.warn('Supabase pricing rules read error, falling back to memory store:', err);
+    }
+  }
+  return globalStore._gsPricingRules || [];
+}
+
+export async function savePricingRule(rule: Omit<PricingRule, 'id'> & { id?: string }): Promise<PricingRule> {
+  const newRule: PricingRule = {
+    id: rule.id || `rule-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    rule_name: rule.rule_name,
+    start_hour: rule.start_hour,
+    end_hour: rule.end_hour,
+    price_per_hour: rule.price_per_hour,
+    court_scope: rule.court_scope || 'ALL',
+    is_active: rule.is_active !== undefined ? rule.is_active : true,
+  };
+
+  // Update in memory
+  if (!globalStore._gsPricingRules) globalStore._gsPricingRules = [];
+  const existingIdx = globalStore._gsPricingRules.findIndex((r) => r.id === newRule.id);
+  if (existingIdx >= 0) {
+    globalStore._gsPricingRules[existingIdx] = newRule;
+  } else {
+    globalStore._gsPricingRules.push(newRule);
+  }
+
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createServerClient();
+      await supabase.from('pricing_rules').upsert(newRule);
+    } catch (err) {
+      console.warn('Supabase pricing rule save error:', err);
+    }
+  }
+
+  return newRule;
+}
+
+export async function deletePricingRule(id: string): Promise<boolean> {
+  if (!globalStore._gsPricingRules) return false;
+  globalStore._gsPricingRules = globalStore._gsPricingRules.filter((r) => r.id !== id);
+
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createServerClient();
+      await supabase.from('pricing_rules').delete().eq('id', id);
+    } catch (err) {
+      console.warn('Supabase pricing rule delete error:', err);
+    }
+  }
+  return true;
+}
+
+export function calculateSlotPriceFromRules(
+  rules: PricingRule[],
+  courtNumber: number,
+  hour: number
+): { price: number; isDiscounted: boolean; ruleName: string } {
+  let price = 300;
+  let isDiscounted = false;
+  let ruleName = '';
+
+  for (const rule of rules) {
+    if (!rule.is_active) continue;
+    if (hour >= rule.start_hour && hour < rule.end_hour) {
+      if (rule.court_scope === 'ALL' || (rule.court_scope === 'CUSTOM' && courtNumber <= 5)) {
+        price = Number(rule.price_per_hour);
+        isDiscounted = price < 300;
+        ruleName = rule.rule_name;
+        break;
+      }
+    }
+  }
+
+  return { price, isDiscounted, ruleName };
+}
+
+// ==============================================================================
+// BLOCKED SLOTS HELPER FUNCTIONS
+// ==============================================================================
+export async function getBlockedSlots(date?: string): Promise<BlockedSlot[]> {
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createServerClient();
+      let query = supabase.from('blocked_slots').select('*');
+      if (date) {
+        query = query.eq('block_date', date);
+      }
+      const { data, error } = await query;
+      if (!error && data) {
+        globalStore._gsBlockedSlots = data as BlockedSlot[];
+        return data as BlockedSlot[];
+      }
+    } catch (err) {
+      console.warn('Supabase blocked slots read error:', err);
+    }
+  }
+
+  const allBlocks = globalStore._gsBlockedSlots || [];
+  if (!date) return allBlocks;
+  return allBlocks.filter((b) => b.block_date === date || b.block_date === 'ALL');
+}
+
+export async function addBlockedSlot(block: Omit<BlockedSlot, 'id'>): Promise<BlockedSlot> {
+  const newBlock: BlockedSlot = {
+    id: `block-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    ...block,
+  };
+
+  if (!globalStore._gsBlockedSlots) globalStore._gsBlockedSlots = [];
+  globalStore._gsBlockedSlots.push(newBlock);
+
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createServerClient();
+      await supabase.from('blocked_slots').insert({
+        id: newBlock.id,
+        court_number: newBlock.court_number,
+        block_date: newBlock.block_date,
+        start_hour: newBlock.start_hour,
+        end_hour: newBlock.end_hour,
+        reason: newBlock.reason,
+      });
+    } catch (err) {
+      console.warn('Supabase block insert error:', err);
+    }
+  }
+
+  return newBlock;
+}
+
+export async function removeBlockedSlot(id: string): Promise<boolean> {
+  if (!globalStore._gsBlockedSlots) return false;
+  globalStore._gsBlockedSlots = globalStore._gsBlockedSlots.filter((b) => b.id !== id);
+
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createServerClient();
+      await supabase.from('blocked_slots').delete().eq('id', id);
+    } catch (err) {
+      console.warn('Supabase block delete error:', err);
+    }
+  }
+  return true;
+}
+
+export function isSlotBlocked(
+  blocks: BlockedSlot[],
+  courtNumber: number,
+  date: string,
+  hour: number
+): { isBlocked: boolean; reason: string } {
+  for (const b of blocks) {
+    const dateMatches = b.block_date === date || b.block_date === 'ALL';
+    const courtMatches = b.court_number === 0 || b.court_number === courtNumber;
+    const hourMatches = hour >= b.start_hour && hour < b.end_hour;
+
+    if (dateMatches && courtMatches && hourMatches) {
+      return { isBlocked: true, reason: b.reason || 'Court Maintenance' };
+    }
+  }
+  return { isBlocked: false, reason: '' };
+}
+
+// ==============================================================================
+// PROMO BANNER HELPER FUNCTIONS
+// ==============================================================================
+export async function getPromoBanner(): Promise<PromoBannerSettings> {
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createServerClient();
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'promo_banner')
+        .single();
+
+      if (!error && data?.value) {
+        globalStore._gsPromoBanner = data.value as PromoBannerSettings;
+        return data.value as PromoBannerSettings;
+      }
+    } catch (err) {
+      console.warn('Supabase site_settings read error:', err);
+    }
+  }
+
+  return (
+    globalStore._gsPromoBanner || {
+      enabled: true,
+      badge: '🎉 SPECIAL HAPPY HOURS OFFER',
+      headline: 'Play Badminton for ₹200/hr from 6:00 AM to 3:00 PM!',
+      message: "Book any of our 11 BWF Synthetic courts during happy hours and enjoy instant ₹100 discount per hour. Limited slots available daily at Gurukul's Sports Academy Thubrahalli.",
+      ctaText: 'Claim Offer & Book Court',
+      updated_at: new Date().toISOString(),
+    }
+  );
+}
+
+export async function savePromoBanner(banner: Partial<PromoBannerSettings>): Promise<PromoBannerSettings> {
+  const updated: PromoBannerSettings = {
+    ...globalStore._gsPromoBanner!,
+    ...banner,
+    updated_at: new Date().toISOString(),
+  };
+
+  globalStore._gsPromoBanner = updated;
+
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createServerClient();
+      await supabase.from('site_settings').upsert({
+        key: 'promo_banner',
+        value: updated,
+        updated_at: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.warn('Supabase promo banner save error:', err);
+    }
+  }
+
+  return updated;
+}
+
+// ==============================================================================
+// MOCK SLOTS / IN-MEMORY BOOKING REPO
+// ==============================================================================
+export function getMockSlots(): BookingSlotRecord[] {
+  return globalStore._gsMockSlots || [];
+}
+
+export function addMockSlots(slots: BookingSlotRecord[]) {
+  if (!globalStore._gsMockSlots) globalStore._gsMockSlots = [];
+  globalStore._gsMockSlots.push(...slots);
+}
+
+export function cancelMockSlot(courtNumber: number, date: string, slotTime: string) {
+  if (!globalStore._gsMockSlots) return;
+  globalStore._gsMockSlots = globalStore._gsMockSlots.filter(
+    (s) => !(s.court_number === courtNumber && s.slot_date === date && s.slot_time === slotTime)
+  );
+}

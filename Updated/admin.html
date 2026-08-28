@@ -43,12 +43,12 @@
             background: #94A3B8;
         }
         .ledger-cell {
-            min-width: 140px;
-            height: 58px;
+            min-width: 130px;
+            height: 52px;
             transition: all 0.15s ease;
         }
         .time-col {
-            min-width: 110px;
+            min-width: 100px;
             position: sticky;
             background: #F8FAFC;
             z-index: 10;
@@ -62,11 +62,9 @@
 </head>
 <body class="bg-[#F8FAFC] text-[#0F172A] font-sans antialiased min-h-screen">
 
-    <!-- ============================================================================== -->
-    <!-- 1. LOGIN OVERLAY (Gated for gurukulssportsblr@gmail.com)                        -->
-    <!-- ============================================================================== -->
-    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0F172A]/80 backdrop-blur-md p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl border border-slate-200 text-center relative overflow-hidden">
+    <!-- 1. LOGIN OVERLAY (Gated for gurukulssportsblr@gmail.com) -->
+    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0F172A]/90 backdrop-blur-md p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-200 text-center relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-600 via-emerald-500 to-slate-900"></div>
             
             <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white shadow-lg">
@@ -91,7 +89,7 @@
                     <input type="password" id="login-password" required placeholder="Enter password" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all">
                 </div>
                 
-                <button type="submit" class="w-full py-3 bg-slate-900 hover:bg-blue-600 text-white font-heading font-bold text-sm rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mt-2">
+                <button type="submit" class="w-full py-3.5 bg-slate-900 hover:bg-blue-600 text-white font-heading font-bold text-sm rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mt-2">
                     <span class="material-symbols-outlined text-[18px]">lock_open</span>
                     Unlock Host Control Panel
                 </button>
@@ -99,18 +97,15 @@
 
             <p class="text-[11px] text-slate-400 mt-6 flex items-center justify-center gap-1">
                 <span class="material-symbols-outlined text-[14px]">shield</span>
-                Authorized Arena Staff Only • 256-Bit Encrypted
+                Authorized Arena Staff Only • Full Live Database Sync
             </p>
         </div>
     </div>
 
-    <!-- ============================================================================== -->
-    <!-- 2. TOP HEADER & OPERATIONAL BAR                                                -->
-    <!-- ============================================================================== -->
+    <!-- 2. TOP HEADER & OPERATIONAL BAR -->
     <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-lg no-print">
         <div class="max-w-[1700px] mx-auto px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
             
-            <!-- Academy Branding -->
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-white/10 border border-white/20 rounded-xl flex items-center justify-center text-emerald-400 font-extrabold">
                     <span class="material-symbols-outlined text-[24px]">sports_tennis</span>
@@ -119,14 +114,13 @@
                     <div class="flex items-center gap-2">
                         <h1 class="font-heading font-extrabold text-lg tracking-tight uppercase">GURUKUL'S SPORTS ACADEMY THUBRAHALLI</h1>
                         <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/30 flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live Register
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live Database Linked
                         </span>
                     </div>
                     <p class="text-xs text-slate-400 font-medium">11 BWF Synthetic Badminton Courts • Arena Operations Dashboard</p>
                 </div>
             </div>
 
-            <!-- Action Center -->
             <div class="flex items-center flex-wrap gap-2.5">
                 <button onclick="openPricingModal()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-heading font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
                     <span class="material-symbols-outlined text-[18px]">percent</span>
@@ -150,9 +144,9 @@
 
                 <div class="h-6 w-[1px] bg-slate-700 mx-1"></div>
 
-                <a href="index.html" target="_blank" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition-all flex items-center gap-1">
+                <a href="/" target="_blank" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition-all flex items-center gap-1">
                     <span class="material-symbols-outlined text-[16px]">open_in_new</span>
-                    View Site
+                    Customer Site
                 </a>
 
                 <button onclick="logoutAdmin()" title="Sign Out" class="p-2 bg-red-900/40 hover:bg-red-800 text-red-300 rounded-lg transition-all">
@@ -162,13 +156,10 @@
         </div>
     </header>
 
-    <!-- ============================================================================== -->
-    <!-- 3. DATE & DAY BAR (MATCHING format.png REGISTER HEADER)                         -->
-    <!-- ============================================================================== -->
+    <!-- 3. DATE & DAY BAR (MATCHING format.png REGISTER HEADER) -->
     <section class="bg-white border-b border-slate-200 sticky top-[69px] z-30 shadow-sm no-print">
         <div class="max-w-[1700px] mx-auto px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
             
-            <!-- Date & Day Picker Controls -->
             <div class="flex items-center gap-3">
                 <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
                     <button onclick="changeDateByDays(-1)" class="p-1.5 hover:bg-white rounded-lg text-slate-700 transition-colors" title="Previous Day">
@@ -189,11 +180,10 @@
 
                 <div class="flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
                     <span class="font-heading font-extrabold text-xs text-blue-700 uppercase">DAY:</span>
-                    <span id="register-day" class="font-mono font-bold text-sm text-blue-900">Sunday</span>
+                    <span id="register-day" class="font-mono font-bold text-sm text-blue-900">Friday</span>
                 </div>
             </div>
 
-            <!-- Legend & Stats Pill -->
             <div class="flex items-center gap-4 text-xs font-semibold">
                 <div class="flex items-center gap-1.5">
                     <span class="w-3 h-3 rounded-full bg-emerald-500 border border-emerald-600"></span>
@@ -222,9 +212,7 @@
         </div>
     </section>
 
-    <!-- ============================================================================== -->
-    <!-- 4. KEY METRICS CARDS                                                           -->
-    <!-- ============================================================================== -->
+    <!-- 4. KEY METRICS CARDS -->
     <main class="max-w-[1700px] mx-auto px-4 lg:px-8 py-6 space-y-6">
         
         <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 no-print">
@@ -256,7 +244,7 @@
                 <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Pricing Rules</p>
                 <div class="flex items-baseline justify-between mt-1">
                     <h3 id="stat-pricing-rules" class="font-heading font-extrabold text-2xl text-amber-600">1</h3>
-                    <span class="text-xs text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-semibold">6AM-3PM @ ₹200</span>
+                    <span class="text-xs text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-semibold cursor-pointer hover:underline" onclick="openPricingModal()">Manage</span>
                 </div>
             </div>
 
@@ -269,51 +257,36 @@
             </div>
         </div>
 
-        <!-- ============================================================================== -->
-        <!-- 5. 10-COURT TIMETABLE MATRIX (EXACT DIGITAL REPLICA OF format.png)             -->
-        <!-- ============================================================================== -->
+        <!-- 5. 11-COURT TIMETABLE MATRIX (EXACT DIGITAL REPLICA OF format.png) -->
         <div class="bg-white rounded-2xl border border-slate-300 shadow-md overflow-hidden">
-            
-            <!-- Register Print Title (Visible only when printing) -->
-            <div class="hidden print:block p-4 border-b border-black text-center">
-                <h2 class="font-heading font-extrabold text-xl uppercase tracking-wider">GURUKUL'S SPORTS ACADEMY THUBRAHALLI</h2>
-                <div class="flex justify-between text-xs font-mono font-bold mt-1">
-                    <span id="print-date">DATE: 28/08/2026</span>
-                    <span id="print-day">DAY: Friday</span>
-                    <span>11 SYNTHETIC COURTS</span>
-                </div>
-            </div>
-
             <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full border-collapse ledger-table text-xs text-left">
                     <thead>
                         <tr class="bg-slate-900 text-white font-heading font-bold text-center uppercase tracking-wider text-[11px] border-b border-slate-800">
+                            <th class="py-3 px-2 border-r border-slate-700 time-col !bg-slate-950 !text-amber-400 sticky left-0 z-20">TIME:</th>
+                            <th class="py-3 px-2 border-r border-slate-700 min-w-[125px]">COURT NO 1</th>
+                            <th class="py-3 px-2 border-r border-slate-700 min-w-[125px]">COURT NO 2</th>
+                            <th class="py-3 px-2 border-r border-slate-700 min-w-[125px]">COURT NO 3</th>
+                            <th class="py-3 px-2 border-r border-slate-700 min-w-[125px]">COURT NO 4</th>
+                            <th class="py-3 px-2 border-r border-slate-700 min-w-[125px]">COURT NO 5</th>
                             <th class="py-3 px-2 border-r border-slate-700 time-col !bg-slate-950 !text-amber-400">TIME:</th>
-                            <th class="py-3 px-2 border-r border-slate-700 min-w-[130px]">COURT NO 1</th>
-                            <th class="py-3 px-2 border-r border-slate-700 min-w-[130px]">COURT NO 2</th>
-                            <th class="py-3 px-2 border-r border-slate-700 min-w-[130px]">COURT NO 3</th>
-                            <th class="py-3 px-2 border-r border-slate-700 min-w-[130px]">COURT NO 4</th>
-                            <th class="py-3 px-2 border-r border-slate-700 min-w-[130px]">COURT NO 5</th>
-                            <th class="py-3 px-2 border-r border-slate-700 time-col !bg-slate-950 !text-amber-400">TIME:</th>
-                            <th class="py-3 px-2 border-r border-slate-700 min-w-[130px]">COURT NO 6</th>
-                            <th class="py-3 px-2 border-r border-slate-700 min-w-[130px]">COURT NO 7</th>
-                            <th class="py-3 px-2 border-r border-slate-700 min-w-[130px]">COURT NO 8</th>
-                            <th class="py-3 px-2 border-r border-slate-700 min-w-[130px]">COURT NO 9</th>
-                            <th class="py-3 px-2 border-r border-slate-700 min-w-[130px]">COURT NO 10</th>
-                            <th class="py-3 px-2 min-w-[130px]">COURT NO 11</th>
+                            <th class="py-3 px-2 border-r border-slate-700 min-w-[125px]">COURT NO 6</th>
+                            <th class="py-3 px-2 border-r border-slate-700 min-w-[125px]">COURT NO 7</th>
+                            <th class="py-3 px-2 border-r border-slate-700 min-w-[125px]">COURT NO 8</th>
+                            <th class="py-3 px-2 border-r border-slate-700 min-w-[125px]">COURT NO 9</th>
+                            <th class="py-3 px-2 border-r border-slate-700 min-w-[125px]">COURT NO 10</th>
+                            <th class="py-3 px-2 min-w-[125px]">COURT NO 11</th>
                         </tr>
                     </thead>
                     <tbody id="timetable-body" class="divide-y divide-slate-200">
-                        <!-- Populated dynamically via JavaScript -->
+                        <!-- Populated dynamically via JavaScript with live backend data -->
                     </tbody>
                 </table>
             </div>
         </div>
     </main>
 
-    <!-- ============================================================================== -->
-    <!-- 6. MODAL: DYNAMIC PRICING & DISCOUNT ENGINE                                    -->
-    <!-- ============================================================================== -->
+    <!-- 6. MODAL: DYNAMIC PRICING & DISCOUNT ENGINE -->
     <div id="pricing-modal" class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center pb-4 border-b border-slate-200 mb-5">
@@ -323,7 +296,7 @@
                     </div>
                     <div>
                         <h3 class="font-heading font-extrabold text-lg text-slate-900">Dynamic Slot Pricing &amp; Discounts</h3>
-                        <p class="text-xs text-slate-500">Configure custom slot pricing (e.g. 6 AM - 3 PM discount)</p>
+                        <p class="text-xs text-slate-500">Configure custom slot pricing that reflects immediately across website</p>
                     </div>
                 </div>
                 <button onclick="closeModal('pricing-modal')" class="p-1 hover:bg-slate-100 rounded-lg text-slate-500">
@@ -331,7 +304,6 @@
                 </button>
             </div>
 
-            <!-- Add New Pricing Rule Form -->
             <form id="add-pricing-rule-form" onsubmit="handleSavePricingRule(event)" class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4 mb-6">
                 <h4 class="font-heading font-bold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-1">
                     <span class="material-symbols-outlined text-[16px] text-blue-600">add_circle</span>
@@ -341,7 +313,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Rule Name</label>
-                        <input type="text" id="rule-name" required placeholder="e.g. Morning Happy Hours" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium">
+                        <input type="text" id="rule-name" required value="Morning Happy Hours" placeholder="e.g. Morning Happy Hours" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Discounted Rate (₹/hour)</label>
@@ -353,13 +325,13 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Start Time Slot</label>
                         <select id="rule-start-slot" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium">
-                            <option value="6">06:00 AM</option>
+                            <option value="6" selected>06:00 AM</option>
                             <option value="7">07:00 AM</option>
                             <option value="8">08:00 AM</option>
                             <option value="9">09:00 AM</option>
                             <option value="10">10:00 AM</option>
                             <option value="11">11:00 AM</option>
-                            <option value="12" selected>12:00 PM</option>
+                            <option value="12">12:00 PM</option>
                         </select>
                     </div>
                     <div>
@@ -390,21 +362,16 @@
 
                 <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-heading font-bold text-xs rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm">
                     <span class="material-symbols-outlined text-[16px]">save</span>
-                    Save &amp; Apply Pricing Rule
+                    Save &amp; Apply Pricing Rule (Live)
                 </button>
             </form>
 
-            <!-- Current Active Rules List -->
             <h4 class="font-heading font-bold text-xs uppercase tracking-wider text-slate-600 mb-3">Active Pricing Rules</h4>
-            <div id="active-pricing-rules-list" class="space-y-2">
-                <!-- Dynamically Rendered -->
-            </div>
+            <div id="active-pricing-rules-list" class="space-y-2"></div>
         </div>
     </div>
 
-    <!-- ============================================================================== -->
-    <!-- 7. MODAL: PROMOTIONAL BANNER & POP-UP NOTIFICATION PUBLISHER                   -->
-    <!-- ============================================================================== -->
+    <!-- 7. MODAL: PROMOTIONAL BANNER & POP-UP -->
     <div id="promo-modal" class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center pb-4 border-b border-slate-200 mb-5">
@@ -414,7 +381,7 @@
                     </div>
                     <div>
                         <h3 class="font-heading font-extrabold text-lg text-slate-900">Website Discount Banner &amp; Pop-up</h3>
-                        <p class="text-xs text-slate-500">Publish live offers, discounts, and announcement pop-ups</p>
+                        <p class="text-xs text-slate-500">Publish live offers and announcements to visitor website</p>
                     </div>
                 </div>
                 <button onclick="closeModal('promo-modal')" class="p-1 hover:bg-slate-100 rounded-lg text-slate-500">
@@ -423,8 +390,6 @@
             </div>
 
             <form id="promo-banner-form" onsubmit="handleSavePromoBanner(event)" class="space-y-4">
-                
-                <!-- Master Toggle -->
                 <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-200">
                     <div>
                         <p class="font-heading font-bold text-sm text-slate-900">Enable Promotional Announcement</p>
@@ -448,19 +413,7 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Detailed Message / Description</label>
-                    <textarea id="promo-message" rows="3" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-slate-800">Enjoy world-class BWF Synthetic badminton courts at special discounted rates. Limited slots available daily at Gurukul's Sports Academy Thubrahalli.</textarea>
-                </div>
-
-                <!-- Live Preview -->
-                <div class="pt-2">
-                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Live Visitor Preview</p>
-                    <div class="p-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 rounded-xl text-white shadow-md flex items-center justify-between gap-3">
-                        <div class="flex items-center gap-2">
-                            <span class="px-2 py-0.5 bg-amber-400 text-slate-950 font-extrabold text-[10px] rounded uppercase" id="preview-badge">🎉 SPECIAL HAPPY HOURS</span>
-                            <span class="text-xs font-bold" id="preview-headline">Book Courts for just ₹200/hr from 6:00 AM to 3:00 PM!</span>
-                        </div>
-                        <span class="px-2.5 py-1 bg-white text-slate-950 text-[10px] font-bold rounded shadow-sm">Book Now →</span>
-                    </div>
+                    <textarea id="promo-message" rows="3" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-slate-800">Enjoy world-class 11 BWF Synthetic badminton courts at special discounted rates. Limited slots available daily at Gurukul's Sports Academy Thubrahalli.</textarea>
                 </div>
 
                 <div class="pt-3 border-t border-slate-200 flex justify-end gap-2">
@@ -474,9 +427,7 @@
         </div>
     </div>
 
-    <!-- ============================================================================== -->
-    <!-- 8. MODAL: BLOCK COURTS (MAINTENANCE / TOURNAMENTS)                             -->
-    <!-- ============================================================================== -->
+    <!-- 8. MODAL: BLOCK COURTS (MAINTENANCE) -->
     <div id="block-modal" class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
             <div class="flex justify-between items-center pb-4 border-b border-slate-200 mb-5">
@@ -498,7 +449,7 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Select Court(s)</label>
                     <select id="block-court-select" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold">
-                        <option value="ALL">All 11 Courts</option>
+                        <option value="0">All 11 Courts</option>
                         <option value="1">Court 1</option>
                         <option value="2">Court 2</option>
                         <option value="3">Court 3</option>
@@ -547,15 +498,13 @@
 
                 <button type="submit" class="w-full py-2.5 bg-red-600 hover:bg-red-500 text-white font-heading font-bold text-xs rounded-lg transition-all shadow-md mt-2 flex items-center justify-center gap-1.5">
                     <span class="material-symbols-outlined text-[16px]">lock</span>
-                    Apply Court Block
+                    Apply Court Block (Live)
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- ============================================================================== -->
-    <!-- 9. MODAL: MANUAL WALK-IN BOOKING                                               -->
-    <!-- ============================================================================== -->
+    <!-- 9. MODAL: WALK-IN BOOKING -->
     <div id="walkin-modal" class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
             <div class="flex justify-between items-center pb-4 border-b border-slate-200 mb-5">
@@ -596,23 +545,17 @@
                             <option value="8">Court 8</option>
                             <option value="9">Court 9</option>
                             <option value="10">Court 10</option>
-                        <option value="11">Court 11</option>
+                            <option value="11">Court 11</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Time Slot</label>
                         <select id="walkin-slot" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold">
-                            <!-- Populated dynamically -->
                         </select>
                     </div>
                 </div>
 
-                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
-                    <span class="text-slate-600 font-medium">Payment Mode:</span>
-                    <span class="font-bold text-slate-900">Direct Cash / Arena UPI</span>
-                </div>
-
-                <button type="submit" class="w-full py-2.5 bg-slate-900 hover:bg-blue-600 text-white font-heading font-bold text-xs rounded-lg transition-all shadow-md flex items-center justify-center gap-1.5">
+                <button type="submit" class="w-full py-2.5 bg-slate-900 hover:bg-blue-600 text-white font-heading font-bold text-xs rounded-lg transition-all shadow-md flex items-center justify-center gap-1.5 mt-2">
                     <span class="material-symbols-outlined text-[16px]">check_circle</span>
                     Confirm Walk-in Reservation
                 </button>
@@ -620,11 +563,8 @@
         </div>
     </div>
 
-    <!-- ============================================================================== -->
-    <!-- 10. JAVASCRIPT: APPLICATION LOGIC & TIMETABLE RENDERER                        -->
-    <!-- ============================================================================== -->
+    <!-- 10. JAVASCRIPT LOGIC (LIVE API INTEGRATED) -->
     <script>
-        // Data & Time Constants (Matching format.png 18 Rows)
         const TIME_ROWS = [
             { label: '6-7 AM', hour: 6, display: '06:00 AM' },
             { label: '7-8 AM', hour: 7, display: '07:00 AM' },
@@ -646,37 +586,22 @@
             { label: '11 PM-12 AM', hour: 23, display: '11:00 PM' }
         ];
 
-        // State Management
         let selectedDateStr = new Date().toISOString().split('T')[0];
-        let pricingRules = JSON.parse(localStorage.getItem('gs_pricing_rules') || '[]');
-        if (pricingRules.length === 0) {
-            // Default rule: 6 AM to 3 PM @ ₹200/hr
-            pricingRules = [{
-                id: 'default-1',
-                name: 'Morning & Afternoon Happy Hours',
-                startHour: 6,
-                endHour: 15,
-                price: 200,
-                courts: 'ALL',
-                active: true
-            }];
-            localStorage.setItem('gs_pricing_rules', JSON.stringify(pricingRules));
-        }
+        let pricingRules = [];
+        let blockedSlots = [];
+        let allBookings = [];
 
-        let blockedCourts = JSON.parse(localStorage.getItem('gs_blocked_courts') || '[]');
-
-        // Check Login Session
         function checkAuth() {
             const isAuth = sessionStorage.getItem('gs_admin_auth');
             const loginModal = document.getElementById('login-modal');
             if (isAuth === 'true') {
                 loginModal.classList.add('hidden');
+                fetchLiveDashboardData();
             } else {
                 loginModal.classList.remove('hidden');
             }
         }
 
-        // Handle Admin Login
         document.getElementById('admin-login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value.trim();
@@ -686,6 +611,7 @@
                 sessionStorage.setItem('gs_admin_auth', 'true');
                 document.getElementById('login-modal').classList.add('hidden');
                 document.getElementById('login-error').classList.add('hidden');
+                fetchLiveDashboardData();
             } else {
                 document.getElementById('login-error').classList.remove('hidden');
             }
@@ -696,7 +622,6 @@
             location.reload();
         }
 
-        // Date Helpers
         function setTodayDate() {
             selectedDateStr = new Date().toISOString().split('T')[0];
             document.getElementById('register-date').value = selectedDateStr;
@@ -720,25 +645,57 @@
             const dayName = days[dateObj.getDay()];
 
             document.getElementById('register-day').textContent = dayName;
-            document.getElementById('print-day').textContent = 'DAY: ' + dayName;
-            document.getElementById('print-date').textContent = 'DATE: ' + selectedDateStr;
-
-            renderTimetable();
+            fetchLiveDashboardData();
         }
 
-        // Slot Price Calculation
+        async function fetchLiveDashboardData() {
+            try {
+                const [bookingsRes, rulesRes, blocksRes, promoRes] = await Promise.all([
+                    fetch(`/api/bookings?allCourts=true&date=${selectedDateStr}`),
+                    fetch('/api/pricing-rules'),
+                    fetch(`/api/blocked-slots?date=${selectedDateStr}`),
+                    fetch('/api/promo-banner')
+                ]);
+
+                if (bookingsRes.ok) {
+                    const data = await bookingsRes.json();
+                    allBookings = data.allBookings || [];
+                }
+                if (rulesRes.ok) {
+                    const data = await rulesRes.json();
+                    pricingRules = data.rules || [];
+                }
+                if (blocksRes.ok) {
+                    const data = await blocksRes.json();
+                    blockedSlots = data.blocks || [];
+                }
+                if (promoRes.ok) {
+                    const data = await promoRes.json();
+                    if (data.banner) {
+                        document.getElementById('stat-banner-status').textContent = data.banner.enabled ? 'ACTIVE' : 'DISABLED';
+                        document.getElementById('stat-banner-status').className = data.banner.enabled ? 'font-heading font-extrabold text-lg text-emerald-600' : 'font-heading font-extrabold text-lg text-slate-400';
+                    }
+                }
+
+                renderTimetable();
+                renderPricingRulesList();
+            } catch (err) {
+                console.error('Error fetching live data:', err);
+            }
+        }
+
         function calculateSlotPrice(courtNum, hour) {
-            let price = 300; // Standard price
+            let price = 300;
             let isDiscounted = false;
             let ruleName = '';
 
             for (const rule of pricingRules) {
-                if (!rule.active) continue;
-                if (hour >= rule.startHour && hour < rule.endHour) {
-                    if (rule.courts === 'ALL' || (rule.courts === 'CUSTOM' && courtNum <= 5)) {
-                        price = rule.price;
-                        isDiscounted = true;
-                        ruleName = rule.name;
+                if (!rule.is_active) continue;
+                if (hour >= rule.start_hour && hour < rule.end_hour) {
+                    if (rule.court_scope === 'ALL' || (rule.court_scope === 'CUSTOM' && courtNum <= 5)) {
+                        price = Number(rule.price_per_hour);
+                        isDiscounted = price < 300;
+                        ruleName = rule.rule_name;
                         break;
                     }
                 }
@@ -746,68 +703,57 @@
             return { price, isDiscounted, ruleName };
         }
 
-        // Render the 10-Court Matrix
         function renderTimetable() {
             const tbody = document.getElementById('timetable-body');
             tbody.innerHTML = '';
 
-            // Load bookings for current date from localStorage
-            const savedBookings = JSON.parse(localStorage.getItem('gs_bookings_' + selectedDateStr) || '[]');
-            const htmlBookedSlots = JSON.parse(localStorage.getItem('gs_html_booked_' + selectedDateStr) || '[]');
-
-            let totalBooked = 0;
+            let totalBooked = allBookings.length;
             let totalRevenue = 0;
 
             TIME_ROWS.forEach(row => {
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-50/60 transition-colors';
 
-                // Helper to render cell
                 const renderCell = (courtNum) => {
                     const { price, isDiscounted } = calculateSlotPrice(courtNum, row.hour);
                     
-                    // Check if booked
-                    const booking = savedBookings.find(b => b.courtNum === courtNum && b.hour === row.hour);
-                    const isHtmlBooked = courtNum === 1 && htmlBookedSlots.includes(row.display);
-
-                    // Check if blocked for maintenance
-                    const isBlocked = blockedCourts.some(b => 
-                        (b.date === selectedDateStr || b.date === 'ALL') &&
-                        (b.court === 'ALL' || parseInt(b.court) === courtNum) &&
-                        row.hour >= b.startHour && row.hour < b.endHour
+                    const blockMatch = blockedSlots.find(b => 
+                        (b.block_date === selectedDateStr || b.block_date === 'ALL') &&
+                        (b.court_number === 0 || b.court_number === courtNum) &&
+                        row.hour >= b.start_hour && row.hour < b.end_hour
                     );
 
-                    if (isBlocked) {
+                    if (blockMatch) {
                         return `
-                            <td class="p-1.5 border-r border-slate-200 ledger-cell bg-amber-50/80">
-                                <div class="w-full h-full rounded-lg bg-amber-100 border border-amber-300 p-1.5 flex flex-col justify-center text-center">
-                                    <span class="font-bold text-[10px] text-amber-900 uppercase tracking-tight flex items-center justify-center gap-1">
-                                        <span class="material-symbols-outlined text-[12px]">warning</span> Blocked
+                            <td class="p-1 border-r border-slate-200 ledger-cell bg-amber-50/80">
+                                <div class="w-full h-full rounded-lg bg-amber-100 border border-amber-300 p-1 flex flex-col justify-between text-center">
+                                    <span class="font-bold text-[10px] text-amber-900 uppercase tracking-tight flex items-center justify-center gap-0.5">
+                                        ⚠️ Blocked
                                     </span>
-                                    <span class="text-[9px] text-amber-700 truncate">Maintenance</span>
+                                    <div class="flex justify-between items-center text-[9px] text-amber-800">
+                                        <span class="truncate">${blockMatch.reason}</span>
+                                        <button onclick="unblockSlot('${blockMatch.id}')" title="Unblock this court" class="text-red-600 hover:underline font-extrabold">✕</button>
+                                    </div>
                                 </div>
                             </td>
                         `;
                     }
 
-                    if (booking || isHtmlBooked) {
-                        totalBooked++;
-                        totalRevenue += price;
-                        const customerName = booking ? booking.name : 'Test Player';
-                        const customerPhone = booking ? booking.phone : '9876543210';
-                        const bookingCode = booking ? booking.code : 'GS-DEMO';
+                    const booking = allBookings.find(b => b.court_number === courtNum && b.slot_time === row.display);
 
+                    if (booking) {
+                        totalRevenue += price;
                         return `
                             <td class="p-1 border-r border-slate-200 ledger-cell">
-                                <div class="w-full h-full rounded-lg bg-slate-900 text-white p-1.5 flex flex-col justify-between shadow-sm relative group">
+                                <div class="w-full h-full rounded-lg bg-slate-900 text-white p-1.5 flex flex-col justify-between shadow-sm">
                                     <div class="flex justify-between items-start">
-                                        <span class="font-bold text-[11px] truncate text-slate-100">${customerName}</span>
+                                        <span class="font-bold text-[11px] truncate text-slate-100">${booking.customer_name}</span>
                                         <span class="text-[9px] font-mono text-emerald-400 font-bold">₹${price}</span>
                                     </div>
                                     <div class="flex justify-between items-center text-[9px] text-slate-400">
-                                        <span class="truncate">${customerPhone}</span>
-                                        <button onclick="cancelSlotBooking(${courtNum}, ${row.hour})" title="Cancel Booking & Free Slot" class="text-red-400 hover:text-red-300 font-bold hover:underline">
-                                            ✕
+                                        <span class="truncate">${booking.customer_phone}</span>
+                                        <button onclick="cancelSlotBooking('${booking.booking_id || booking.id}', ${courtNum}, '${row.display}')" title="Cancel Booking & Free Slot" class="text-red-400 hover:text-red-300 font-bold hover:underline">
+                                            ✕ Cancel
                                         </button>
                                     </div>
                                 </div>
@@ -815,9 +761,8 @@
                         `;
                     }
 
-                    // Available Slot
                     return `
-                        <td class="p-1 border-r border-slate-200 ledger-cell cursor-pointer group" onclick="quickBookPrompt(${courtNum}, ${row.hour}, '${row.display}')">
+                        <td class="p-1 border-r border-slate-200 ledger-cell cursor-pointer group" onclick="quickBookPrompt(${courtNum}, '${row.display}')">
                             <div class="w-full h-full rounded-lg ${isDiscounted ? 'bg-blue-50/70 border border-blue-200 group-hover:bg-blue-100' : 'bg-emerald-50/40 border border-slate-200 group-hover:bg-emerald-100/50'} p-1.5 flex flex-col justify-between transition-all">
                                 <div class="flex justify-between items-center">
                                     <span class="font-bold text-[10px] ${isDiscounted ? 'text-blue-700' : 'text-slate-500'}">₹${price}</span>
@@ -830,24 +775,17 @@
                 };
 
                 tr.innerHTML = `
-                    <!-- Left Time Col -->
-                    <td class="py-2 px-2.5 font-mono font-bold text-center border-r border-slate-300 time-col text-slate-900 text-xs bg-slate-100">
+                    <td class="py-2 px-2 font-mono font-bold text-center border-r border-slate-300 time-col text-slate-900 text-xs bg-slate-100 sticky left-0 z-10">
                         ${row.label}
                     </td>
-
-                    <!-- Courts 1 to 5 -->
                     ${renderCell(1)}
                     ${renderCell(2)}
                     ${renderCell(3)}
                     ${renderCell(4)}
                     ${renderCell(5)}
-
-                    <!-- Mid-Table Repeated Time Col (Matching format.png) -->
-                    <td class="py-2 px-2.5 font-mono font-bold text-center border-r border-slate-300 time-col text-slate-900 text-xs bg-slate-100">
+                    <td class="py-2 px-2 font-mono font-bold text-center border-r border-slate-300 time-col text-slate-900 text-xs bg-slate-100">
                         ${row.label}
                     </td>
-
-                    <!-- Courts 6 to 10 -->
                     ${renderCell(6)}
                     ${renderCell(7)}
                     ${renderCell(8)}
@@ -859,85 +797,88 @@
                 tbody.appendChild(tr);
             });
 
-            // Update stats
             document.getElementById('stat-booked-count').textContent = totalBooked;
             document.getElementById('stat-revenue').textContent = '₹' + totalRevenue.toLocaleString('en-IN');
             document.getElementById('stat-occupancy').textContent = Math.round((totalBooked / 198) * 100) + '%';
         }
 
-        // Quick Booking from Table Cell
-        function quickBookPrompt(courtNum, hour, displayTime) {
+        async function quickBookPrompt(courtNum, displayTime) {
             const name = prompt(`Book Court ${courtNum} at ${displayTime} for ${selectedDateStr}\n\nEnter Player Full Name:`);
             if (!name) return;
             const phone = prompt('Enter Player Phone Number (10 digits):');
             if (!phone) return;
 
-            const savedKey = 'gs_bookings_' + selectedDateStr;
-            const existing = JSON.parse(localStorage.getItem(savedKey) || '[]');
-            existing.push({
-                courtNum,
-                hour,
-                displayTime,
-                name: name.trim(),
-                phone: phone.trim(),
-                code: 'GS-' + Math.floor(100000 + Math.random() * 900000),
-                created: new Date().toISOString()
+            const res = await fetch('/api/bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    courtId: `c${courtNum}`,
+                    customerName: name.trim(),
+                    customerPhone: phone.trim(),
+                    bookingDate: selectedDateStr,
+                    selectedSlots: [displayTime]
+                })
             });
 
-            localStorage.setItem(savedKey, JSON.stringify(existing));
-            renderTimetable();
+            if (res.ok) {
+                alert('✅ Slot successfully reserved on live database!');
+                fetchLiveDashboardData();
+            } else {
+                const d = await res.json();
+                alert(`❌ Error: ${d.error || 'Failed to book slot'}`);
+            }
         }
 
-        // Cancel Slot Booking
-        function cancelSlotBooking(courtNum, hour) {
-            if (!confirm(`Are you sure you want to cancel the booking for Court ${courtNum}? This will free up the time slot immediately.`)) return;
+        async function cancelSlotBooking(bookingId, courtNum, slotTime) {
+            if (!confirm(`Cancel booking for Court ${courtNum} at ${slotTime}? This will free the slot immediately on the live website.`)) return;
 
-            const savedKey = 'gs_bookings_' + selectedDateStr;
-            let existing = JSON.parse(localStorage.getItem(savedKey) || '[]');
-            existing = existing.filter(b => !(b.courtNum === courtNum && b.hour === hour));
-            localStorage.setItem(savedKey, JSON.stringify(existing));
+            const res = await fetch('/api/cancel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bookingId })
+            });
 
-            // Also clear HTML prototype mock storage
-            localStorage.removeItem('gs_html_booked_' + selectedDateStr);
-
-            renderTimetable();
+            if (res.ok) {
+                alert('✅ Booking cancelled and slot released!');
+                fetchLiveDashboardData();
+            } else {
+                const d = await res.json();
+                alert(`❌ Error: ${d.error || 'Could not cancel'}`);
+            }
         }
 
-        // Pricing Rules Logic
+        async function unblockSlot(blockId) {
+            if (!confirm('Unblock this court?')) return;
+            await fetch(`/api/blocked-slots?id=${blockId}`, { method: 'DELETE' });
+            fetchLiveDashboardData();
+        }
+
         function renderPricingRulesList() {
             const container = document.getElementById('active-pricing-rules-list');
             container.innerHTML = '';
 
-            pricingRules.forEach((rule, idx) => {
-                const startLabel = TIME_ROWS.find(t => t.hour === rule.startHour)?.display || '6:00 AM';
-                const endLabel = TIME_ROWS.find(t => t.hour === rule.endHour)?.display || '3:00 PM';
-
+            pricingRules.forEach(rule => {
                 const card = document.createElement('div');
                 card.className = 'p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between shadow-sm';
                 card.innerHTML = `
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="font-bold text-xs text-slate-900">${rule.name}</span>
-                            <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-extrabold rounded">₹${rule.price}/hr</span>
+                            <span class="font-bold text-xs text-slate-900">${rule.rule_name}</span>
+                            <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-extrabold rounded">₹${rule.price_per_hour}/hr</span>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-0.5">${startLabel} – ${endLabel} • ${rule.courts === 'ALL' ? 'All 11 Courts' : 'Courts 1–5'}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">${rule.start_hour}:00 to ${rule.end_hour}:00 • ${rule.court_scope === 'ALL' ? 'All 11 Courts' : 'Courts 1–5'}</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="togglePricingRule(${idx})" class="text-xs font-bold ${rule.active ? 'text-emerald-600' : 'text-slate-400'}">
-                            ${rule.active ? 'Active' : 'Paused'}
-                        </button>
-                        <button onclick="deletePricingRule(${idx})" class="p-1 hover:bg-red-50 text-red-500 rounded">
-                            <span class="material-symbols-outlined text-[16px]">delete</span>
-                        </button>
-                    </div>
+                    <button onclick="deletePricingRule('${rule.id}')" class="p-1 hover:bg-red-50 text-red-500 rounded text-xs font-bold">
+                        Delete
+                    </button>
                 `;
                 container.appendChild(card);
             });
 
-            document.getElementById('stat-pricing-rules').textContent = pricingRules.filter(r => r.active).length;
+            document.getElementById('stat-pricing-rules').textContent = pricingRules.filter(r => r.is_active).length;
         }
 
-        function handleSavePricingRule(e) {
+        async function handleSavePricingRule(e) {
             e.preventDefault();
             const name = document.getElementById('rule-name').value.trim();
             const price = parseInt(document.getElementById('rule-price').value, 10);
@@ -950,109 +891,105 @@
                 return;
             }
 
-            pricingRules.push({
-                id: 'rule-' + Date.now(),
-                name,
-                price,
-                startHour,
-                endHour,
-                courts: courtScope,
-                active: true
+            const res = await fetch('/api/pricing-rules', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    rule_name: name,
+                    start_hour: startHour,
+                    end_hour: endHour,
+                    price_per_hour: price,
+                    court_scope: courtScope,
+                    is_active: true
+                })
             });
 
-            localStorage.setItem('gs_pricing_rules', JSON.stringify(pricingRules));
-            renderPricingRulesList();
-            renderTimetable();
-            closeModal('pricing-modal');
-            alert('✅ Pricing rule saved & applied to the timetable!');
+            if (res.ok) {
+                closeModal('pricing-modal');
+                fetchLiveDashboardData();
+                alert('✅ Pricing rule saved & applied to the live timetable and customer portal!');
+            }
         }
 
-        function togglePricingRule(idx) {
-            pricingRules[idx].active = !pricingRules[idx].active;
-            localStorage.setItem('gs_pricing_rules', JSON.stringify(pricingRules));
-            renderPricingRulesList();
-            renderTimetable();
-        }
-
-        function deletePricingRule(idx) {
+        async function deletePricingRule(id) {
             if (!confirm('Delete this pricing rule?')) return;
-            pricingRules.splice(idx, 1);
-            localStorage.setItem('gs_pricing_rules', JSON.stringify(pricingRules));
-            renderPricingRulesList();
-            renderTimetable();
+            await fetch(`/api/pricing-rules?id=${id}`, { method: 'DELETE' });
+            fetchLiveDashboardData();
         }
 
-        // Promo Banner & Pop-up Publisher
-        function handleSavePromoBanner(e) {
+        async function handleSavePromoBanner(e) {
             e.preventDefault();
             const enabled = document.getElementById('promo-enabled').checked;
             const badge = document.getElementById('promo-badge').value.trim();
             const headline = document.getElementById('promo-headline').value.trim();
             const message = document.getElementById('promo-message').value.trim();
 
-            const promoData = { enabled, badge, headline, message, updated: new Date().toISOString() };
-            localStorage.setItem('gs_promo_banner', JSON.stringify(promoData));
+            const res = await fetch('/api/promo-banner', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled, badge, headline, message, ctaText: 'Claim Offer & Book Court' })
+            });
 
-            document.getElementById('stat-banner-status').textContent = enabled ? 'ACTIVE' : 'OFFLINE';
-            document.getElementById('stat-banner-status').className = enabled ? 'font-heading font-extrabold text-lg text-emerald-600' : 'font-heading font-extrabold text-lg text-slate-400';
-
-            closeModal('promo-modal');
-            alert('🎉 Promotional Announcement published to live website!');
+            if (res.ok) {
+                closeModal('promo-modal');
+                fetchLiveDashboardData();
+                alert('🎉 Promotional Announcement published to live website!');
+            }
         }
 
-        // Court Blocking
-        function handleBlockCourtSubmit(e) {
+        async function handleBlockCourtSubmit(e) {
             e.preventDefault();
-            const court = document.getElementById('block-court-select').value;
+            const court = parseInt(document.getElementById('block-court-select').value, 10);
             const reason = document.getElementById('block-reason-select').value;
             const startHour = parseInt(document.getElementById('block-start-slot').value, 10);
             const endHour = parseInt(document.getElementById('block-end-slot').value, 10);
 
-            blockedCourts.push({
-                id: 'block-' + Date.now(),
-                date: selectedDateStr,
-                court,
-                reason,
-                startHour,
-                endHour
+            const res = await fetch('/api/blocked-slots', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    court_number: court,
+                    block_date: selectedDateStr,
+                    start_hour: startHour,
+                    end_hour: endHour,
+                    reason
+                })
             });
 
-            localStorage.setItem('gs_blocked_courts', JSON.stringify(blockedCourts));
-            renderTimetable();
-            closeModal('block-modal');
-            alert(`⚠️ Court(s) successfully blocked for ${reason}!`);
+            if (res.ok) {
+                closeModal('block-modal');
+                fetchLiveDashboardData();
+                alert(`⚠️ Court(s) successfully blocked for ${reason}!`);
+            }
         }
 
-        // Walk-in Submit
-        function handleWalkinSubmit(e) {
+        async function handleWalkinSubmit(e) {
             e.preventDefault();
             const name = document.getElementById('walkin-name').value.trim();
             const phone = document.getElementById('walkin-phone').value.trim();
             const courtNum = parseInt(document.getElementById('walkin-court').value, 10);
-            const hour = parseInt(document.getElementById('walkin-slot').value, 10);
-            const displayTime = TIME_ROWS.find(t => t.hour === hour)?.display || '6:00 AM';
+            const slot = document.getElementById('walkin-slot').value;
 
-            const savedKey = 'gs_bookings_' + selectedDateStr;
-            const existing = JSON.parse(localStorage.getItem(savedKey) || '[]');
-            existing.push({
-                courtNum,
-                hour,
-                displayTime,
-                name,
-                phone,
-                code: 'GS-OFFLINE-' + Math.floor(1000 + Math.random() * 9000),
-                created: new Date().toISOString()
+            const res = await fetch('/api/bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    courtId: `c${courtNum}`,
+                    customerName: name,
+                    customerPhone: phone,
+                    bookingDate: selectedDateStr,
+                    selectedSlots: [slot]
+                })
             });
 
-            localStorage.setItem(savedKey, JSON.stringify(existing));
-            renderTimetable();
-            closeModal('walkin-modal');
-            alert('✅ Walk-in booking confirmed successfully!');
+            if (res.ok) {
+                closeModal('walkin-modal');
+                fetchLiveDashboardData();
+                alert('✅ Walk-in booking confirmed successfully!');
+            }
         }
 
-        // Modal Helpers
         function openPricingModal() {
-            renderPricingRulesList();
             document.getElementById('pricing-modal').classList.remove('hidden');
         }
         function openPromoModal() {
@@ -1065,7 +1002,7 @@
             const select = document.getElementById('walkin-slot');
             select.innerHTML = '';
             TIME_ROWS.forEach(t => {
-                select.innerHTML += `<option value="${t.hour}">${t.display}</option>`;
+                select.innerHTML += `<option value="${t.display}">${t.display}</option>`;
             });
             document.getElementById('walkin-modal').classList.remove('hidden');
         }
@@ -1073,19 +1010,9 @@
             document.getElementById(modalId).classList.add('hidden');
         }
 
-        // Initialization
         document.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
             setTodayDate();
-            renderPricingRulesList();
-
-            // Setup preview updates for promo modal
-            document.getElementById('promo-badge').addEventListener('input', (e) => {
-                document.getElementById('preview-badge').textContent = e.target.value;
-            });
-            document.getElementById('promo-headline').addEventListener('input', (e) => {
-                document.getElementById('preview-headline').textContent = e.target.value;
-            });
+            checkAuth();
         });
     </script>
 </body>
