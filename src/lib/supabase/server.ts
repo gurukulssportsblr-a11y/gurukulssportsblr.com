@@ -1,6 +1,11 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const DEFAULT_SUPABASE_URL = 'https://egrpofmcquzcurmtwwix.supabase.co';
+
+const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-project'))
+  ? process.env.NEXT_PUBLIC_SUPABASE_URL
+  : DEFAULT_SUPABASE_URL;
+
 const supabaseServiceKey =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
   process.env.SUPABASE_PRIVATE_KEY ||
@@ -15,12 +20,6 @@ export const isSupabaseConfigured = Boolean(
 );
 
 export function createServerClient() {
-  if (!isSupabaseConfigured) {
-    return createSupabaseClient(
-      'https://placeholder-domain-gurukul.supabase.co',
-      'placeholder-service-key'
-    );
-  }
   return createSupabaseClient(supabaseUrl, supabaseServiceKey, {
     auth: {
       persistSession: false,
