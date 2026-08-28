@@ -43,6 +43,7 @@ export const DEFAULT_COURTS: DefaultCourt[] = [
   { id: 'c8', court_number: 8, name: 'Court 8', surface_type: 'Synthetic', price_per_hour: 300 },
   { id: 'c9', court_number: 9, name: 'Court 9', surface_type: 'Synthetic', price_per_hour: 300 },
   { id: 'c10', court_number: 10, name: 'Court 10', surface_type: 'Synthetic', price_per_hour: 300 },
+  { id: 'c11', court_number: 11, name: 'Court 11', surface_type: 'Synthetic', price_per_hour: 300 },
 ];
 
 export function parseSlotToHour(slotStr: string): number {

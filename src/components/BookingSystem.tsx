@@ -276,11 +276,11 @@ export default function BookingSystem() {
 
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-container rounded-lg text-xs font-semibold text-[#0F172A]">
                   <span className="w-2 h-2 rounded-full bg-[#10B981]"></span>
-                  10 BWF Synthetic Courts • ₹300/hr
+                  11 BWF Synthetic Courts • ₹300/hr
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
                 {courts.map((court) => {
                   const isSelected = court.id === selectedCourtId;
                   return (

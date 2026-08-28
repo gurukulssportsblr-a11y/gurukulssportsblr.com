@@ -24,7 +24,7 @@ export default function Facilities() {
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-title-md text-title-md text-[#0F172A] font-bold">Badminton Courts</h3>
               <span className="px-2.5 py-1 bg-[#2563EB]/10 text-[#2563EB] text-[11px] font-bold rounded-full uppercase tracking-wider">
-                10 Courts
+                11 Courts
               </span>
             </div>
             <p className="font-body-md text-body-md text-on-surface-variant mb-6 flex-1">

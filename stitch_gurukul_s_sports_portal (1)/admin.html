@@ -122,7 +122,7 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live Register
                         </span>
                     </div>
-                    <p class="text-xs text-slate-400 font-medium">10 BWF Synthetic Badminton Courts • Arena Operations Dashboard</p>
+                    <p class="text-xs text-slate-400 font-medium">11 BWF Synthetic Badminton Courts • Arena Operations Dashboard</p>
                 </div>
             </div>
 
@@ -232,7 +232,7 @@
                 <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Booked Slots</p>
                 <div class="flex items-baseline justify-between mt-1">
                     <h3 id="stat-booked-count" class="font-heading font-extrabold text-2xl text-slate-900">0</h3>
-                    <span class="text-xs text-slate-400 font-medium">/ 180 total</span>
+                    <span class="text-xs text-slate-400 font-medium">/ 198 total</span>
                 </div>
             </div>
 
@@ -280,7 +280,7 @@
                 <div class="flex justify-between text-xs font-mono font-bold mt-1">
                     <span id="print-date">DATE: 28/08/2026</span>
                     <span id="print-day">DAY: Friday</span>
-                    <span>10 SYNTHETIC COURTS</span>
+                    <span>11 SYNTHETIC COURTS</span>
                 </div>
             </div>
 
@@ -299,7 +299,8 @@
                             <th class="py-3 px-2 border-r border-slate-700 min-w-[130px]">COURT NO 7</th>
                             <th class="py-3 px-2 border-r border-slate-700 min-w-[130px]">COURT NO 8</th>
                             <th class="py-3 px-2 border-r border-slate-700 min-w-[130px]">COURT NO 9</th>
-                            <th class="py-3 px-2 min-w-[130px]">COURT NO 10</th>
+                            <th class="py-3 px-2 border-r border-slate-700 min-w-[130px]">COURT NO 10</th>
+                            <th class="py-3 px-2 min-w-[130px]">COURT NO 11</th>
                         </tr>
                     </thead>
                     <tbody id="timetable-body" class="divide-y divide-slate-200">
@@ -379,7 +380,7 @@
                     <label class="block text-xs font-bold text-slate-700 mb-1">Applicable Courts</label>
                     <div class="flex items-center gap-3">
                         <label class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-800">
-                            <input type="radio" name="court-scope" value="ALL" checked class="text-blue-600"> All 10 Courts
+                            <input type="radio" name="court-scope" value="ALL" checked class="text-blue-600"> All 11 Courts
                         </label>
                         <label class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-800">
                             <input type="radio" name="court-scope" value="CUSTOM" class="text-blue-600"> Courts 1–5 Only
@@ -497,7 +498,7 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Select Court(s)</label>
                     <select id="block-court-select" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold">
-                        <option value="ALL">All 10 Courts</option>
+                        <option value="ALL">All 11 Courts</option>
                         <option value="1">Court 1</option>
                         <option value="2">Court 2</option>
                         <option value="3">Court 3</option>
@@ -508,6 +509,7 @@
                         <option value="8">Court 8</option>
                         <option value="9">Court 9</option>
                         <option value="10">Court 10</option>
+                        <option value="11">Court 11</option>
                     </select>
                 </div>
 
@@ -594,6 +596,7 @@
                             <option value="8">Court 8</option>
                             <option value="9">Court 9</option>
                             <option value="10">Court 10</option>
+                        <option value="11">Court 11</option>
                         </select>
                     </div>
                     <div>
@@ -850,6 +853,7 @@
                     ${renderCell(8)}
                     ${renderCell(9)}
                     ${renderCell(10)}
+                    ${renderCell(11)}
                 `;
 
                 tbody.appendChild(tr);
@@ -858,7 +862,7 @@
             // Update stats
             document.getElementById('stat-booked-count').textContent = totalBooked;
             document.getElementById('stat-revenue').textContent = '₹' + totalRevenue.toLocaleString('en-IN');
-            document.getElementById('stat-occupancy').textContent = Math.round((totalBooked / 180) * 100) + '%';
+            document.getElementById('stat-occupancy').textContent = Math.round((totalBooked / 198) * 100) + '%';
         }
 
         // Quick Booking from Table Cell
@@ -916,7 +920,7 @@
                             <span class="font-bold text-xs text-slate-900">${rule.name}</span>
                             <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-extrabold rounded">₹${rule.price}/hr</span>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-0.5">${startLabel} – ${endLabel} • ${rule.courts === 'ALL' ? 'All 10 Courts' : 'Courts 1–5'}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">${startLabel} – ${endLabel} • ${rule.courts === 'ALL' ? 'All 11 Courts' : 'Courts 1–5'}</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <button onclick="togglePricingRule(${idx})" class="text-xs font-bold ${rule.active ? 'text-emerald-600' : 'text-slate-400'}">

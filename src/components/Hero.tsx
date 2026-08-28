@@ -126,7 +126,7 @@ export default function Hero() {
                 <span className="material-symbols-outlined text-[24px]">sports_tennis</span>
               </div>
               <div>
-                <h3 className="font-label-md text-label-md text-[#0F172A] font-bold">10 Pro Courts</h3>
+                <h3 className="font-label-md text-label-md text-[#0F172A] font-bold">11 Pro Courts</h3>
                 <p className="font-label-sm text-label-sm text-on-surface-variant mt-1">BWF-Grade Synthetic</p>
               </div>
             </div>

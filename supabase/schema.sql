@@ -117,7 +117,8 @@ VALUES
     (7, 'Court 7', 'Synthetic', 300.00, true, 7),
     (8, 'Court 8', 'Synthetic', 300.00, true, 8),
     (9, 'Court 9', 'Synthetic', 300.00, true, 9),
-    (10, 'Court 10', 'Synthetic', 300.00, true, 10)
+    (10, 'Court 10', 'Synthetic', 300.00, true, 10),
+    (11, 'Court 11', 'Synthetic', 300.00, true, 11)
 ON CONFLICT (court_number) DO UPDATE 
 SET surface_type = EXCLUDED.surface_type,
     price_per_hour = EXCLUDED.price_per_hour;
