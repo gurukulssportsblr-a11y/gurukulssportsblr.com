@@ -29,8 +29,8 @@ export default function Footer() {
             </a>
             <a
               className="w-9 h-9 rounded-full bg-surface-container-lowest/10 flex items-center justify-center text-surface-container-lowest hover:bg-[#10B981] transition-colors"
-              href="tel:+919876543210"
-              title="Call Us"
+              href="tel:+919482156333"
+              title="Call Us: +91 9482156333"
             >
               <span className="material-symbols-outlined text-[18px]">call</span>
             </a>
@@ -40,7 +40,7 @@ export default function Footer() {
         {/* Location & Hours */}
         <div className="flex flex-col gap-4">
           <h4 className="font-title-md text-base font-bold text-surface-container-lowest mb-1">
-            Location &amp; Hours
+            Location &amp; Contact
           </h4>
           <div className="flex items-start gap-3 group">
             <span className="material-symbols-outlined text-surface-dim mt-0.5 text-[20px]">
@@ -60,6 +60,25 @@ export default function Footer() {
               6:00 AM – 12:00 AM<br />
               (Monday – Sunday Daily)
             </p>
+          </div>
+          <div className="flex items-start gap-3 group mt-1">
+            <span className="material-symbols-outlined text-surface-dim mt-0.5 text-[20px]">
+              call
+            </span>
+            <div className="flex flex-col gap-0.5 text-sm font-body-md text-surface-dim">
+              <a
+                className="hover:text-[#38BDF8] transition-colors font-medium"
+                href="tel:+919482156333"
+              >
+                +91 9482156333
+              </a>
+              <a
+                className="hover:text-[#38BDF8] transition-colors font-medium"
+                href="tel:+917676397018"
+              >
+                +91 7676397018
+              </a>
+            </div>
           </div>
           <div className="flex items-start gap-3 group mt-1">
             <span className="material-symbols-outlined text-surface-dim mt-0.5 text-[20px]">
