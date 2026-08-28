@@ -52,17 +52,7 @@ const globalStore = global as unknown as {
 };
 
 if (!globalStore._gsPricingRules) {
-  globalStore._gsPricingRules = [
-    {
-      id: 'default-rule-1',
-      rule_name: 'Morning & Afternoon Happy Hours',
-      start_hour: 6,
-      end_hour: 15,
-      price_per_hour: 200,
-      court_scope: 'ALL',
-      is_active: true,
-    },
-  ];
+  globalStore._gsPricingRules = [];
 }
 
 if (!globalStore._gsBlockedSlots) {
@@ -71,11 +61,11 @@ if (!globalStore._gsBlockedSlots) {
 
 if (!globalStore._gsPromoBanner) {
   globalStore._gsPromoBanner = {
-    enabled: true,
-    badge: '🎉 SPECIAL HAPPY HOURS OFFER',
-    headline: 'Play Badminton for ₹200/hr from 6:00 AM to 3:00 PM!',
-    message: "Book any of our 11 BWF Synthetic courts during happy hours and enjoy instant ₹100 discount per hour. Limited slots available daily at Gurukul's Sports Academy Thubrahalli.",
-    ctaText: 'Claim Offer & Book Court',
+    enabled: false,
+    badge: '🎉 SPECIAL OFFER',
+    headline: 'Special Discounts Available on Badminton Courts!',
+    message: "Enjoy international standard BWF Synthetic courts at Gurukul's Sports Academy Thubrahalli.",
+    ctaText: 'Book Court Now',
     updated_at: new Date().toISOString(),
   };
 }
@@ -288,11 +278,11 @@ export async function getPromoBanner(): Promise<PromoBannerSettings> {
 
   return (
     globalStore._gsPromoBanner || {
-      enabled: true,
-      badge: '🎉 SPECIAL HAPPY HOURS OFFER',
-      headline: 'Play Badminton for ₹200/hr from 6:00 AM to 3:00 PM!',
-      message: "Book any of our 11 BWF Synthetic courts during happy hours and enjoy instant ₹100 discount per hour. Limited slots available daily at Gurukul's Sports Academy Thubrahalli.",
-      ctaText: 'Claim Offer & Book Court',
+      enabled: false,
+      badge: '🎉 SPECIAL OFFER',
+      headline: 'Special Discounts Available on Badminton Courts!',
+      message: "Enjoy international standard BWF Synthetic courts at Gurukul's Sports Academy Thubrahalli.",
+      ctaText: 'Book Court Now',
       updated_at: new Date().toISOString(),
     }
   );
