@@ -92,15 +92,7 @@ export async function GET(req: Request) {
     let bookedSlots: string[] = [];
     let allBookingsList: any[] = [];
 
-    // 1. Fetch from In-Memory Store
-    const memorySlots = getMockSlots().filter(
-      (s) =>
-        s.slot_date === date &&
-        s.status === 'booked' &&
-        (allCourts || s.court_number === courtNum)
-    );
-
-    // 2. Fetch from Supabase (if configured)
+    // Fetch from Supabase (if configured) or fallback to In-Memory store
     if (supabase) {
       try {
         let query = supabase
@@ -112,7 +104,7 @@ export async function GET(req: Request) {
             slot_date,
             slot_time,
             status,
-            bookings:booking_id (id, booking_code, customer_name, customer_phone, total_amount)
+            bookings:booking_id (id, booking_code, customer_name, customer_phone, total_amount, status)
           `)
           .eq('slot_date', date)
           .eq('status', 'booked');
@@ -123,6 +115,9 @@ export async function GET(req: Request) {
             const lowerCourtId = String(item.court_id).toLowerCase();
             const courtNumber = courtIdToNum.get(lowerCourtId) || parseCourtNumber(item.court_id);
             const bookingDetails = Array.isArray(item.bookings) ? item.bookings[0] : item.bookings;
+
+            // Ensure booking itself is not cancelled
+            if (bookingDetails?.status === 'cancelled') return;
 
             if (allCourts || courtNumber === courtNum) {
               allBookingsList.push({
@@ -145,26 +140,33 @@ export async function GET(req: Request) {
       } catch (err) {
         console.warn('Supabase bookings query error:', err);
       }
-    }
+    } else {
+      // In-Memory Fallback ONLY when Supabase is offline
+      const memorySlots = getMockSlots().filter(
+        (s) =>
+          s.slot_date === date &&
+          s.status === 'booked' &&
+          (allCourts || s.court_number === courtNum)
+      );
 
-    // Merge in-memory slots
-    memorySlots.forEach((ms) => {
-      if (ms.court_number === courtNum && !bookedSlots.includes(ms.slot_time)) {
-        bookedSlots.push(ms.slot_time);
-      }
-      if (!allBookingsList.some((b) => b.court_number === ms.court_number && b.slot_time === ms.slot_time)) {
-        allBookingsList.push({
-          id: ms.id || `mock-${Date.now()}`,
-          booking_id: ms.booking_id || 'mock-bid',
-          court_number: ms.court_number,
-          slot_time: ms.slot_time,
-          slot_date: ms.slot_date,
-          customer_name: ms.customer_name || 'Walk-in Player',
-          customer_phone: ms.customer_phone || '9876543210',
-          booking_code: ms.booking_code || 'GS-WALKIN',
-        });
-      }
-    });
+      memorySlots.forEach((ms) => {
+        if (ms.court_number === courtNum && !bookedSlots.includes(ms.slot_time)) {
+          bookedSlots.push(ms.slot_time);
+        }
+        if (!allBookingsList.some((b) => b.court_number === ms.court_number && b.slot_time === ms.slot_time)) {
+          allBookingsList.push({
+            id: ms.id || `mock-${Date.now()}`,
+            booking_id: ms.booking_id || 'mock-bid',
+            court_number: ms.court_number,
+            slot_time: ms.slot_time,
+            slot_date: ms.slot_date,
+            customer_name: ms.customer_name || 'Walk-in Player',
+            customer_phone: ms.customer_phone || '9876543210',
+            booking_code: ms.booking_code || 'GS-WALKIN',
+          });
+        }
+      });
+    }
 
     return NextResponse.json({
       success: true,
