@@ -168,12 +168,20 @@ export async function GET(req: Request) {
       });
     }
 
+    const seenMap = new Set<string>();
+    const deduplicatedBookings = allBookingsList.filter((item) => {
+      const key = `${item.court_number}_${item.slot_time}`;
+      if (seenMap.has(key)) return false;
+      seenMap.add(key);
+      return true;
+    });
+
     return NextResponse.json({
       success: true,
       bookedSlots,
       blockedSlots,
       pricingRules,
-      allBookings: allBookingsList,
+      allBookings: deduplicatedBookings,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -250,6 +258,30 @@ export async function POST(req: Request) {
           { error: `Court ${courtNum} is blocked for ${reason} at ${slot}. Please choose another court or time.` },
           { status: 409 }
         );
+      }
+    }
+
+    // 2. Prevent Double Booking: Check if slot is ALREADY booked in Supabase
+    if (supabase) {
+      const { data: existingSlots } = await supabase
+        .from('booking_slots')
+        .select('slot_time, status, bookings(status)')
+        .eq('court_id', resolvedCourtId)
+        .eq('slot_date', bookingDate)
+        .eq('status', 'booked');
+
+      const activeExisting = (existingSlots || [])
+        .filter((s: any) => s.bookings?.status !== 'cancelled')
+        .map((s: any) => String(s.slot_time).trim().replace(/^0/, '').toUpperCase());
+
+      for (const slot of selectedSlots) {
+        const norm = String(slot).trim().replace(/^0/, '').toUpperCase();
+        if (activeExisting.includes(norm)) {
+          return NextResponse.json(
+            { error: `Court ${courtNum} at ${slot} is already booked. Please choose an available slot.` },
+            { status: 409 }
+          );
+        }
       }
     }
 
