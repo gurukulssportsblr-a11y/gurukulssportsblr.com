@@ -36,7 +36,7 @@ The system is deployed live in production on **Vercel** with a fully synchronize
 - **Endpoint:** `/api/pricing-rules` (GET, POST, DELETE)
 - **Features:** Allows arena managers to create, activate, and delete custom hourly pricing rules (e.g. 6:00 AM to 3:00 PM @ ₹200/hr).
 - **Targeting:** Rules can be applied to **All 11 Courts** or **Courts 1–5 Only**.
-- **Customer Site Reflection:** Discounted slots immediately display with animated **`⚡ OFFER`** badges on the website, and price calculations automatically apply to the booking summary.
+- **Customer Site Reflection:** Pricing rules are eagerly loaded on mount; discounted slots immediately display with animated **`⚡ OFFER`** badges on the website, and price calculations automatically apply to the booking summary.
 
 ### C. Court Maintenance & Blocking Engine
 - **Endpoint:** `/api/blocked-slots` (GET, POST, DELETE)
@@ -47,13 +47,10 @@ The system is deployed live in production on **Vercel** with a fully synchronize
 - **Endpoint:** `/api/promo-banner` (GET, POST)
 - **Features:** Real-time publishing and toggling of top website announcement bars and modal pop-ups with customizable badges, headlines, descriptions, and call-to-action buttons.
 
-### E. End-to-End Live Booking Lifecycle
+### E. End-to-End Live Booking Lifecycle & Walk-in Reservations
 - **Endpoint:** `/api/bookings` (GET, POST)
-- **Validation:**
-  - Enforces Indian Standard Time (`getNowInIST()`) to prevent past-time bookings across serverless regions.
-  - Automatically validates against active maintenance blockers.
-  - Generates unique customer reservation codes (`GS-XXXXXX`).
-- **Database Persistence:** Directly inserts records into `bookings` and `booking_slots` tables in Supabase with relational UUID integrity.
+- **Interactive Register Booking:** Clicking any open cell in the Host Register matrix immediately opens the full **Walk-in Booking Modal** with that exact court and time slot pre-selected.
+- **Bi-directional UUID Resolution:** All bookings submitted by customers or hosts resolve court numbers and database UUIDs bi-directionally, ensuring walk-in bookings instantly lock the corresponding slot on the customer website.
 
 ### F. Instant Lookup & 1-Click Booking Cancellation
 - **Endpoint:** `/api/cancel` (GET, POST)
@@ -64,7 +61,7 @@ The system is deployed live in production on **Vercel** with a fully synchronize
 
 ### G. Host Operations Control Panel
 - **Routes:** `/admin` (React Dynamic Dashboard) and `/admin.html` (Static Fallback)
-- **Register Table:** Full 18-hour $\times$ 11-court interactive register matrix with booked player details, revenue stats, occupancy metrics, quick-booking modal, and walk-in reservation recording.
+- **Register Table:** Full 18-hour $\times$ 11-court interactive register matrix with booked player details, revenue stats, occupancy metrics, walk-in modal booking, and maintenance controls.
 
 ---
 
