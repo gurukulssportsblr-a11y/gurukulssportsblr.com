@@ -291,7 +291,7 @@
 <div class="flex items-center justify-between mb-4">
 <h3 class="font-title-md text-title-md text-[#0F172A]">2. Select Court</h3>
 </div>
-<div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+<div id="court-selector-grid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
   <button class="py-3 px-4 rounded-lg bg-[#0F172A] text-white border border-[#0F172A] flex flex-col items-center transition-colors">
     <span class="font-label-md text-label-md font-bold">Court 1</span>
     <span class="text-[10px] opacity-80 uppercase tracking-wider mt-1">Synthetic</span>
@@ -341,7 +341,7 @@
 <!-- Time Slots -->
 <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50">
 <div class="flex items-center justify-between mb-4">
-<h3 class="font-title-md text-title-md text-[#0F172A]">3. Select Time Slots</h3>
+<h3 id="step3-court-title" class="font-title-md text-title-md text-[#0F172A]">3. Select Time Slots for Court 1</h3>
 <div class="flex items-center gap-3">
 <div class="flex items-center gap-1 font-label-sm text-label-sm"><div class="w-3 h-3 rounded bg-[#10B981]/10 border border-[#10B981]/20"></div> Available</div>
 <div class="flex items-center gap-1 font-label-sm text-label-sm"><div class="w-3 h-3 rounded bg-[#0F172A]"></div> Selected</div>
@@ -552,92 +552,127 @@ gurukulssportsblr@gmail.com
     </script>
 
 
-    <script data-purpose="slot-toggle-logic">
-        function toggleSlot(btn) {
-            if (btn.classList.contains('booked') || btn.classList.contains('cursor-not-allowed')) return;
+    <script data-purpose="live-booking-system">
+        let currentSelectedCourt = 1;
+        let selectedSlots = [];
+        let bookedSlots = [];
+        let blockedSlots = [];
+
+        function normalizeSlot(s) {
+            if (!s) return '';
+            return s.trim().replace(/^0/, '').toUpperCase();
+        }
+
+        function selectCourt(courtNum) {
+            currentSelectedCourt = courtNum;
+            selectedSlots = [];
             
-            if (btn.classList.contains('available')) {
-                btn.classList.remove('available', 'hover:bg-[#10B981]/20');
-                btn.classList.add('selected');
-            } else if (btn.classList.contains('selected')) {
-                btn.classList.remove('selected');
-                btn.classList.add('available', 'hover:bg-[#10B981]/20');
+            document.querySelectorAll('#court-selector-grid button').forEach((btn, idx) => {
+                if (idx + 1 === courtNum) {
+                    btn.className = "py-3 px-3 rounded-xl bg-[#0F172A] text-white border border-[#0F172A] shadow-md scale-102 ring-2 ring-[#2563EB]/40 flex flex-col items-center transition-all cursor-pointer";
+                } else {
+                    btn.className = "py-3 px-3 rounded-xl bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] hover:bg-surface-container flex flex-col items-center transition-all cursor-pointer";
+                }
+            });
+
+            const heading = document.getElementById('step3-court-title');
+            if (heading) heading.textContent = '3. Select Time Slots for Court ' + courtNum;
+
+            refreshSlotAvailability();
+        }
+
+        function toggleSlot(btn) {
+            const slotText = btn.getAttribute('data-slot') || btn.textContent.trim();
+            const norm = normalizeSlot(slotText);
+
+            if (btn.disabled || btn.classList.contains('booked') || btn.classList.contains('blocked')) return;
+
+            const idx = selectedSlots.findIndex(s => normalizeSlot(s) === norm);
+            if (idx >= 0) {
+                selectedSlots.splice(idx, 1);
+            } else {
+                selectedSlots.push(slotText);
             }
+
+            refreshSlotAvailability();
         }
 
-        function parseSlotToHour(slotText) {
-            const match = slotText.trim().match(/(\d+):(\d+)\s*(AM|PM)/i);
-            if (!match) return 0;
-            let hour = parseInt(match[1], 10);
-            const period = match[3].toUpperCase();
-            if (period === 'PM' && hour < 12) hour += 12;
-            if (period === 'AM' && hour === 12) hour = 0;
-            return hour;
-        }
-
-        function refreshSlotAvailability() {
+        async function refreshSlotAvailability() {
             const datePicker = document.getElementById('booking-date-picker');
             if (!datePicker) return;
 
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const todayStr = `${year}-${month}-${day}`;
-            const currentHour = now.getHours();
-
-            // Set minimum date to today
-            datePicker.min = todayStr;
-            if (!datePicker.value || datePicker.value < todayStr) {
-                datePicker.value = todayStr;
-            }
-
-            const endDatePicker = document.getElementById('end-date');
-            if (endDatePicker) {
-                endDatePicker.min = datePicker.value || todayStr;
-            }
-
             const selectedDate = datePicker.value;
-            const slotButtons = document.querySelectorAll('.court-slot');
-            const localBooked = JSON.parse(localStorage.getItem('gs_html_booked_' + selectedDate) || '[]');
+            if (!selectedDate) return;
 
-            slotButtons.forEach(btn => {
-                const slotText = btn.textContent.trim();
-                const slotHour = parseSlotToHour(slotText);
-                
-                const isPastDate = selectedDate < todayStr;
-                const isPastTime = selectedDate === todayStr && slotHour <= currentHour;
-                const isLocallyBooked = localBooked.includes(slotText);
+            try {
+                const res = await fetch('/api/bookings?courtId=c' + currentSelectedCourt + '&date=' + selectedDate);
+                if (res.ok) {
+                    const data = await res.json();
+                    bookedSlots = (data.bookedSlots || []).map(normalizeSlot);
+                    blockedSlots = data.blockedSlots || [];
+                }
+            } catch (err) {
+                console.warn('API error fetching slots:', err);
+            }
 
-                if (isPastDate || isPastTime || isLocallyBooked) {
-                    btn.classList.remove('available', 'selected', 'hover:bg-[#10B981]/20');
-                    btn.classList.add('booked', 'opacity-40', 'cursor-not-allowed', 'line-through');
-                    btn.disabled = true;
-                    btn.title = isLocallyBooked ? "Slot already booked" : "Time slot has passed";
+            const now = new Date();
+            const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+            const istNow = new Date(utc + 3600000 * 5.5);
+            const year = istNow.getFullYear();
+            const month = String(istNow.getMonth() + 1).padStart(2, '0');
+            const day = String(istNow.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
+            const currentHour = istNow.getHours();
+
+            document.querySelectorAll('.court-slot').forEach(btn => {
+                const rawSlot = btn.getAttribute('data-slot') || btn.textContent.trim();
+                const norm = normalizeSlot(rawSlot);
+                const match = rawSlot.match(/(\d+):(\d+)\s*(AM|PM)/i);
+                let hour = 0;
+                if (match) {
+                    hour = parseInt(match[1], 10);
+                    if (match[3].toUpperCase() === 'PM' && hour < 12) hour += 12;
+                    if (match[3].toUpperCase() === 'AM' && hour === 12) hour = 0;
+                }
+
+                const isPast = selectedDate < todayStr || (selectedDate === todayStr && hour <= currentHour);
+                const isBooked = bookedSlots.includes(norm);
+                const isBlocked = blockedSlots.some(b => normalizeSlot(b.slot_time) === norm);
+                const isSelected = selectedSlots.some(s => normalizeSlot(s) === norm);
+
+                btn.disabled = isPast || isBooked || isBlocked;
+
+                if (isBlocked) {
+                    btn.className = "court-slot blocked px-3 py-2 rounded-xl text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 line-through cursor-not-allowed min-w-[90px] shadow-sm flex flex-col items-center justify-center";
+                    btn.innerHTML = '<span>' + rawSlot + '</span><span class="text-[8px] text-amber-800 font-extrabold uppercase no-underline">⚠️ Blocked</span>';
+                } else if (isBooked) {
+                    btn.className = "court-slot booked px-3 py-2 rounded-xl text-xs font-bold text-center min-w-[90px] cursor-not-allowed bg-slate-200 text-slate-500 border border-slate-300 line-through opacity-80 flex flex-col items-center justify-center shadow-inner";
+                    btn.innerHTML = '<span>' + rawSlot + '</span><span class="text-[8px] text-red-600 font-extrabold uppercase no-underline">🔒 Booked</span>';
+                } else if (isPast) {
+                    btn.className = "court-slot px-3 py-2 rounded-xl text-xs font-medium text-slate-400 bg-slate-100 border border-slate-200 line-through cursor-not-allowed min-w-[90px] text-center";
+                    btn.innerHTML = '<span>' + rawSlot + '</span>';
+                } else if (isSelected) {
+                    btn.className = "court-slot selected px-3 py-2 rounded-xl text-xs font-bold transition-all min-w-[90px] text-center flex flex-col items-center justify-center border shadow-md bg-[#0F172A] text-white ring-2 ring-blue-500 cursor-pointer";
+                    btn.innerHTML = '<span>' + rawSlot + '</span><span class="text-[10px] text-emerald-300 font-bold">₹300</span>';
                 } else {
-                    btn.classList.remove('booked', 'opacity-40', 'cursor-not-allowed', 'line-through');
-                    if (!btn.classList.contains('selected')) {
-                        btn.classList.add('available');
-                    }
-                    btn.disabled = false;
-                    btn.title = "Available for booking";
+                    btn.className = "court-slot available px-3 py-2 rounded-xl text-xs font-bold transition-all min-w-[90px] text-center flex flex-col items-center justify-center border shadow-sm bg-emerald-50/60 hover:bg-emerald-100 text-slate-800 border-emerald-300/80 hover:border-emerald-500 cursor-pointer";
+                    btn.innerHTML = '<span>' + rawSlot + '</span><span class="text-[10px] text-slate-600 font-bold">₹300</span>';
                 }
             });
         }
 
-        function handleDirectBooking() {
+        async function handleDirectBooking() {
             const nameInput = document.getElementById('name');
             const phoneInput = document.getElementById('phone');
             const name = nameInput ? nameInput.value.trim() : '';
-            const phone = phoneInput ? phoneInput.value.trim() : '';
-            const selectedSlots = document.querySelectorAll('.court-slot.selected');
+            const phone = phoneInput ? phoneInput.value.trim().replace(/\D/g, '') : '';
             
             if (!name) {
                 alert('Please enter your full name.');
                 return;
             }
             if (phone.length < 10) {
-                alert('Please enter a valid 10-digit phone number.');
+                alert('Please enter a valid 10-digit mobile number.');
                 return;
             }
             if (selectedSlots.length === 0) {
@@ -646,78 +681,107 @@ gurukulssportsblr@gmail.com
             }
 
             const datePicker = document.getElementById('booking-date-picker');
-            const selectedDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
-            const bookingCode = 'GS-' + Math.floor(100000 + Math.random() * 900000);
+            const selectedDate = datePicker ? datePicker.value : '';
 
-            const bookedTimes = [];
-            selectedSlots.forEach(slot => {
-                const time = slot.textContent.trim();
-                bookedTimes.push(time);
-                slot.classList.remove('selected', 'available');
-                slot.classList.add('booked', 'opacity-40', 'cursor-not-allowed', 'line-through');
-                slot.disabled = true;
-            });
+            try {
+                const res = await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        courtId: 'c' + currentSelectedCourt,
+                        customerName: name,
+                        customerPhone: phone,
+                        bookingDate: selectedDate,
+                        selectedSlots: selectedSlots
+                    })
+                });
 
-            // Save to localStorage for instant persistence
-            const savedKey = 'gs_html_booked_' + selectedDate;
-            const existing = JSON.parse(localStorage.getItem(savedKey) || '[]');
-            localStorage.setItem(savedKey, JSON.stringify([...existing, ...bookedTimes]));
-
-            alert('🎉 Booking Confirmed!\n\nBooking Code: ' + bookingCode + '\nName: ' + name + '\nPhone: +91 ' + phone + '\nSlots: ' + bookedTimes.join(', ') + '\n\n⚠️ IMPORTANT RULE: If you are late by 10 minutes, your booking will be forfeited and you will lose your reserved slot.\n\nThese slots are now permanently locked and blocked for other users.');
-        }
-
-        function handleDirectViewBookings() {
-            const input = prompt('Enter your 10-digit Phone Number or Booking Code (e.g. GS-123456) to view your bookings:');
-            if (!input || !input.trim()) return;
-
-            const datePicker = document.getElementById('booking-date-picker');
-            const selectedDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
-            const savedKey = 'gs_html_booked_' + selectedDate;
-            const localBooked = JSON.parse(localStorage.getItem(savedKey) || '[]');
-
-            if (localBooked.length === 0) {
-                alert('ℹ️ No active bookings found for ' + selectedDate + ' under "' + input.trim() + '".');
-            } else {
-                alert('🏸 Active Bookings Found for ' + selectedDate + ':\n\n' + localBooked.map(s => '• ' + s + ' (Court 1 - Synthetic)').join('\n') + '\n\nPlayer: ' + input.trim() + '\nStatus: Confirmed');
+                const data = await res.json();
+                if (res.ok) {
+                    alert('🎉 Booking Confirmed!\n\nBooking Code: ' + data.booking.booking_code + '\nCourt: Court ' + currentSelectedCourt + '\nDate: ' + selectedDate + '\nSlots: ' + selectedSlots.join(', ') + '\n\nSlot is now locked in the live database.');
+                    selectedSlots = [];
+                    if (nameInput) nameInput.value = '';
+                    if (phoneInput) phoneInput.value = '';
+                    refreshSlotAvailability();
+                } else {
+                    alert('❌ Error: ' + (data.error || 'Could not place booking'));
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
             }
         }
 
-        function handleDirectCancel() {
-            const input = prompt('Enter your Booking Code (e.g. GS-123456) or Phone Number to cancel booking:');
+        async function handleDirectCancel() {
+            const input = prompt('Enter your 10-digit Phone Number or Booking Code (e.g. GS-123456) to look up & cancel reservation:');
             if (!input || !input.trim()) return;
 
-            const datePicker = document.getElementById('booking-date-picker');
-            const selectedDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
-            const savedKey = 'gs_html_booked_' + selectedDate;
-            
-            // Release the booked slots in storage
-            localStorage.removeItem(savedKey);
-            refreshSlotAvailability();
+            try {
+                const clean = input.trim();
+                const param = clean.startsWith('GS-') ? 'code=' + clean : 'phone=' + clean;
+                const res = await fetch('/api/cancel?' + param);
+                const data = await res.json();
 
-            alert('✅ Booking for "' + input.trim() + '" has been cancelled successfully!\n\nThe reserved court time slots have been released and are now free and available for booking again.');
+                if (res.ok && data.bookings && data.bookings.length > 0) {
+                    const b = data.bookings[0];
+                    const confirmCancel = confirm('Booking Found!\n\nCode: ' + b.booking_code + '\nName: ' + b.customer_name + '\nDate: ' + b.booking_date + '\n\nDo you want to cancel this booking and free the slot?');
+                    if (confirmCancel) {
+                        const cancelRes = await fetch('/api/cancel', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ bookingId: b.id || b.booking_code })
+                        });
+                        if (cancelRes.ok) {
+                            alert('✅ Booking cancelled successfully. Slots are now free!');
+                            refreshSlotAvailability();
+                        } else {
+                            const cData = await cancelRes.json();
+                            alert('❌ Error: ' + (cData.error || 'Failed to cancel'));
+                        }
+                    }
+                } else {
+                    alert('ℹ️ No active bookings found for "' + clean + '".');
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            refreshSlotAvailability();
+            const now = new Date();
+            const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+            const istNow = new Date(utc + 3600000 * 5.5);
+            const year = istNow.getFullYear();
+            const month = String(istNow.getMonth() + 1).padStart(2, '0');
+            const day = String(istNow.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
+
             const datePicker = document.getElementById('booking-date-picker');
             if (datePicker) {
+                datePicker.min = todayStr;
+                datePicker.value = todayStr;
                 datePicker.addEventListener('change', refreshSlotAvailability);
             }
 
-            const formConfirmBtn = document.querySelector('form button:nth-of-type(1)');
-            if (formConfirmBtn) {
-                formConfirmBtn.onclick = handleDirectBooking;
-            }
+            const courtButtons = document.querySelectorAll('#court-selector-grid button');
+            courtButtons.forEach((btn, idx) => {
+                btn.onclick = () => selectCourt(idx + 1);
+            });
 
-            const formViewBtn = document.querySelector('form button:nth-of-type(2)');
-            if (formViewBtn) {
-                formViewBtn.onclick = handleDirectViewBookings;
-            }
+            document.querySelectorAll('.court-slot').forEach(btn => {
+                const txt = btn.textContent.trim();
+                btn.setAttribute('data-slot', txt);
+                btn.onclick = () => toggleSlot(btn);
+            });
+
+            selectCourt(1);
+            setInterval(refreshSlotAvailability, 8000);
+            window.addEventListener('focus', refreshSlotAvailability);
+
+            const formConfirmBtn = document.querySelector('form button:nth-of-type(1)');
+            if (formConfirmBtn) formConfirmBtn.onclick = handleDirectBooking;
 
             const formCancelBtn = document.querySelector('form button:nth-of-type(3)');
-            if (formCancelBtn) {
-                formCancelBtn.onclick = handleDirectCancel;
-            }
+            if (formCancelBtn) formCancelBtn.onclick = handleDirectCancel;
         });
     </script>
 
