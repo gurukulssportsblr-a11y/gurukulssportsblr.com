@@ -1,9 +1,9 @@
-# 🏸 Gurukul's Sports Academy Thubrahalli — Comprehensive System Documentation
+# 🏸 Gurukul's Sports Academy Thubrahalli — System Documentation & Incident Resolution Log
 
 ## 1. Executive Summary
-This document provides the complete, end-to-end technical reference and operational guide for the **Gurukul's Sports Academy** online court reservation platform and full-stack **Host Control Operations Portal**.
+This document provides the complete, end-to-end technical reference, operational manual, and **Comprehensive Bug & Incident Resolution Log** for the **Gurukul's Sports Academy** online court reservation platform and full-stack **Host Control Operations Portal**.
 
-The system is deployed live in production on **Vercel** with a fully synchronized **Supabase PostgreSQL database**, supporting dynamic discount rules, court maintenance blockers, real-time timetable operations, and instant 1-click booking cancellation with automatic slot freeing.
+The system is deployed live in production on **Vercel** with a synchronized **Supabase PostgreSQL database**, supporting dynamic discount rules, court maintenance blockers, real-time timetable operations, and instant 1-click booking cancellation with automatic slot freeing.
 
 ---
 
@@ -26,7 +26,49 @@ The system is deployed live in production on **Vercel** with a fully synchronize
 
 ---
 
-## 3. Implemented Features & Operational Modules
+## 3. Incident History, Root Causes & Technical Fixes
+
+### Incident 1: PostgREST UUID Type-Casting Syntax Error in Cancellation
+- **Symptom:** Cancelling a walk-in or online booking via booking code (e.g. `GS-123456`) reported success on the UI, but the slot remained permanently blocked in Supabase.
+- **Root Cause Discovered:** The cancellation API constructed an `.or()` query: `.or("id.eq.GS-123456,booking_code.eq.GS-123456")`. PostgreSQL rejected this with database error `code: '22P02', message: 'invalid input syntax for type uuid: "GS-123456"'` because `id` is a strict `UUID` type column.
+- **Technical Fix:** Implemented UUID regex validation in [`src/app/api/cancel/route.ts`](file:///home/jeremy/projects/GurukulSprots/src/app/api/cancel/route.ts). The query now distinguishes between UUIDs and booking codes before querying, updating both `bookings` and `booking_slots` tables without syntax errors.
+
+### Incident 2: PostgREST Foreign Key Relation Join Syntax in Slot Queries
+- **Symptom:** Cancelled bookings continued to show as `Booked` on the customer website.
+- **Root Cause Discovered:** The `GET /api/bookings` route handler used `bookings:booking_id (...)` to join parent booking records. PostgREST returned `bookings: undefined`, causing `bookingDetails?.status === 'cancelled'` to evaluate to `false` and keep cancelled slots in the active booked list.
+- **Technical Fix:** Corrected the relation syntax in [`src/app/api/bookings/route.ts`](file:///home/jeremy/projects/GurukulSprots/src/app/api/bookings/route.ts) to `bookings (id, booking_code, customer_name, customer_phone, total_amount, status)` and enforced strict filtering so cancelled reservations never return as booked slots.
+
+### Incident 3: Double Bookings & In-Memory Store Collisions
+- **Symptom:** Multiple identical entries appeared in the admin console and customer matrices.
+- **Root Cause Discovered:**
+  1. `POST /api/bookings` only validated court maintenance blocks, but did not check if the slot was already reserved in Supabase `booking_slots`.
+  2. The serverless route handler previously merged an in-memory fallback array with Supabase query results.
+- **Technical Fix:**
+  1. Added strict pre-insertion verification in `POST /api/bookings` that queries Supabase for active slots and returns `HTTP 409 Conflict` if the slot is already booked.
+  2. Enforced Supabase as the **single source of truth** when configured, bypassing in-memory arrays and adding duplicate filtering via `${court_number}_${slot_time}` key sets.
+
+### Incident 4: Court Selection Resetting to Court 1 on Website Refresh
+- **Symptom:** Selecting Court 4 and refreshing the website caused slots to appear free, because the UI reset to Court 1.
+- **Root Cause Discovered:** React state initialized `selectedCourtId` to `DEFAULT_COURTS[0].id` (`'c1'`) on every page load, discarding the user's court selection.
+- **Technical Fix:** Integrated `sessionStorage` in [`src/components/BookingSystem.tsx`](file:///home/jeremy/projects/GurukulSprots/src/components/BookingSystem.tsx) to remember the active court across page refreshes.
+
+### Incident 5: Legacy Static Templates Reading Mock LocalStorage
+- **Symptom:** Standalone HTML files (`index.html`) did not sync with the live database.
+- **Root Cause Discovered:** `index.html` contained legacy mock scripts referencing `localStorage.getItem('gs_html_booked_...')`.
+- **Technical Fix:** Rewrote [`index.html`](file:///home/jeremy/projects/GurukulSprots/index.html) to directly query `/api/courts`, `/api/bookings`, and `/api/cancel` with real-time 8-second background polling.
+
+### Incident 6: Court ID Offset & Bi-directional Normalization
+- **Symptom:** Booking Court 4 locked Court 5 on the customer portal.
+- **Root Cause Discovered:** Supabase UUID strings were being parsed with regular expressions extracting arbitrary numbers from inside the UUID.
+- **Technical Fix:** Implemented standard `c1`..`c11` normalization in [`src/app/api/courts/route.ts`](file:///home/jeremy/projects/GurukulSprots/src/app/api/courts/route.ts) and bi-directional UUID lookup tables in `/api/bookings`.
+
+### Incident 7: Matrix Cell Click Interaction in Host Console
+- **Symptom:** Clicking a slot cell in the admin timetable opened basic browser prompts asking only for a name.
+- **Technical Fix:** Replaced browser prompts in [`src/app/admin/page.tsx`](file:///home/jeremy/projects/GurukulSprots/src/app/admin/page.tsx) and [`public/admin.html`](file:///home/jeremy/projects/GurukulSprots/public/admin.html) with the complete **Record Walk-in Booking Modal**, pre-populating Court number, Time slot, and Date.
+
+---
+
+## 4. Implemented Features & Operational Modules
 
 ### A. 11 BWF Synthetic Badminton Courts Matrix
 - Fully configured **11 BWF Synthetic Badminton Courts** (Court 1 through Court 11), replicating the digital register format from `format.png`.
@@ -58,26 +100,6 @@ The system is deployed live in production on **Vercel** with a fully synchronize
   - 10-digit mobile number (e.g. `9876543210`)
   - Booking code (e.g. `GS-546911`)
 - **Cancellation Action:** 1-click cancellation immediately updates records to `cancelled` in Supabase and re-opens the time slot as **Available** in real-time on both the website and host timetable.
-
-### G. Host Operations Control Panel
-- **Routes:** `/admin` (React Dynamic Dashboard) and `/admin.html` (Static Fallback)
-- **Register Table:** Full 18-hour $\times$ 11-court interactive register matrix with booked player details, revenue stats, occupancy metrics, walk-in modal booking, and maintenance controls.
-
----
-
-## 4. API Endpoints Reference
-
-| Route | Method(s) | Caching | Description |
-| :--- | :--- | :---: | :--- |
-| `/api/bookings` | `GET` | `force-dynamic` | Returns booked slots, blocked slots, pricing rules, and register matrix for a given date. |
-| `/api/bookings` | `POST` | `force-dynamic` | Validates slots, calculates dynamic price, and writes booking + slots to Supabase. |
-| `/api/cancel` | `GET` | `force-dynamic` | Searches bookings by 10-digit phone number or `GS-XXXXXX` booking code. |
-| `/api/cancel` | `POST` | `force-dynamic` | Cancels a booking and frees the time slots immediately in database. |
-| `/api/pricing-rules` | `GET, POST, DELETE` | `force-dynamic` | Creates, lists, and deletes dynamic pricing rules. |
-| `/api/blocked-slots` | `GET, POST, DELETE` | `force-dynamic` | Manages court maintenance blocks. |
-| `/api/promo-banner` | `GET, POST` | `force-dynamic` | Reads and updates website promotional announcements. |
-| `/api/courts` | `GET` | `force-dynamic` | Returns list of all 11 active badminton courts. |
-| `/api/db-status` | `GET` | `force-dynamic` | Diagnostic health check returning connection status and record counts. |
 
 ---
 
