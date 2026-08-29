@@ -114,8 +114,8 @@ export default function AdminDashboardPage() {
   };
 
   // Fetch all live operational data from backend APIs
-  const fetchDashboardData = useCallback(async () => {
-    setLoading(true);
+  const fetchDashboardData = useCallback(async (isBackground = false) => {
+    if (!isBackground) setLoading(true);
     try {
       const [bookingsRes, rulesRes, blocksRes, promoRes] = await Promise.all([
         fetch(`/api/bookings?allCourts=true&date=${selectedDate}`),
@@ -143,13 +143,22 @@ export default function AdminDashboardPage() {
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   }, [selectedDate]);
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchDashboardData();
+
+      const handleFocus = () => fetchDashboardData(true);
+      window.addEventListener('focus', handleFocus);
+      const interval = setInterval(() => fetchDashboardData(true), 8000);
+
+      return () => {
+        window.removeEventListener('focus', handleFocus);
+        clearInterval(interval);
+      };
     }
   }, [isAuthenticated, fetchDashboardData]);
 

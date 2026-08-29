@@ -81,9 +81,9 @@ export default function BookingSystem() {
   }, []);
 
   // Fetch Booked Slots & Blocked Slots for current court & date
-  const fetchBookedSlots = useCallback(async () => {
+  const fetchBookedSlots = useCallback(async (isBackground = false) => {
     if (!selectedCourtId || !selectedDate) return;
-    setLoadingSlots(true);
+    if (!isBackground) setLoadingSlots(true);
     try {
       const res = await fetch(`/api/bookings?courtId=${selectedCourtId}&date=${selectedDate}`);
       if (res.ok) {
@@ -97,12 +97,21 @@ export default function BookingSystem() {
     } catch (err) {
       console.error('Error fetching booked slots:', err);
     } finally {
-      setLoadingSlots(false);
+      if (!isBackground) setLoadingSlots(false);
     }
   }, [selectedCourtId, selectedDate]);
 
   useEffect(() => {
     fetchBookedSlots();
+
+    const handleFocus = () => fetchBookedSlots(true);
+    window.addEventListener('focus', handleFocus);
+    const interval = setInterval(() => fetchBookedSlots(true), 8000);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
   }, [fetchBookedSlots]);
 
   // Current selected court object
