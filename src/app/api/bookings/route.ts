@@ -104,7 +104,7 @@ export async function GET(req: Request) {
             slot_date,
             slot_time,
             status,
-            bookings:booking_id (id, booking_code, customer_name, customer_phone, total_amount, status)
+            bookings (id, booking_code, customer_name, customer_phone, total_amount, status)
           `)
           .eq('slot_date', date)
           .eq('status', 'booked');
