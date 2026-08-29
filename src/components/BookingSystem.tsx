@@ -444,10 +444,6 @@ export default function BookingSystem() {
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
               {courts.map((court) => {
                 const isSelected = court.id === selectedCourtId;
-                const bookedCount = allBookings.filter(
-                  (b) => b.court_number === court.court_number
-                ).length;
-
                 return (
                   <button
                     key={court.id}
@@ -466,26 +462,13 @@ export default function BookingSystem() {
                     }`}
                   >
                     <span className="font-label-md text-xs sm:text-sm font-bold">{court.name}</span>
-                    <div className="flex items-center gap-1 mt-1">
-                      <span
-                        className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded font-bold ${
-                          isSelected ? 'bg-white/20 text-white' : 'bg-[#2563EB]/15 text-[#2563EB]'
-                        }`}
-                      >
-                        Synthetic
-                      </span>
-                      {bookedCount > 0 && (
-                        <span
-                          className={`text-[9px] px-1.5 py-0.5 rounded font-extrabold ${
-                            isSelected
-                              ? 'bg-amber-400 text-slate-950'
-                              : 'bg-amber-100 text-amber-900 border border-amber-300'
-                          }`}
-                        >
-                          🔒 {bookedCount}
-                        </span>
-                      )}
-                    </div>
+                    <span
+                      className={`text-[9px] uppercase tracking-wider mt-1 px-1.5 py-0.5 rounded font-bold ${
+                        isSelected ? 'bg-white/20 text-white' : 'bg-[#2563EB]/15 text-[#2563EB]'
+                      }`}
+                    >
+                      Synthetic
+                    </span>
                   </button>
                 );
               })}
