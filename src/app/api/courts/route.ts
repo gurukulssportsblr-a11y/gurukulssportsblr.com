@@ -19,36 +19,33 @@ export async function GET() {
       .from('courts')
       .select('*')
       .eq('is_active', true)
-      .order('display_order', { ascending: true });
+      .order('court_number', { ascending: true });
 
     if (error) {
       console.error('Error fetching courts:', error);
-      return NextResponse.json({ courts: DEFAULT_COURTS, isConfigured: true, error: error.message }, { status: 500 });
+      return NextResponse.json({ courts: DEFAULT_COURTS, isConfigured: true, error: error.message });
     }
 
-    let courts = (data as any[]) || [];
+    const dbCourts = (data as any[]) || [];
 
-    if (courts.length === 0) {
-      const seedInserts = DEFAULT_COURTS.map((c) => ({
-        court_number: c.court_number,
-        name: c.name,
-        surface_type: c.surface_type,
-        price_per_hour: c.price_per_hour,
-        is_active: true,
-        display_order: c.court_number,
-      }));
-      const { data: seeded } = await supabase
-        .from('courts')
-        .upsert(seedInserts, { onConflict: 'court_number' })
-        .select();
-      if (seeded && seeded.length > 0) courts = seeded;
-    }
+    // Ensure all 11 courts are normalized with id: 'c1'..'c11' and db_id: UUID
+    const normalizedCourts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((num) => {
+      const match = dbCourts.find((dc) => dc.court_number === num);
+      return {
+        id: `c${num}`,
+        db_id: match?.id || `c${num}`,
+        court_number: num,
+        name: `Court ${num}`,
+        surface_type: (match?.surface_type as any) || 'Synthetic',
+        price_per_hour: Number(match?.price_per_hour) || 300,
+      };
+    });
 
     return NextResponse.json({
-      courts: courts.length > 0 ? courts : DEFAULT_COURTS,
+      courts: normalizedCourts,
       isConfigured: true,
     });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message, courts: DEFAULT_COURTS }, { status: 500 });
+    return NextResponse.json({ error: err.message, courts: DEFAULT_COURTS });
   }
 }
