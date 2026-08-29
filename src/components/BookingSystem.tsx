@@ -48,13 +48,17 @@ export default function BookingSystem() {
   // Surface filter
   const [surfaceFilter, setSurfaceFilter] = useState<'ALL' | 'Synthetic' | 'Wooden'>('ALL');
 
-  // Fetch Courts
+  // Fetch Courts & Pricing Rules on Mount
   useEffect(() => {
-    async function fetchCourts() {
+    async function fetchInitialData() {
       try {
-        const res = await fetch('/api/courts');
-        if (res.ok) {
-          const data = await res.json();
+        const [courtsRes, rulesRes] = await Promise.all([
+          fetch('/api/courts'),
+          fetch('/api/pricing-rules'),
+        ]);
+
+        if (courtsRes.ok) {
+          const data = await courtsRes.json();
           if (data.courts && data.courts.length > 0) {
             setCourts(data.courts);
             if (!data.courts.find((c: any) => c.id === selectedCourtId)) {
@@ -62,11 +66,18 @@ export default function BookingSystem() {
             }
           }
         }
+
+        if (rulesRes.ok) {
+          const rData = await rulesRes.json();
+          if (rData.rules) {
+            setPricingRules(rData.rules);
+          }
+        }
       } catch (err) {
-        console.error('Failed to load courts from API:', err);
+        console.error('Failed to load initial booking data:', err);
       }
     }
-    fetchCourts();
+    fetchInitialData();
   }, []);
 
   // Fetch Booked Slots & Blocked Slots for current court & date
@@ -100,8 +111,11 @@ export default function BookingSystem() {
   }, [courts, selectedCourtId]);
 
   const currentCourtNumber = useMemo(() => {
-    const match = String(currentCourt.id).match(/\d+/);
-    return match ? parseInt(match[0], 10) : currentCourt.court_number || 1;
+    if (typeof currentCourt.court_number === 'number' && currentCourt.court_number >= 1 && currentCourt.court_number <= 11) {
+      return currentCourt.court_number;
+    }
+    const match = String(currentCourt.id).match(/^c(\d+)$/i);
+    return match ? parseInt(match[1], 10) : 1;
   }, [currentCourt]);
 
   // Filtered courts list

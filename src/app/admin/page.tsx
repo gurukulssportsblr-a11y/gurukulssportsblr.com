@@ -186,36 +186,13 @@ export default function AdminDashboardPage() {
     [pricingRules]
   );
 
-  // Quick Book Cell Prompt
-  const handleQuickBook = async (courtNum: number, slotDisplay: string) => {
-    const name = window.prompt(`Book Court ${courtNum} at ${slotDisplay} for ${selectedDate}\n\nEnter Player Full Name:`);
-    if (!name) return;
-    const phone = window.prompt('Enter Player Phone Number (10 digits):');
-    if (!phone) return;
-
-    try {
-      const res = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          courtId: `c${courtNum}`,
-          customerName: name.trim(),
-          customerPhone: phone.trim().replace(/\D/g, ''),
-          bookingDate: selectedDate,
-          selectedSlots: [slotDisplay],
-        }),
-      });
-
-      if (res.ok) {
-        alert('✅ Slot successfully reserved!');
-        fetchDashboardData();
-      } else {
-        const d = await res.json();
-        alert(`❌ Error: ${d.error || 'Failed to book slot'}`);
-      }
-    } catch (err: any) {
-      alert(`Network error: ${err.message}`);
-    }
+  // Click Cell in Matrix -> Open Walk-in Modal with court & slot pre-selected
+  const handleCellClick = (courtNum: number, slotDisplay: string) => {
+    setWalkinCourt(courtNum);
+    setWalkinSlot(slotDisplay);
+    setWalkinName('');
+    setWalkinPhone('');
+    setActiveModal('walkin');
   };
 
   // Cancel Slot Booking
@@ -789,7 +766,7 @@ export default function AdminDashboardPage() {
                         <td
                           key={courtNum}
                           className="p-1 border-r border-slate-200 cursor-pointer group"
-                          onClick={() => handleQuickBook(courtNum, row.display)}
+                          onClick={() => handleCellClick(courtNum, row.display)}
                         >
                           <div
                             className={`w-full h-12 rounded-lg p-1.5 flex flex-col justify-between transition-all ${

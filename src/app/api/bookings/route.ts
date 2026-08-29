@@ -16,58 +16,13 @@ import {
 
 function parseCourtNumber(courtIdOrNum: string | number): number {
   if (typeof courtIdOrNum === 'number') return courtIdOrNum;
-  const match = String(courtIdOrNum).match(/\d+/);
+  const str = String(courtIdOrNum).trim();
+  if (str.startsWith('c') || str.startsWith('C')) {
+    const num = parseInt(str.slice(1), 10);
+    if (!isNaN(num) && num >= 1 && num <= 11) return num;
+  }
+  const match = str.match(/\b([1-9]|1[01])\b/);
   return match ? parseInt(match[0], 10) : 1;
-}
-
-async function resolveSupabaseCourtId(courtIdOrNum: string | number, supabase: any): Promise<string> {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (typeof courtIdOrNum === 'string' && uuidRegex.test(courtIdOrNum)) {
-    return courtIdOrNum;
-  }
-
-  const courtNum = parseCourtNumber(courtIdOrNum);
-  try {
-    const { data } = await supabase
-      .from('courts')
-      .select('id')
-      .eq('court_number', courtNum)
-      .limit(1);
-
-    if (data && data.length > 0 && data[0]?.id) {
-      return data[0].id;
-    }
-
-    // Insert if missing
-    const defaultCourt = DEFAULT_COURTS.find((c) => c.court_number === courtNum) || {
-      court_number: courtNum,
-      name: `Court ${courtNum}`,
-      surface_type: 'Synthetic',
-      price_per_hour: 300,
-    };
-
-    const { data: inserted } = await supabase
-      .from('courts')
-      .upsert(
-        {
-          court_number: courtNum,
-          name: defaultCourt.name,
-          surface_type: defaultCourt.surface_type,
-          price_per_hour: defaultCourt.price_per_hour,
-          is_active: true,
-          display_order: courtNum,
-        },
-        { onConflict: 'court_number' }
-      )
-      .select('id')
-      .single();
-
-    if (inserted?.id) return inserted.id;
-  } catch (err) {
-    console.error('Error resolving court UUID:', err);
-  }
-
-  return String(courtIdOrNum);
 }
 
 export async function GET(req: Request) {
@@ -81,7 +36,35 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'date is required' }, { status: 400 });
     }
 
-    const courtNum = courtId ? parseCourtNumber(courtId) : 1;
+    const supabase = isSupabaseConfigured ? createServerClient() : null;
+
+    // Load Court Map from Supabase (UUID -> court_number and court_number -> UUID)
+    const courtIdToNum = new Map<string, number>();
+    const courtNumToId = new Map<number, string>();
+
+    if (supabase) {
+      try {
+        const { data: courtsList } = await supabase.from('courts').select('id, court_number, name');
+        courtsList?.forEach((c: any) => {
+          courtIdToNum.set(c.id.toLowerCase(), c.court_number);
+          courtNumToId.set(c.court_number, c.id);
+        });
+      } catch (err) {
+        console.warn('Error loading courts map:', err);
+      }
+    }
+
+    // Determine target court number
+    let courtNum = 1;
+    if (courtId) {
+      const lowerCourtId = courtId.trim().toLowerCase();
+      if (courtIdToNum.has(lowerCourtId)) {
+        courtNum = courtIdToNum.get(lowerCourtId)!;
+      } else {
+        courtNum = parseCourtNumber(courtId);
+      }
+    }
+
     const [pricingRules, blockedSlotsData] = await Promise.all([
       getPricingRules(),
       getBlockedSlots(date),
@@ -118,15 +101,8 @@ export async function GET(req: Request) {
     );
 
     // 2. Fetch from Supabase (if configured)
-    if (isSupabaseConfigured) {
+    if (supabase) {
       try {
-        const supabase = createServerClient();
-        
-        // Fetch courts map
-        const { data: courtsList } = await supabase.from('courts').select('id, court_number, name');
-        const courtMap = new Map<string, number>();
-        courtsList?.forEach((c: any) => courtMap.set(c.id, c.court_number));
-
         let query = supabase
           .from('booking_slots')
           .select(`
@@ -144,7 +120,8 @@ export async function GET(req: Request) {
         const { data, error } = await query;
         if (!error && data) {
           data.forEach((item: any) => {
-            const courtNumber = courtMap.get(item.court_id) || parseCourtNumber(item.court_id);
+            const lowerCourtId = String(item.court_id).toLowerCase();
+            const courtNumber = courtIdToNum.get(lowerCourtId) || parseCourtNumber(item.court_id);
             const bookingDetails = Array.isArray(item.bookings) ? item.bookings[0] : item.bookings;
 
             if (allCourts || courtNumber === courtNum) {
@@ -231,7 +208,35 @@ export async function POST(req: Request) {
       }
     }
 
-    const courtNum = parseCourtNumber(courtId);
+    const supabase = isSupabaseConfigured ? createServerClient() : null;
+
+    // Resolve Court Number and Court UUID
+    let courtNum = 1;
+    let resolvedCourtId = String(courtId);
+
+    if (supabase) {
+      try {
+        const { data: courtsList } = await supabase.from('courts').select('id, court_number, name');
+        if (courtsList && courtsList.length > 0) {
+          const lowerInput = String(courtId).trim().toLowerCase();
+          const matchByUuid = courtsList.find((c: any) => c.id.toLowerCase() === lowerInput);
+          if (matchByUuid) {
+            courtNum = matchByUuid.court_number;
+            resolvedCourtId = matchByUuid.id;
+          } else {
+            courtNum = parseCourtNumber(courtId);
+            const matchByNum = courtsList.find((c: any) => c.court_number === courtNum);
+            if (matchByNum) {
+              resolvedCourtId = matchByNum.id;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Error resolving court in POST:', err);
+      }
+    } else {
+      courtNum = parseCourtNumber(courtId);
+    }
 
     // 1. Check if ANY slot is blocked for maintenance
     const blockedData = await getBlockedSlots(bookingDate);
@@ -294,11 +299,8 @@ export async function POST(req: Request) {
     });
 
     // 4. If Supabase is configured, persist to PostgreSQL database
-    if (isSupabaseConfigured) {
+    if (supabase) {
       try {
-        const supabase = createServerClient();
-        const resolvedCourtId = await resolveSupabaseCourtId(courtId, supabase);
-
         const { data: newBooking, error: bookingErr } = await supabase
           .from('bookings')
           .insert({

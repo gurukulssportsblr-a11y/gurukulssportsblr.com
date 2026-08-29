@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase/server';
 
 export interface PricingRule {
@@ -56,6 +57,8 @@ export interface BookingRecord {
   created_at: string;
 }
 
+const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
 // Global in-memory singleton preserved across Next.js API route invocations
 const globalStore = global as unknown as {
   _gsPricingRules?: PricingRule[];
@@ -99,7 +102,7 @@ export async function getPricingRules(): Promise<PricingRule[]> {
         .select('*')
         .order('created_at', { ascending: true });
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         globalStore._gsPricingRules = data as PricingRule[];
         return data as PricingRule[];
       }
@@ -111,12 +114,14 @@ export async function getPricingRules(): Promise<PricingRule[]> {
 }
 
 export async function savePricingRule(rule: Omit<PricingRule, 'id'> & { id?: string }): Promise<PricingRule> {
+  const ruleId = rule.id && isUUID(rule.id) ? rule.id : crypto.randomUUID();
+
   const newRule: PricingRule = {
-    id: rule.id || `rule-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    id: ruleId,
     rule_name: rule.rule_name,
-    start_hour: rule.start_hour,
-    end_hour: rule.end_hour,
-    price_per_hour: rule.price_per_hour,
+    start_hour: Number(rule.start_hour),
+    end_hour: Number(rule.end_hour),
+    price_per_hour: Number(rule.price_per_hour),
     court_scope: rule.court_scope || 'ALL',
     is_active: rule.is_active !== undefined ? rule.is_active : true,
   };
@@ -132,9 +137,17 @@ export async function savePricingRule(rule: Omit<PricingRule, 'id'> & { id?: str
   if (isSupabaseConfigured) {
     try {
       const supabase = createServerClient();
-      await supabase.from('pricing_rules').upsert(newRule);
+      await supabase.from('pricing_rules').upsert({
+        id: newRule.id,
+        rule_name: newRule.rule_name,
+        start_hour: newRule.start_hour,
+        end_hour: newRule.end_hour,
+        price_per_hour: newRule.price_per_hour,
+        court_scope: newRule.court_scope,
+        is_active: newRule.is_active,
+      });
     } catch (err) {
-      console.warn('Supabase pricing rule save error:', err);
+      console.warn('Supabase pricing rule save exception:', err);
     }
   }
 
@@ -189,7 +202,7 @@ export async function getBlockedSlots(date?: string): Promise<BlockedSlot[]> {
       const supabase = createServerClient();
       let query = supabase.from('blocked_slots').select('*');
       if (date) {
-        query = query.or(`block_date.eq.${date},block_date.eq.ALL`);
+        query = query.or(`block_date.eq.${date},block_date.eq.ALL,block_date.eq.2099-12-31`);
       }
       const { data, error } = await query;
       if (!error && data) {
@@ -204,8 +217,9 @@ export async function getBlockedSlots(date?: string): Promise<BlockedSlot[]> {
 }
 
 export async function addBlockedSlot(block: Omit<BlockedSlot, 'id'>): Promise<BlockedSlot> {
+  const blockId = crypto.randomUUID();
   const newBlock: BlockedSlot = {
-    id: `block-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    id: blockId,
     ...block,
   };
 
@@ -216,6 +230,7 @@ export async function addBlockedSlot(block: Omit<BlockedSlot, 'id'>): Promise<Bl
     try {
       const supabase = createServerClient();
       await supabase.from('blocked_slots').insert({
+        id: blockId,
         court_number: newBlock.court_number,
         block_date: newBlock.block_date === 'ALL' ? '2099-12-31' : newBlock.block_date,
         start_hour: newBlock.start_hour,
