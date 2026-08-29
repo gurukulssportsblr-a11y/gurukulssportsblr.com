@@ -26,9 +26,15 @@ export default function BookingSystem() {
   const todayStr = useMemo(() => format(new Date(), 'yyyy-MM-dd'), []);
 
   const [courts, setCourts] = useState<DefaultCourt[]>(DEFAULT_COURTS);
-  const [selectedCourtId, setSelectedCourtId] = useState<string>(DEFAULT_COURTS[0].id);
+  const [selectedCourtId, setSelectedCourtId] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('gs_selected_court') || DEFAULT_COURTS[0].id;
+    }
+    return DEFAULT_COURTS[0].id;
+  });
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
+  const [allBookings, setAllBookings] = useState<any[]>([]);
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [blockedSlots, setBlockedSlots] = useState<BlockedSlotItem[]>([]);
   const [pricingRules, setPricingRules] = useState<PricingRule[]>([]);
@@ -48,47 +54,54 @@ export default function BookingSystem() {
   // Surface filter
   const [surfaceFilter, setSurfaceFilter] = useState<'ALL' | 'Synthetic' | 'Wooden'>('ALL');
 
-  // Fetch Courts & Pricing Rules on Mount
-  useEffect(() => {
-    async function fetchInitialData() {
-      try {
-        const [courtsRes, rulesRes] = await Promise.all([
-          fetch('/api/courts'),
-          fetch('/api/pricing-rules'),
-        ]);
+  // Current selected court object
+  const currentCourt = useMemo(() => {
+    return courts.find((c) => c.id === selectedCourtId) || courts[0] || DEFAULT_COURTS[0];
+  }, [courts, selectedCourtId]);
 
+  const currentCourtNumber = useMemo(() => {
+    if (typeof currentCourt.court_number === 'number' && currentCourt.court_number >= 1 && currentCourt.court_number <= 11) {
+      return currentCourt.court_number;
+    }
+    const match = String(currentCourt.id).match(/^c(\d+)$/i);
+    return match ? parseInt(match[1], 10) : 1;
+  }, [currentCourt]);
+
+  // Fetch Courts on Mount
+  useEffect(() => {
+    async function fetchCourtsList() {
+      try {
+        const courtsRes = await fetch('/api/courts');
         if (courtsRes.ok) {
           const data = await courtsRes.json();
           if (data.courts && data.courts.length > 0) {
             setCourts(data.courts);
-            if (!data.courts.find((c: any) => c.id === selectedCourtId)) {
-              setSelectedCourtId(data.courts[0].id);
-            }
-          }
-        }
-
-        if (rulesRes.ok) {
-          const rData = await rulesRes.json();
-          if (rData.rules) {
-            setPricingRules(rData.rules);
           }
         }
       } catch (err) {
-        console.error('Failed to load initial booking data:', err);
+        console.error('Failed to load courts:', err);
       }
     }
-    fetchInitialData();
+    fetchCourtsList();
   }, []);
 
-  // Fetch Booked Slots & Blocked Slots for current court & date
+  // Fetch All Court Bookings & Blocked Slots for Date
   const fetchBookedSlots = useCallback(async (isBackground = false) => {
-    if (!selectedCourtId || !selectedDate) return;
+    if (!selectedDate) return;
     if (!isBackground) setLoadingSlots(true);
     try {
-      const res = await fetch(`/api/bookings?courtId=${selectedCourtId}&date=${selectedDate}`);
+      const res = await fetch(`/api/bookings?allCourts=true&date=${selectedDate}`);
       if (res.ok) {
         const data = await res.json();
-        setBookedSlots(data.bookedSlots || []);
+        const bookingsList = data.allBookings || [];
+        setAllBookings(bookingsList);
+
+        // Extract slots for currently selected court
+        const courtBooked = bookingsList
+          .filter((b: any) => b.court_number === currentCourtNumber)
+          .map((b: any) => b.slot_time);
+
+        setBookedSlots(courtBooked);
         setBlockedSlots(data.blockedSlots || []);
         if (data.pricingRules) {
           setPricingRules(data.pricingRules);
@@ -99,7 +112,7 @@ export default function BookingSystem() {
     } finally {
       if (!isBackground) setLoadingSlots(false);
     }
-  }, [selectedCourtId, selectedDate]);
+  }, [selectedDate, currentCourtNumber]);
 
   useEffect(() => {
     fetchBookedSlots();
@@ -113,19 +126,6 @@ export default function BookingSystem() {
       clearInterval(interval);
     };
   }, [fetchBookedSlots]);
-
-  // Current selected court object
-  const currentCourt = useMemo(() => {
-    return courts.find((c) => c.id === selectedCourtId) || courts[0] || DEFAULT_COURTS[0];
-  }, [courts, selectedCourtId]);
-
-  const currentCourtNumber = useMemo(() => {
-    if (typeof currentCourt.court_number === 'number' && currentCourt.court_number >= 1 && currentCourt.court_number <= 11) {
-      return currentCourt.court_number;
-    }
-    const match = String(currentCourt.id).match(/^c(\d+)$/i);
-    return match ? parseInt(match[1], 10) : 1;
-  }, [currentCourt]);
 
   // Filtered courts list
   const filteredCourts = useMemo(() => {
@@ -444,28 +444,48 @@ export default function BookingSystem() {
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
               {courts.map((court) => {
                 const isSelected = court.id === selectedCourtId;
+                const bookedCount = allBookings.filter(
+                  (b) => b.court_number === court.court_number
+                ).length;
+
                 return (
                   <button
                     key={court.id}
                     type="button"
                     onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        sessionStorage.setItem('gs_selected_court', court.id);
+                      }
                       setSelectedCourtId(court.id);
                       setSelectedSlots([]);
                     }}
-                    className={`py-3 px-3 rounded-xl border flex flex-col items-center justify-center transition-all ${
+                    className={`py-3 px-3 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
                       isSelected
                         ? 'bg-[#0F172A] text-white border-[#0F172A] shadow-md scale-102 ring-2 ring-[#2563EB]/40'
                         : 'bg-surface text-on-surface border-outline-variant/50 hover:border-[#2563EB] hover:bg-surface-container'
                     }`}
                   >
                     <span className="font-label-md text-xs sm:text-sm font-bold">{court.name}</span>
-                    <span
-                      className={`text-[9px] uppercase tracking-wider mt-1 px-1.5 py-0.5 rounded font-bold ${
-                        isSelected ? 'bg-white/20 text-white' : 'bg-[#2563EB]/15 text-[#2563EB]'
-                      }`}
-                    >
-                      Synthetic
-                    </span>
+                    <div className="flex items-center gap-1 mt-1">
+                      <span
+                        className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded font-bold ${
+                          isSelected ? 'bg-white/20 text-white' : 'bg-[#2563EB]/15 text-[#2563EB]'
+                        }`}
+                      >
+                        Synthetic
+                      </span>
+                      {bookedCount > 0 && (
+                        <span
+                          className={`text-[9px] px-1.5 py-0.5 rounded font-extrabold ${
+                            isSelected
+                              ? 'bg-amber-400 text-slate-950'
+                              : 'bg-amber-100 text-amber-900 border border-amber-300'
+                          }`}
+                        >
+                          🔒 {bookedCount}
+                        </span>
+                      )}
+                    </div>
                   </button>
                 );
               })}
