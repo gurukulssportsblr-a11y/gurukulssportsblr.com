@@ -260,13 +260,20 @@ export default function BookingSystem() {
     }
   };
 
+  // Normalize time slot strings (e.g. '03:00 PM' <-> '3:00 PM')
+  const normalizeSlot = (s: string) => {
+    if (!s) return '';
+    return s.trim().replace(/^0/, '').toUpperCase();
+  };
+
   // Helper to render individual slot button
   const renderSlotButton = (slot: string) => {
     const isPassed = isSlotPassed(slot, selectedDate);
-    const isBooked = bookedSlots.includes(slot);
-    const blockedInfo = blockedSlots.find((b) => b.slot_time === slot);
+    const normCurrent = normalizeSlot(slot);
+    const isBooked = bookedSlots.some((bs) => normalizeSlot(bs) === normCurrent);
+    const blockedInfo = blockedSlots.find((b) => normalizeSlot(b.slot_time) === normCurrent);
     const isBlocked = Boolean(blockedInfo);
-    const isSelected = selectedSlots.includes(slot);
+    const isSelected = selectedSlots.some((s) => normalizeSlot(s) === normCurrent);
     const isDisabled = isPassed || isBooked || isBlocked;
     const { price, isDiscounted } = getSlotPricing(slot);
 
@@ -277,7 +284,7 @@ export default function BookingSystem() {
           type="button"
           disabled
           title={`Court is blocked: ${blockedInfo?.reason || 'Maintenance'}`}
-          className="px-3 py-2 rounded-xl text-xs font-bold bg-amber-100/90 text-amber-900 border border-amber-300 line-through cursor-not-allowed flex flex-col items-center justify-center min-w-[90px] shadow-sm"
+          className="px-3 py-2 rounded-xl text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 line-through cursor-not-allowed flex flex-col items-center justify-center min-w-[90px] shadow-sm opacity-90"
         >
           <span>{slot}</span>
           <span className="text-[9px] font-extrabold uppercase text-amber-800 tracking-tight no-underline">⚠️ Maintenance</span>
@@ -291,11 +298,11 @@ export default function BookingSystem() {
           key={slot}
           type="button"
           disabled
-          title="Slot is already booked"
-          className="court-slot booked px-3 py-2 rounded-xl text-xs font-bold text-center min-w-[90px] cursor-not-allowed opacity-80"
+          title="This time slot is already booked"
+          className="px-3 py-2 rounded-xl text-xs font-bold text-center min-w-[90px] cursor-not-allowed bg-slate-200 text-slate-500 border border-slate-300 line-through opacity-80 flex flex-col items-center justify-center shadow-inner"
         >
           <span>{slot}</span>
-          <span className="text-[9px] text-slate-400 block font-medium">Booked</span>
+          <span className="text-[9px] text-red-600 font-extrabold uppercase tracking-tight no-underline">🔒 Booked</span>
         </button>
       );
     }
@@ -470,7 +477,7 @@ export default function BookingSystem() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
               <h3 className="font-title-md text-title-md font-bold text-[#0F172A] flex items-center gap-2">
                 <span className="w-7 h-7 rounded-full bg-[#0F172A] text-white text-xs flex items-center justify-center font-bold">3</span>
-                Select Time Slots
+                Select Time Slots for {currentCourt.name || 'Court 1'}
               </h3>
 
               {/* Legend */}
