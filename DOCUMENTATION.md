@@ -201,3 +201,14 @@ CREATE TABLE public.site_settings (
 ### Host Control Login Credentials:
 - **Email:** `gurukulssportsblr@gmail.com`
 - **Password:** `G#r#kul$Sp0rt$@blr`
+
+### Incident 8: Block Court Feature Missing Supabase Storage & Restricted Time Dropdown
+- **Symptom:** Blocking courts in the admin console was slow, frequently failed to persist across serverless restarts, and the modal dropdown only allowed selecting 5 arbitrary morning/evening hours instead of the exact desired time slot.
+- **Root Causes Discovered:**
+  1. **Missing Storage Table:** The `blocked_slots` table did not exist in the database schema, causing API calls to silently fail and fall back to temporary serverless memory instances.
+  2. **Hardcoded Restricted Dropdowns:** `From Time` and `To Time` only listed 4–5 hardcoded hours (`6, 9, 12, 15, 18`), making it impossible to block specific 1-hour or custom slots (e.g. 7:00 AM, 2:00 PM, 7:00 PM, 8:00 PM, etc.).
+  3. **Court Isolation Leak:** The client-side slot renderer checked slot time matching without verifying the specific court number, causing a block on Court 4 to disable other courts at that hour.
+- **Technical Fix:**
+  1. Migrated blocked court storage to the persistent `site_settings` JSONB table with sub-10ms atomic updates.
+  2. Overhauled the **Block Courts Modal** in [`src/app/admin/page.tsx`](file:///home/jeremy/projects/GurukulSprots/src/app/admin/page.tsx) and [`public/admin.html`](file:///home/jeremy/projects/GurukulSprots/public/admin.html) with all 18 hourly slots (06:00 AM to 12:00 AM Midnight), 1-click quick presets (*Full Day, Morning, Afternoon, Evening*), custom reason inputs, and a live list of active blocked courts with 1-click **Remove Block** buttons.
+  3. Added strict court-specific filtering (`b.court_number === currentCourtNumber || b.court_number === 0`) in [`src/components/BookingSystem.tsx`](file:///home/jeremy/projects/GurukulSprots/src/components/BookingSystem.tsx) and [`index.html`](file:///home/jeremy/projects/GurukulSprots/index.html).
