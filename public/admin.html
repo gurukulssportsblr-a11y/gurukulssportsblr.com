@@ -474,17 +474,29 @@
                         </div>
                     </div>
 
-                    <!-- 2. Custom Date Scope Dropdown -->
-                    <div class="relative custom-dropdown-container">
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Date Scope</label>
-                        <button type="button" onclick="toggleDropdown('scope-dropdown-menu')" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-left flex justify-between items-center text-slate-800 hover:bg-slate-100 transition-colors shadow-xs">
-                            <span id="selected-scope-display">Selected Date Only</span>
-                            <span class="material-symbols-outlined text-[18px] text-slate-500">expand_more</span>
-                        </button>
-                        <input type="hidden" id="block-scope-select" value="DATE">
-                        <div id="scope-dropdown-menu" class="hidden custom-dropdown-menu absolute left-0 top-[calc(100%+4px)] w-full bg-white border border-slate-200 rounded-xl shadow-2xl z-50 py-1 ring-1 ring-slate-900/5">
-                            <div onclick="selectCustomScope('DATE', 'Selected Date Only')" class="px-3 py-2 text-xs font-bold hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-800 border-b border-slate-100">Selected Date Only</div>
-                            <div onclick="selectCustomScope('ALL', 'All Dates (Indefinite)')" class="px-3 py-2 text-xs font-bold hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-800">All Dates (Indefinite)</div>
+                    <!-- 2. Interactive Calendar Date Picker & Scope -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-bold text-slate-700">Date to Block</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] font-bold text-slate-600 hover:text-slate-900">
+                                <input type="checkbox" id="block-all-dates-check" onchange="toggleBlockAllDates(this.checked)" class="w-3.5 h-3.5 rounded accent-red-600 cursor-pointer">
+                                <span>All Dates (Indefinite)</span>
+                            </label>
+                        </div>
+                        <div id="block-date-picker-wrap" class="space-y-1.5">
+                            <div class="relative flex items-center">
+                                <span class="material-symbols-outlined absolute left-3 text-slate-400 pointer-events-none text-[18px]">calendar_month</span>
+                                <input type="date" id="block-target-date" required class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="setBlockTargetDatePreset(0)" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-colors">Today</button>
+                                <button type="button" onclick="setBlockTargetDatePreset(1)" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-colors">Tomorrow</button>
+                                <button type="button" onclick="setBlockTargetDatePreset(7)" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-colors">+7 Days</button>
+                            </div>
+                        </div>
+                        <div id="block-all-dates-alert" class="hidden p-2.5 bg-red-50 border border-red-200 rounded-lg text-[11px] font-bold text-red-800 flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px]">event_repeat</span>
+                            <span>Indefinite block applies to all dates until deleted.</span>
                         </div>
                     </div>
                 </div>
@@ -997,10 +1009,22 @@
             document.getElementById('court-dropdown-menu').classList.add('hidden');
         }
 
-        function selectCustomScope(scope, displayText) {
-            document.getElementById('block-scope-select').value = scope;
-            document.getElementById('selected-scope-display').textContent = displayText;
-            document.getElementById('scope-dropdown-menu').classList.add('hidden');
+        function toggleBlockAllDates(checked) {
+            const pickerWrap = document.getElementById('block-date-picker-wrap');
+            const alertBox = document.getElementById('block-all-dates-alert');
+            if (checked) {
+                pickerWrap.classList.add('hidden');
+                alertBox.classList.remove('hidden');
+            } else {
+                pickerWrap.classList.remove('hidden');
+                alertBox.classList.add('hidden');
+            }
+        }
+
+        function setBlockTargetDatePreset(offsetDays) {
+            const d = new Date();
+            d.setDate(d.getDate() + offsetDays);
+            document.getElementById('block-target-date').value = d.toISOString().split('T')[0];
         }
 
         function selectCustomReason(reason, displayText) {
@@ -1097,7 +1121,8 @@
             const reasonSelect = document.getElementById('block-reason-select').value;
             const customReason = document.getElementById('block-custom-reason')?.value?.trim();
             const reason = reasonSelect === 'Custom' ? (customReason || 'Court Maintenance') : reasonSelect;
-            const scope = document.getElementById('block-scope-select').value;
+            const isAllDates = document.getElementById('block-all-dates-check').checked;
+            const targetDate = isAllDates ? 'ALL' : document.getElementById('block-target-date').value;
             const startHour = parseInt(document.getElementById('block-start-slot').value, 10);
             const endHour = parseInt(document.getElementById('block-end-slot').value, 10);
 
@@ -1111,7 +1136,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     court_number: court,
-                    block_date: scope === 'ALL' ? 'ALL' : selectedDateStr,
+                    block_date: targetDate,
                     start_hour: startHour,
                     end_hour: endHour,
                     reason
@@ -1158,6 +1183,16 @@
             if (modalId === 'block-modal') {
                 populateBlockTimeSlots();
                 renderModalActiveBlocks();
+                const targetDateInput = document.getElementById('block-target-date');
+                if (targetDateInput) {
+                    targetDateInput.value = selectedDateStr;
+                    targetDateInput.min = new Date().toISOString().split('T')[0];
+                }
+                const allDatesCheck = document.getElementById('block-all-dates-check');
+                if (allDatesCheck) {
+                    allDatesCheck.checked = false;
+                    toggleBlockAllDates(false);
+                }
             }
             if (modalId === 'walkin-modal') {
                 const select = document.getElementById('walkin-slot');
