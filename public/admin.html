@@ -446,79 +446,99 @@
             </div>
 
             <form id="block-court-form" onsubmit="handleBlockCourtSubmit(event)" class="space-y-4 mb-5 pb-5 border-b border-slate-200">
-                <!-- 1. Court Selector Matrix -->
-                <div>
-                    <div class="flex justify-between items-center mb-1.5">
-                        <label class="block text-xs font-bold text-slate-700">1. Select Court(s) to Block</label>
-                        <span id="block-court-label" class="text-[11px] font-bold text-blue-700">Selected: All 11 Courts</span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- 1. Custom Court Dropdown -->
+                    <div class="relative custom-dropdown-container">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Select Court(s)</label>
+                        <button type="button" onclick="toggleDropdown('court-dropdown-menu')" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-left flex justify-between items-center text-slate-800 hover:bg-slate-100 transition-colors shadow-xs">
+                            <span id="selected-court-display">All 11 Courts</span>
+                            <span class="material-symbols-outlined text-[18px] text-slate-500">expand_more</span>
+                        </button>
+                        <input type="hidden" id="block-court-select" value="0">
+                        <div id="court-dropdown-menu" class="hidden custom-dropdown-menu absolute left-0 top-[calc(100%+4px)] w-full bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-56 overflow-y-auto py-1 ring-1 ring-slate-900/5">
+                            <div onclick="selectCustomCourt(0, 'All 11 Courts')" class="px-3 py-2 text-xs font-bold hover:bg-blue-50 hover:text-blue-700 cursor-pointer flex justify-between items-center text-slate-800 border-b border-slate-100">
+                                <span>All 11 Courts</span>
+                                <span class="text-blue-600 font-bold">✓</span>
+                            </div>
+                            <div onclick="selectCustomCourt(1, 'Court 1')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-700">Court 1</div>
+                            <div onclick="selectCustomCourt(2, 'Court 2')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-700">Court 2</div>
+                            <div onclick="selectCustomCourt(3, 'Court 3')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-700">Court 3</div>
+                            <div onclick="selectCustomCourt(4, 'Court 4')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-700">Court 4</div>
+                            <div onclick="selectCustomCourt(5, 'Court 5')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-700">Court 5</div>
+                            <div onclick="selectCustomCourt(6, 'Court 6')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-700">Court 6</div>
+                            <div onclick="selectCustomCourt(7, 'Court 7')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-700">Court 7</div>
+                            <div onclick="selectCustomCourt(8, 'Court 8')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-700">Court 8</div>
+                            <div onclick="selectCustomCourt(9, 'Court 9')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-700">Court 9</div>
+                            <div onclick="selectCustomCourt(10, 'Court 10')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-700">Court 10</div>
+                            <div onclick="selectCustomCourt(11, 'Court 11')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-700">Court 11</div>
+                        </div>
                     </div>
-                    <input type="hidden" id="block-court-select" value="0">
-                    <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1.5" id="court-chip-group">
-                        <button type="button" onclick="selectBlockCourt(0)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-900 text-white border-slate-900 shadow-sm ring-2 ring-slate-400/40">✓ All 11 Courts</button>
-                        <button type="button" onclick="selectBlockCourt(1)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 1</button>
-                        <button type="button" onclick="selectBlockCourt(2)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 2</button>
-                        <button type="button" onclick="selectBlockCourt(3)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 3</button>
-                        <button type="button" onclick="selectBlockCourt(4)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 4</button>
-                        <button type="button" onclick="selectBlockCourt(5)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 5</button>
-                        <button type="button" onclick="selectBlockCourt(6)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 6</button>
-                        <button type="button" onclick="selectBlockCourt(7)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 7</button>
-                        <button type="button" onclick="selectBlockCourt(8)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 8</button>
-                        <button type="button" onclick="selectBlockCourt(9)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 9</button>
-                        <button type="button" onclick="selectBlockCourt(10)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 10</button>
-                        <button type="button" onclick="selectBlockCourt(11)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 11</button>
+
+                    <!-- 2. Custom Date Scope Dropdown -->
+                    <div class="relative custom-dropdown-container">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Date Scope</label>
+                        <button type="button" onclick="toggleDropdown('scope-dropdown-menu')" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-left flex justify-between items-center text-slate-800 hover:bg-slate-100 transition-colors shadow-xs">
+                            <span id="selected-scope-display">Selected Date Only</span>
+                            <span class="material-symbols-outlined text-[18px] text-slate-500">expand_more</span>
+                        </button>
+                        <input type="hidden" id="block-scope-select" value="DATE">
+                        <div id="scope-dropdown-menu" class="hidden custom-dropdown-menu absolute left-0 top-[calc(100%+4px)] w-full bg-white border border-slate-200 rounded-xl shadow-2xl z-50 py-1 ring-1 ring-slate-900/5">
+                            <div onclick="selectCustomScope('DATE', 'Selected Date Only')" class="px-3 py-2 text-xs font-bold hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-800 border-b border-slate-100">Selected Date Only</div>
+                            <div onclick="selectCustomScope('ALL', 'All Dates (Indefinite)')" class="px-3 py-2 text-xs font-bold hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-800">All Dates (Indefinite)</div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 2. Date Scope -->
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">2. Date Scope</label>
-                    <input type="hidden" id="block-scope-select" value="DATE">
-                    <div class="grid grid-cols-2 gap-2" id="scope-chip-group">
-                        <button type="button" onclick="selectBlockScope('DATE')" id="scope-btn-date" class="py-2 px-3 rounded-lg text-xs font-bold border transition-all text-left bg-white text-blue-900 border-blue-500 shadow-xs ring-1 ring-blue-500/20 flex items-center justify-between">
-                            <span id="scope-date-label">Selected Date Only</span>
-                            <span class="text-blue-600 font-extrabold">✓</span>
-                        </button>
-                        <button type="button" onclick="selectBlockScope('ALL')" id="scope-btn-all" class="py-2 px-3 rounded-lg text-xs font-bold border transition-all text-left bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/60 flex items-center justify-between">
-                            <span>All Dates (Indefinite)</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 3. Reason for Blocking -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">3. Reason for Blocking</label>
+                <!-- 3. Custom Reason Dropdown -->
+                <div class="relative custom-dropdown-container">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Reason for Blocking</label>
+                    <button type="button" onclick="toggleDropdown('reason-dropdown-menu')" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-left flex justify-between items-center text-slate-800 hover:bg-slate-100 transition-colors shadow-xs">
+                        <span id="selected-reason-display">Court Mat Maintenance &amp; Cleaning</span>
+                        <span class="material-symbols-outlined text-[18px] text-slate-500">expand_more</span>
+                    </button>
                     <input type="hidden" id="block-reason-select" value="Court Maintenance">
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5" id="reason-chip-group">
-                        <button type="button" onclick="selectBlockReason('Court Maintenance', this)" class="reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-red-700 text-white border-red-700 shadow-xs truncate">✓ Mat Maintenance</button>
-                        <button type="button" onclick="selectBlockReason('State Tournament', this)" class="reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 truncate">State Tournament</button>
-                        <button type="button" onclick="selectBlockReason('Academy Coaching Camp', this)" class="reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 truncate">Coaching Camp</button>
-                        <button type="button" onclick="selectBlockReason('Private Event', this)" class="reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 truncate">Corporate Event</button>
-                        <button type="button" onclick="selectBlockReason('Floodlight & Electrical Repair', this)" class="reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 truncate">Electrical Repair</button>
-                        <button type="button" onclick="selectBlockReason('Custom', this)" class="reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 truncate">Custom Reason...</button>
+                    <div id="reason-dropdown-menu" class="hidden custom-dropdown-menu absolute left-0 top-[calc(100%+4px)] w-full bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-56 overflow-y-auto py-1 ring-1 ring-slate-900/5">
+                        <div onclick="selectCustomReason('Court Maintenance', 'Court Mat Maintenance &amp; Cleaning')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-800">Court Mat Maintenance &amp; Cleaning</div>
+                        <div onclick="selectCustomReason('State Tournament', 'State Badminton Tournament')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-800">State Badminton Tournament</div>
+                        <div onclick="selectCustomReason('Academy Coaching Camp', 'Academy Coaching Camp')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-800">Academy Coaching Camp</div>
+                        <div onclick="selectCustomReason('Private Event', 'Private Corporate Event')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-800">Private Corporate Event</div>
+                        <div onclick="selectCustomReason('Floodlight &amp; Electrical Repair', 'Floodlight &amp; Electrical Repair')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-800">Floodlight &amp; Electrical Repair</div>
+                        <div onclick="selectCustomReason('Custom', 'Custom Reason (Type below)...')" class="px-3 py-2 text-xs font-bold hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-800 border-t border-slate-100">Custom Reason...</div>
                     </div>
                     <input type="text" id="block-custom-reason" placeholder="Enter custom reason" class="hidden w-full mt-2 px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-slate-800">
                 </div>
 
                 <!-- 4. Quick Presets & Time -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">4. Time Range & Presets</label>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mb-2.5">
-                        <button type="button" onclick="setBlockTimePreset(6, 24)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700">Full Day (6A-12A)</button>
-                        <button type="button" onclick="setBlockTimePreset(6, 12)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700">Morning (6A-12P)</button>
-                        <button type="button" onclick="setBlockTimePreset(12, 18)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700">Afternoon (12P-6P)</button>
-                        <button type="button" onclick="setBlockTimePreset(18, 23)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700">Evening (6P-11P)</button>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Quick Time Presets</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                        <button type="button" onclick="setBlockTimePreset(6, 24)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors">Full Day (6A-12A)</button>
+                        <button type="button" onclick="setBlockTimePreset(6, 12)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors">Morning (6A-12P)</button>
+                        <button type="button" onclick="setBlockTimePreset(12, 18)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors">Afternoon (12P-6P)</button>
+                        <button type="button" onclick="setBlockTimePreset(18, 23)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors">Evening (6P-11P)</button>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-1">From Time Slot</label>
-                            <select id="block-start-slot" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-800">
-                            </select>
+                        <div class="relative custom-dropdown-container">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">From Time Slot</label>
+                            <button type="button" onclick="toggleDropdown('from-time-dropdown-menu')" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-left flex justify-between items-center text-slate-800 hover:bg-slate-100 transition-colors shadow-xs">
+                                <span id="selected-from-display">06:00 AM</span>
+                                <span class="material-symbols-outlined text-[18px] text-slate-500">expand_more</span>
+                            </button>
+                            <input type="hidden" id="block-start-slot" value="6">
+                            <div id="from-time-dropdown-menu" class="hidden custom-dropdown-menu absolute left-0 top-[calc(100%+4px)] w-full bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-56 overflow-y-auto py-1 ring-1 ring-slate-900/5">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-1">To Time Slot</label>
-                            <select id="block-end-slot" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-800">
-                            </select>
+
+                        <div class="relative custom-dropdown-container">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">To Time Slot</label>
+                            <button type="button" onclick="toggleDropdown('to-time-dropdown-menu')" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-left flex justify-between items-center text-slate-800 hover:bg-slate-100 transition-colors shadow-xs">
+                                <span id="selected-to-display">12:00 AM (Midnight)</span>
+                                <span class="material-symbols-outlined text-[18px] text-slate-500">expand_more</span>
+                            </button>
+                            <input type="hidden" id="block-end-slot" value="24">
+                            <div id="to-time-dropdown-menu" class="hidden custom-dropdown-menu absolute left-0 top-[calc(100%+4px)] w-full bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-56 overflow-y-auto py-1 ring-1 ring-slate-900/5">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -955,67 +975,82 @@
             }
         }
 
-        function selectBlockCourt(courtNum) {
-            document.getElementById('block-court-select').value = courtNum;
-            document.getElementById('block-court-label').textContent = courtNum === 0 ? 'Selected: All 11 Courts' : `Selected: Court ${courtNum}`;
-            const chips = document.querySelectorAll('#court-chip-group .court-chip');
-            chips.forEach((chip, idx) => {
-                const isSelected = (idx === 0 && courtNum === 0) || (idx === courtNum);
-                if (isSelected) {
-                    chip.className = 'court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center ' + (courtNum === 0 ? 'bg-slate-900 text-white border-slate-900 shadow-sm ring-2 ring-slate-400/40' : 'bg-blue-700 text-white border-blue-700 shadow-sm ring-2 ring-blue-400/40');
-                    chip.textContent = (courtNum === 0 ? '✓ All 11 Courts' : `✓ Court ${courtNum}`);
-                } else {
-                    chip.className = 'court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100';
-                    chip.textContent = idx === 0 ? 'All 11 Courts' : `Court ${idx}`;
-                }
-            });
-        }
-
-        function selectBlockScope(scope) {
-            document.getElementById('block-scope-select').value = scope;
-            const btnDate = document.getElementById('scope-btn-date');
-            const btnAll = document.getElementById('scope-btn-all');
-            if (scope === 'DATE') {
-                btnDate.className = 'py-2 px-3 rounded-lg text-xs font-bold border transition-all text-left bg-white text-blue-900 border-blue-500 shadow-xs ring-1 ring-blue-500/20 flex items-center justify-between';
-                btnDate.innerHTML = `<span id="scope-date-label">Selected Date Only (${selectedDateStr})</span><span class="text-blue-600 font-extrabold">✓</span>`;
-                btnAll.className = 'py-2 px-3 rounded-lg text-xs font-bold border transition-all text-left bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/60 flex items-center justify-between';
-                btnAll.innerHTML = `<span>All Dates (Indefinite)</span>`;
-            } else {
-                btnAll.className = 'py-2 px-3 rounded-lg text-xs font-bold border transition-all text-left bg-white text-red-900 border-red-500 shadow-xs ring-1 ring-red-500/20 flex items-center justify-between';
-                btnAll.innerHTML = `<span>All Dates (Indefinite Recurring)</span><span class="text-red-600 font-extrabold">✓</span>`;
-                btnDate.className = 'py-2 px-3 rounded-lg text-xs font-bold border transition-all text-left bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/60 flex items-center justify-between';
-                btnDate.innerHTML = `<span id="scope-date-label">Selected Date Only</span>`;
+        function toggleDropdown(menuId) {
+            const targetMenu = document.getElementById(menuId);
+            const isCurrentlyHidden = targetMenu.classList.contains('hidden');
+            // Close all dropdown menus
+            document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.add('hidden'));
+            if (isCurrentlyHidden) {
+                targetMenu.classList.remove('hidden');
             }
         }
 
-        function selectBlockReason(reason, btn) {
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.custom-dropdown-container')) {
+                document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.add('hidden'));
+            }
+        });
+
+        function selectCustomCourt(courtNum, displayText) {
+            document.getElementById('block-court-select').value = courtNum;
+            document.getElementById('selected-court-display').textContent = displayText;
+            document.getElementById('court-dropdown-menu').classList.add('hidden');
+        }
+
+        function selectCustomScope(scope, displayText) {
+            document.getElementById('block-scope-select').value = scope;
+            document.getElementById('selected-scope-display').textContent = displayText;
+            document.getElementById('scope-dropdown-menu').classList.add('hidden');
+        }
+
+        function selectCustomReason(reason, displayText) {
             document.getElementById('block-reason-select').value = reason;
-            const chips = document.querySelectorAll('#reason-chip-group .reason-chip');
-            chips.forEach(c => {
-                c.className = 'reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 truncate';
-                c.textContent = c.textContent.replace(/^✓\s*/, '');
-            });
-            btn.className = 'reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-red-700 text-white border-red-700 shadow-xs truncate';
-            btn.textContent = '✓ ' + btn.textContent;
+            document.getElementById('selected-reason-display').textContent = displayText;
+            document.getElementById('reason-dropdown-menu').classList.add('hidden');
             toggleCustomBlockReason(reason);
         }
 
-        function populateBlockTimeSlots() {
-            const startSelect = document.getElementById('block-start-slot');
-            const endSelect = document.getElementById('block-end-slot');
-            if (!startSelect || !endSelect) return;
+        function selectCustomFromTime(hour, displayText) {
+            document.getElementById('block-start-slot').value = hour;
+            document.getElementById('selected-from-display').textContent = displayText;
+            document.getElementById('from-time-dropdown-menu').classList.add('hidden');
+        }
 
-            startSelect.innerHTML = TIME_ROWS.map(r => `<option value="${r.hour}">${r.display}</option>`).join('');
-            endSelect.innerHTML = TIME_ROWS.map(r => {
+        function selectCustomToTime(hour, displayText) {
+            document.getElementById('block-end-slot').value = hour;
+            document.getElementById('selected-to-display').textContent = displayText;
+            document.getElementById('to-time-dropdown-menu').classList.add('hidden');
+        }
+
+        function populateBlockTimeSlots() {
+            const fromMenu = document.getElementById('from-time-dropdown-menu');
+            const toMenu = document.getElementById('to-time-dropdown-menu');
+            if (!fromMenu || !toMenu) return;
+
+            fromMenu.innerHTML = TIME_ROWS.map(r => `
+                <div onclick="selectCustomFromTime(${r.hour}, '${r.display}')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-700">
+                    ${r.display}
+                </div>
+            `).join('');
+
+            toMenu.innerHTML = TIME_ROWS.map(r => {
                 const endH = r.hour + 1;
                 const label = endH === 24 ? '12:00 AM (Midnight)' : endH > 12 ? `${String(endH - 12).padStart(2, '0')}:00 PM` : `${String(endH).padStart(2, '0')}:00 AM`;
-                return `<option value="${endH}" ${endH === 24 ? 'selected' : ''}>${label}</option>`;
+                return `
+                    <div onclick="selectCustomToTime(${endH}, '${label}')" class="px-3 py-2 text-xs font-medium hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-slate-700">
+                        ${label}
+                    </div>
+                `;
             }).join('');
         }
 
         function setBlockTimePreset(start, end) {
-            document.getElementById('block-start-slot').value = start;
-            document.getElementById('block-end-slot').value = end;
+            const startRow = TIME_ROWS.find(r => r.hour === start);
+            const startLabel = startRow ? startRow.display : (start > 12 ? `${start-12}:00 PM` : `${start}:00 AM`);
+            const endLabel = end === 24 ? '12:00 AM (Midnight)' : (end > 12 ? `${end-12}:00 PM` : `${end}:00 AM`);
+
+            selectCustomFromTime(start, startLabel);
+            selectCustomToTime(end, endLabel);
         }
 
         function toggleCustomBlockReason(val) {
