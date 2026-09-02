@@ -270,6 +270,7 @@ export default function BookingSystem() {
   const renderSlotButton = (slot: string) => {
     const isPassed = isSlotPassed(slot, selectedDate);
     const normCurrent = normalizeSlot(slot);
+    const isBooked = bookedSlots.some((bs) => normalizeSlot(bs) === normCurrent);
     const blockedInfo = blockedSlots.find(
       (b) =>
         (b.court_number === currentCourtNumber || b.court_number === 0) &&
