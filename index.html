@@ -636,8 +636,7 @@ gurukulssportsblr@gmail.com
                 }
 
                 const isPast = selectedDate < todayStr || (selectedDate === todayStr && hour <= currentHour);
-                const isBooked = bookedSlots.includes(norm);
-                const isBlocked = blockedSlots.some(b => normalizeSlot(b.slot_time) === norm);
+                const isBlocked = blockedSlots.some(b => (b.court_number === currentSelectedCourt || b.court_number === 0) && normalizeSlot(b.slot_time) === norm);
                 const isSelected = selectedSlots.some(s => normalizeSlot(s) === norm);
 
                 btn.disabled = isPast || isBooked || isBlocked;

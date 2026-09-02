@@ -200,20 +200,35 @@ export async function getBlockedSlots(date?: string): Promise<BlockedSlot[]> {
   if (isSupabaseConfigured) {
     try {
       const supabase = createServerClient();
-      let query = supabase.from('blocked_slots').select('*');
-      if (date) {
-        query = query.or(`block_date.eq.${date},block_date.eq.ALL,block_date.eq.2099-12-31`);
-      }
-      const { data, error } = await query;
-      if (!error && data) {
-        globalStore._gsBlockedSlots = data as BlockedSlot[];
-        return data as BlockedSlot[];
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'blocked_slots')
+        .maybeSingle();
+
+      if (!error && data && Array.isArray(data.value)) {
+        const allBlocks = data.value as BlockedSlot[];
+        globalStore._gsBlockedSlots = allBlocks;
+
+        if (date) {
+          return allBlocks.filter(
+            (b) => b.block_date === date || b.block_date === 'ALL' || b.block_date === '2099-12-31'
+          );
+        }
+        return allBlocks;
       }
     } catch (err) {
       console.warn('Supabase blocked slots read error:', err);
     }
   }
-  return globalStore._gsBlockedSlots || [];
+
+  const inMemory = globalStore._gsBlockedSlots || [];
+  if (date) {
+    return inMemory.filter(
+      (b) => b.block_date === date || b.block_date === 'ALL' || b.block_date === '2099-12-31'
+    );
+  }
+  return inMemory;
 }
 
 export async function addBlockedSlot(block: Omit<BlockedSlot, 'id'>): Promise<BlockedSlot> {
@@ -229,14 +244,22 @@ export async function addBlockedSlot(block: Omit<BlockedSlot, 'id'>): Promise<Bl
   if (isSupabaseConfigured) {
     try {
       const supabase = createServerClient();
-      await supabase.from('blocked_slots').insert({
-        id: blockId,
-        court_number: newBlock.court_number,
-        block_date: newBlock.block_date === 'ALL' ? '2099-12-31' : newBlock.block_date,
-        start_hour: newBlock.start_hour,
-        end_hour: newBlock.end_hour,
-        reason: newBlock.reason,
-      });
+      const { data } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'blocked_slots')
+        .maybeSingle();
+
+      const existingBlocks = (data && Array.isArray(data.value)) ? (data.value as BlockedSlot[]) : [];
+      const updatedBlocks = [...existingBlocks.filter((b) => b.id !== blockId), newBlock];
+
+      await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'blocked_slots',
+          value: updatedBlocks,
+          updated_at: new Date().toISOString(),
+        });
     } catch (err) {
       console.warn('Supabase blocked slot save error:', err);
     }
@@ -246,13 +269,28 @@ export async function addBlockedSlot(block: Omit<BlockedSlot, 'id'>): Promise<Bl
 }
 
 export async function removeBlockedSlot(id: string): Promise<boolean> {
-  if (!globalStore._gsBlockedSlots) return false;
+  if (!globalStore._gsBlockedSlots) globalStore._gsBlockedSlots = [];
   globalStore._gsBlockedSlots = globalStore._gsBlockedSlots.filter((b) => b.id !== id);
 
   if (isSupabaseConfigured) {
     try {
       const supabase = createServerClient();
-      await supabase.from('blocked_slots').delete().eq('id', id);
+      const { data } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'blocked_slots')
+        .maybeSingle();
+
+      const existingBlocks = (data && Array.isArray(data.value)) ? (data.value as BlockedSlot[]) : [];
+      const updatedBlocks = existingBlocks.filter((b) => b.id !== id);
+
+      await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'blocked_slots',
+          value: updatedBlocks,
+          updated_at: new Date().toISOString(),
+        });
     } catch (err) {
       console.warn('Supabase blocked slot delete error:', err);
     }

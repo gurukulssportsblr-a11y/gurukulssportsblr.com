@@ -445,53 +445,68 @@
                 </button>
             </div>
 
-            <form id="block-court-form" onsubmit="handleBlockCourtSubmit(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Select Court(s)</label>
-                    <select id="block-court-select" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold">
-                        <option value="0">All 11 Courts</option>
-                        <option value="1">Court 1</option>
-                        <option value="2">Court 2</option>
-                        <option value="3">Court 3</option>
-                        <option value="4">Court 4</option>
-                        <option value="5">Court 5</option>
-                        <option value="6">Court 6</option>
-                        <option value="7">Court 7</option>
-                        <option value="8">Court 8</option>
-                        <option value="9">Court 9</option>
-                        <option value="10">Court 10</option>
-                        <option value="11">Court 11</option>
-                    </select>
+            <form id="block-court-form" onsubmit="handleBlockCourtSubmit(event)" class="space-y-4 mb-5 pb-5 border-b border-slate-200">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Select Court(s)</label>
+                        <select id="block-court-select" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold">
+                            <option value="0">All 11 Courts</option>
+                            <option value="1">Court 1</option>
+                            <option value="2">Court 2</option>
+                            <option value="3">Court 3</option>
+                            <option value="4">Court 4</option>
+                            <option value="5">Court 5</option>
+                            <option value="6">Court 6</option>
+                            <option value="7">Court 7</option>
+                            <option value="8">Court 8</option>
+                            <option value="9">Court 9</option>
+                            <option value="10">Court 10</option>
+                            <option value="11">Court 11</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Date Scope</label>
+                        <select id="block-scope-select" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium">
+                            <option value="DATE">Selected Date Only</option>
+                            <option value="ALL">All Dates (Indefinite)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Reason for Blocking</label>
-                    <select id="block-reason-select" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium">
+                    <select id="block-reason-select" onchange="toggleCustomBlockReason(this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium">
                         <option value="Court Maintenance">Court Mat Maintenance &amp; Cleaning</option>
                         <option value="State Tournament">State Badminton Tournament</option>
                         <option value="Academy Coaching Camp">Academy Coaching Camp</option>
                         <option value="Private Event">Private Corporate Event</option>
+                        <option value="Floodlight &amp; Electrical Repair">Floodlight &amp; Electrical Repair</option>
+                        <option value="Custom">Custom Reason (Type below)...</option>
                     </select>
+                    <input type="text" id="block-custom-reason" placeholder="Enter custom reason" class="hidden w-full mt-2 px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-slate-800">
+                </div>
+
+                <!-- Quick Presets -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Quick Time Presets</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <button type="button" onclick="setBlockTimePreset(6, 24)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700">Full Day (6A-12A)</button>
+                        <button type="button" onclick="setBlockTimePreset(6, 12)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700">Morning (6A-12P)</button>
+                        <button type="button" onclick="setBlockTimePreset(12, 18)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700">Afternoon (12P-6P)</button>
+                        <button type="button" onclick="setBlockTimePreset(18, 23)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700">Evening (6P-11P)</button>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">From Time</label>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">From Time Slot</label>
                         <select id="block-start-slot" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium">
-                            <option value="6">06:00 AM</option>
-                            <option value="9">09:00 AM</option>
-                            <option value="12">12:00 PM</option>
-                            <option value="15">03:00 PM</option>
-                            <option value="18">06:00 PM</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">To Time</label>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">To Time Slot</label>
                         <select id="block-end-slot" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium">
-                            <option value="12">12:00 PM</option>
-                            <option value="15">03:00 PM</option>
-                            <option value="18">06:00 PM</option>
-                            <option value="23" selected>12:00 AM (Midnight)</option>
                         </select>
                     </div>
                 </div>
@@ -501,6 +516,16 @@
                     Apply Court Block (Live)
                 </button>
             </form>
+
+            <!-- Active Blocks List -->
+            <div>
+                <h4 class="font-heading font-bold text-xs uppercase tracking-wider text-slate-600 mb-3 flex items-center justify-between">
+                    <span>Active Court Blocks</span>
+                    <span class="text-[10px] normal-case text-slate-400">Click Remove to unblock</span>
+                </h4>
+                <div id="modal-active-blocks" class="space-y-2 max-h-40 overflow-y-auto">
+                </div>
+            </div>
         </div>
     </div>
 
@@ -918,19 +943,83 @@
             }
         }
 
+        function populateBlockTimeSlots() {
+            const startSelect = document.getElementById('block-start-slot');
+            const endSelect = document.getElementById('block-end-slot');
+            if (!startSelect || !endSelect) return;
+
+            startSelect.innerHTML = TIME_ROWS.map(r => `<option value="${r.hour}">${r.display}</option>`).join('');
+            endSelect.innerHTML = TIME_ROWS.map(r => {
+                const endH = r.hour + 1;
+                const label = endH === 24 ? '12:00 AM (Midnight)' : endH > 12 ? `${String(endH - 12).padStart(2, '0')}:00 PM` : `${String(endH).padStart(2, '0')}:00 AM`;
+                return `<option value="${endH}" ${endH === 24 ? 'selected' : ''}>${label}</option>`;
+            }).join('');
+        }
+
+        function setBlockTimePreset(start, end) {
+            document.getElementById('block-start-slot').value = start;
+            document.getElementById('block-end-slot').value = end;
+        }
+
+        function toggleCustomBlockReason(val) {
+            const customInput = document.getElementById('block-custom-reason');
+            if (val === 'Custom') {
+                customInput.classList.remove('hidden');
+                customInput.required = true;
+            } else {
+                customInput.classList.add('hidden');
+                customInput.required = false;
+            }
+        }
+
+        function renderModalActiveBlocks() {
+            const container = document.getElementById('modal-active-blocks');
+            if (!container) return;
+
+            if (blockedSlots.length === 0) {
+                container.innerHTML = '<div class="p-3 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-center text-xs text-slate-400">No active blocks for this date. All courts are open.</div>';
+                return;
+            }
+
+            container.innerHTML = blockedSlots.map(b => `
+                <div class="p-2.5 bg-red-50/70 rounded-xl border border-red-200 flex items-center justify-between text-xs">
+                    <div>
+                        <span class="font-bold text-red-950">${b.court_number === 0 ? 'All 11 Courts' : 'Court ' + b.court_number}</span>
+                        <span class="px-1.5 py-0.5 bg-red-100 text-red-800 text-[10px] font-extrabold rounded ml-1">${b.reason || 'Maintenance'}</span>
+                        <p class="text-[11px] text-slate-500 mt-0.5">
+                            ${b.start_hour > 12 ? (b.start_hour - 12) + ':00 PM' : b.start_hour + ':00 AM'} to 
+                            ${b.end_hour === 24 ? '12:00 AM' : b.end_hour > 12 ? (b.end_hour - 12) + ':00 PM' : b.end_hour + ':00 AM'} 
+                            • ${b.block_date === 'ALL' || b.block_date === '2099-12-31' ? 'All Dates' : b.block_date}
+                        </p>
+                    </div>
+                    <button onclick="unblockSlot('${b.id}')" class="px-2 py-1 bg-white hover:bg-red-100 text-red-600 border border-red-200 rounded font-bold text-xs">
+                        Remove
+                    </button>
+                </div>
+            `).join('');
+        }
+
         async function handleBlockCourtSubmit(e) {
             e.preventDefault();
             const court = parseInt(document.getElementById('block-court-select').value, 10);
-            const reason = document.getElementById('block-reason-select').value;
+            const reasonSelect = document.getElementById('block-reason-select').value;
+            const customReason = document.getElementById('block-custom-reason')?.value?.trim();
+            const reason = reasonSelect === 'Custom' ? (customReason || 'Court Maintenance') : reasonSelect;
+            const scope = document.getElementById('block-scope-select').value;
             const startHour = parseInt(document.getElementById('block-start-slot').value, 10);
             const endHour = parseInt(document.getElementById('block-end-slot').value, 10);
+
+            if (startHour >= endHour) {
+                alert('From time must be earlier than To time.');
+                return;
+            }
 
             const res = await fetch('/api/blocked-slots', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     court_number: court,
-                    block_date: selectedDateStr,
+                    block_date: scope === 'ALL' ? 'ALL' : selectedDateStr,
                     start_hour: startHour,
                     end_hour: endHour,
                     reason
@@ -941,6 +1030,9 @@
                 closeModal('block-modal');
                 fetchLiveDashboardData();
                 alert(`⚠️ Court(s) successfully blocked for ${reason}!`);
+            } else {
+                const d = await res.json();
+                alert(`❌ Error blocking court: ${d.error || 'Server error'}`);
             }
         }
 
@@ -970,22 +1062,34 @@
             }
         }
 
+        function openModal(modalId) {
+            if (modalId === 'block-modal') {
+                populateBlockTimeSlots();
+                renderModalActiveBlocks();
+            }
+            if (modalId === 'walkin-modal') {
+                const select = document.getElementById('walkin-slot');
+                if (select) {
+                    select.innerHTML = '';
+                    TIME_ROWS.forEach(t => {
+                        select.innerHTML += `<option value="${t.display}">${t.display}</option>`;
+                    });
+                }
+            }
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
         function openPricingModal() {
-            document.getElementById('pricing-modal').classList.remove('hidden');
+            openModal('pricing-modal');
         }
         function openPromoModal() {
-            document.getElementById('promo-modal').classList.remove('hidden');
+            openModal('promo-modal');
         }
         function openBlockModal() {
-            document.getElementById('block-modal').classList.remove('hidden');
+            openModal('block-modal');
         }
         function openWalkinModal() {
-            const select = document.getElementById('walkin-slot');
-            select.innerHTML = '';
-            TIME_ROWS.forEach(t => {
-                select.innerHTML += `<option value="${t.display}">${t.display}</option>`;
-            });
-            document.getElementById('walkin-modal').classList.remove('hidden');
+            openModal('walkin-modal');
         }
         function closeModal(modalId) {
             document.getElementById(modalId).classList.add('hidden');

@@ -81,8 +81,10 @@ export default function AdminDashboardPage() {
 
   const [blockCourtNum, setBlockCourtNum] = useState<number>(0);
   const [blockReason, setBlockReason] = useState('Court Maintenance');
+  const [blockCustomReason, setBlockCustomReason] = useState('');
+  const [blockAllDates, setBlockAllDates] = useState(false);
   const [blockStart, setBlockStart] = useState(6);
-  const [blockEnd, setBlockEnd] = useState(23);
+  const [blockEnd, setBlockEnd] = useState(24);
 
   const [walkinName, setWalkinName] = useState('');
   const [walkinPhone, setWalkinPhone] = useState('');
@@ -311,21 +313,23 @@ export default function AdminDashboardPage() {
       return;
     }
 
+    const finalReason = blockReason === 'Custom' ? (blockCustomReason.trim() || 'Court Maintenance') : blockReason;
+
     try {
       const res = await fetch('/api/blocked-slots', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           court_number: blockCourtNum,
-          block_date: selectedDate,
+          block_date: blockAllDates ? 'ALL' : selectedDate,
           start_hour: blockStart,
           end_hour: blockEnd,
-          reason: blockReason,
+          reason: finalReason,
         }),
       });
 
       if (res.ok) {
-        alert(`⚠️ Court(s) successfully blocked for ${blockReason}!`);
+        alert(`⚠️ Court(s) successfully blocked for ${finalReason}!`);
         setActiveModal('none');
         fetchDashboardData();
       }
@@ -1082,15 +1086,15 @@ export default function AdminDashboardPage() {
       {/* MODAL 3: BLOCK COURTS */}
       {activeModal === 'block' && (
         <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center pb-4 border-b border-slate-200 mb-5">
               <div className="flex items-center gap-2">
                 <div className="p-2 bg-red-100 text-red-600 rounded-xl">
                   <span className="material-symbols-outlined text-[24px]">block</span>
                 </div>
                 <div>
-                  <h3 className="font-heading font-extrabold text-lg text-slate-900">Block Courts</h3>
-                  <p className="text-xs text-slate-500">Prevent customer bookings for maintenance or events</p>
+                  <h3 className="font-heading font-extrabold text-lg text-slate-900">Block Courts (Maintenance / Events)</h3>
+                  <p className="text-xs text-slate-500">Instantly prevent customer bookings on selected courts &amp; hours</p>
                 </div>
               </div>
               <button onClick={() => setActiveModal('none')} className="p-1 hover:bg-slate-100 rounded-lg text-slate-500">
@@ -1098,25 +1102,39 @@ export default function AdminDashboardPage() {
               </button>
             </div>
 
-            <form onSubmit={handleBlockCourtSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Select Court(s)</label>
-                <select
-                  value={blockCourtNum}
-                  onChange={(e) => setBlockCourtNum(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold"
-                >
-                  <option value="0">All 11 Courts</option>
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((n) => (
-                    <option key={n} value={n}>
-                      Court {n}
-                    </option>
-                  ))}
-                </select>
+            <form onSubmit={handleBlockCourtSubmit} className="space-y-4 mb-6 pb-6 border-b border-slate-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Select Court(s)</label>
+                  <select
+                    value={blockCourtNum}
+                    onChange={(e) => setBlockCourtNum(Number(e.target.value))}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold"
+                  >
+                    <option value="0">All 11 Courts</option>
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((n) => (
+                      <option key={n} value={n}>
+                        Court {n}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Date Scope</label>
+                  <select
+                    value={blockAllDates ? 'ALL' : 'DATE'}
+                    onChange={(e) => setBlockAllDates(e.target.value === 'ALL')}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium"
+                  >
+                    <option value="DATE">Selected Date Only ({selectedDate})</option>
+                    <option value="ALL">All Dates (Indefinite Maintenance)</option>
+                  </select>
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Reason</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Reason for Blocking</label>
                 <select
                   value={blockReason}
                   onChange={(e) => setBlockReason(e.target.value)}
@@ -1126,46 +1144,166 @@ export default function AdminDashboardPage() {
                   <option value="State Tournament">State Badminton Tournament</option>
                   <option value="Academy Coaching Camp">Academy Coaching Camp</option>
                   <option value="Private Corporate Event">Private Corporate Event</option>
+                  <option value="Floodlight &amp; Electrical Repair">Floodlight &amp; Electrical Repair</option>
+                  <option value="Custom">Custom Reason (Type below)...</option>
                 </select>
+                {blockReason === 'Custom' && (
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter custom blocking reason"
+                    value={blockCustomReason}
+                    onChange={(e) => setBlockCustomReason(e.target.value)}
+                    className="w-full mt-2 px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-slate-800"
+                  />
+                )}
               </div>
 
+              {/* Quick Time Presets */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Quick Time Presets</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setBlockStart(6); setBlockEnd(24); }}
+                    className={`py-1.5 px-2 rounded-lg text-[11px] font-bold border transition-all ${
+                      blockStart === 6 && blockEnd === 24
+                        ? 'bg-slate-900 text-white border-slate-900'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    Full Day (6 AM - 12 AM)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setBlockStart(6); setBlockEnd(12); }}
+                    className={`py-1.5 px-2 rounded-lg text-[11px] font-bold border transition-all ${
+                      blockStart === 6 && blockEnd === 12
+                        ? 'bg-slate-900 text-white border-slate-900'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    Morning (6 AM - 12 PM)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setBlockStart(12); setBlockEnd(18); }}
+                    className={`py-1.5 px-2 rounded-lg text-[11px] font-bold border transition-all ${
+                      blockStart === 12 && blockEnd === 18
+                        ? 'bg-slate-900 text-white border-slate-900'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    Afternoon (12 PM - 6 PM)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setBlockStart(18); setBlockEnd(23); }}
+                    className={`py-1.5 px-2 rounded-lg text-[11px] font-bold border transition-all ${
+                      blockStart === 18 && blockEnd === 23
+                        ? 'bg-slate-900 text-white border-slate-900'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    Evening (6 PM - 11 PM)
+                  </button>
+                </div>
+              </div>
+
+              {/* Custom From & To Hours */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">From Time</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">From Time Slot</label>
                   <select
                     value={blockStart}
                     onChange={(e) => setBlockStart(Number(e.target.value))}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium"
                   >
-                    <option value="6">06:00 AM</option>
-                    <option value="9">09:00 AM</option>
-                    <option value="12">12:00 PM</option>
-                    <option value="15">03:00 PM</option>
-                    <option value="18">06:00 PM</option>
+                    {TIME_ROWS.map((row) => (
+                      <option key={row.hour} value={row.hour}>
+                        {row.display}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">To Time</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">To Time Slot</label>
                   <select
                     value={blockEnd}
                     onChange={(e) => setBlockEnd(Number(e.target.value))}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium"
                   >
-                    <option value="12">12:00 PM</option>
-                    <option value="15">03:00 PM</option>
-                    <option value="18">06:00 PM</option>
-                    <option value="23">12:00 AM (Midnight)</option>
+                    {TIME_ROWS.map((row) => (
+                      <option key={row.hour + 1} value={row.hour + 1}>
+                        {row.hour + 1 === 24
+                          ? '12:00 AM (Midnight)'
+                          : row.hour + 1 > 12
+                          ? `${String(row.hour + 1 - 12).padStart(2, '0')}:00 PM`
+                          : `${String(row.hour + 1).padStart(2, '0')}:00 AM`}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-lg shadow-md mt-2"
+                className="w-full py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-lg shadow-md mt-2 flex items-center justify-center gap-1.5"
               >
-                Apply Court Block
+                <span className="material-symbols-outlined text-[16px]">lock</span>
+                Apply Court Block (Live)
               </button>
             </form>
+
+            {/* Currently Active Blocks List */}
+            <div>
+              <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-slate-600 mb-3 flex items-center justify-between">
+                <span>Active Court Blocks ({blockedSlots.length})</span>
+                <span className="text-[10px] normal-case text-slate-400">Click Remove to unblock</span>
+              </h4>
+
+              {blockedSlots.length === 0 ? (
+                <div className="p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-center text-xs text-slate-400">
+                  No active court blocks for this date. All courts are open for reservations.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {blockedSlots.map((b) => (
+                    <div
+                      key={b.id}
+                      className="p-3 bg-red-50/60 rounded-xl border border-red-200 flex items-center justify-between shadow-sm"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xs text-red-950">
+                            {b.court_number === 0 ? 'All 11 Courts' : `Court ${b.court_number}`}
+                          </span>
+                          <span className="px-2 py-0.5 bg-red-100 text-red-800 text-[10px] font-extrabold rounded">
+                            {b.reason || 'Maintenance'}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 mt-0.5">
+                          {b.start_hour > 12 ? `${b.start_hour - 12}:00 PM` : `${b.start_hour}:00 AM`} to{' '}
+                          {b.end_hour === 24
+                            ? '12:00 AM'
+                            : b.end_hour > 12
+                            ? `${b.end_hour - 12}:00 PM`
+                            : `${b.end_hour}:00 AM`}{' '}
+                          • {b.block_date === 'ALL' || b.block_date === '2099-12-31' ? 'All Dates' : b.block_date}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleUnblock(b.id)}
+                        className="px-2.5 py-1 bg-white hover:bg-red-100 text-red-600 border border-red-200 rounded font-bold text-xs transition-colors shadow-xs"
+                      >
+                        Remove Block
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
