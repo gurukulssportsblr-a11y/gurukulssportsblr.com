@@ -446,73 +446,85 @@
             </div>
 
             <form id="block-court-form" onsubmit="handleBlockCourtSubmit(event)" class="space-y-4 mb-5 pb-5 border-b border-slate-200">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Select Court(s)</label>
-                        <select id="block-court-select" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold">
-                            <option value="0">All 11 Courts</option>
-                            <option value="1">Court 1</option>
-                            <option value="2">Court 2</option>
-                            <option value="3">Court 3</option>
-                            <option value="4">Court 4</option>
-                            <option value="5">Court 5</option>
-                            <option value="6">Court 6</option>
-                            <option value="7">Court 7</option>
-                            <option value="8">Court 8</option>
-                            <option value="9">Court 9</option>
-                            <option value="10">Court 10</option>
-                            <option value="11">Court 11</option>
-                        </select>
+                <!-- 1. Court Selector Matrix -->
+                <div>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-bold text-slate-700">1. Select Court(s) to Block</label>
+                        <span id="block-court-label" class="text-[11px] font-bold text-blue-700">Selected: All 11 Courts</span>
                     </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Date Scope</label>
-                        <select id="block-scope-select" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium">
-                            <option value="DATE">Selected Date Only</option>
-                            <option value="ALL">All Dates (Indefinite)</option>
-                        </select>
+                    <input type="hidden" id="block-court-select" value="0">
+                    <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1.5" id="court-chip-group">
+                        <button type="button" onclick="selectBlockCourt(0)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-900 text-white border-slate-900 shadow-sm ring-2 ring-slate-400/40">✓ All 11 Courts</button>
+                        <button type="button" onclick="selectBlockCourt(1)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 1</button>
+                        <button type="button" onclick="selectBlockCourt(2)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 2</button>
+                        <button type="button" onclick="selectBlockCourt(3)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 3</button>
+                        <button type="button" onclick="selectBlockCourt(4)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 4</button>
+                        <button type="button" onclick="selectBlockCourt(5)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 5</button>
+                        <button type="button" onclick="selectBlockCourt(6)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 6</button>
+                        <button type="button" onclick="selectBlockCourt(7)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 7</button>
+                        <button type="button" onclick="selectBlockCourt(8)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 8</button>
+                        <button type="button" onclick="selectBlockCourt(9)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 9</button>
+                        <button type="button" onclick="selectBlockCourt(10)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 10</button>
+                        <button type="button" onclick="selectBlockCourt(11)" class="court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100">Court 11</button>
                     </div>
                 </div>
 
+                <!-- 2. Date Scope -->
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">2. Date Scope</label>
+                    <input type="hidden" id="block-scope-select" value="DATE">
+                    <div class="grid grid-cols-2 gap-2" id="scope-chip-group">
+                        <button type="button" onclick="selectBlockScope('DATE')" id="scope-btn-date" class="py-2 px-3 rounded-lg text-xs font-bold border transition-all text-left bg-white text-blue-900 border-blue-500 shadow-xs ring-1 ring-blue-500/20 flex items-center justify-between">
+                            <span id="scope-date-label">Selected Date Only</span>
+                            <span class="text-blue-600 font-extrabold">✓</span>
+                        </button>
+                        <button type="button" onclick="selectBlockScope('ALL')" id="scope-btn-all" class="py-2 px-3 rounded-lg text-xs font-bold border transition-all text-left bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/60 flex items-center justify-between">
+                            <span>All Dates (Indefinite)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Reason for Blocking -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Reason for Blocking</label>
-                    <select id="block-reason-select" onchange="toggleCustomBlockReason(this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium">
-                        <option value="Court Maintenance">Court Mat Maintenance &amp; Cleaning</option>
-                        <option value="State Tournament">State Badminton Tournament</option>
-                        <option value="Academy Coaching Camp">Academy Coaching Camp</option>
-                        <option value="Private Event">Private Corporate Event</option>
-                        <option value="Floodlight &amp; Electrical Repair">Floodlight &amp; Electrical Repair</option>
-                        <option value="Custom">Custom Reason (Type below)...</option>
-                    </select>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">3. Reason for Blocking</label>
+                    <input type="hidden" id="block-reason-select" value="Court Maintenance">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5" id="reason-chip-group">
+                        <button type="button" onclick="selectBlockReason('Court Maintenance', this)" class="reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-red-700 text-white border-red-700 shadow-xs truncate">✓ Mat Maintenance</button>
+                        <button type="button" onclick="selectBlockReason('State Tournament', this)" class="reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 truncate">State Tournament</button>
+                        <button type="button" onclick="selectBlockReason('Academy Coaching Camp', this)" class="reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 truncate">Coaching Camp</button>
+                        <button type="button" onclick="selectBlockReason('Private Event', this)" class="reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 truncate">Corporate Event</button>
+                        <button type="button" onclick="selectBlockReason('Floodlight & Electrical Repair', this)" class="reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 truncate">Electrical Repair</button>
+                        <button type="button" onclick="selectBlockReason('Custom', this)" class="reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 truncate">Custom Reason...</button>
+                    </div>
                     <input type="text" id="block-custom-reason" placeholder="Enter custom reason" class="hidden w-full mt-2 px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-slate-800">
                 </div>
 
-                <!-- Quick Presets -->
+                <!-- 4. Quick Presets & Time -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Quick Time Presets</label>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">4. Time Range & Presets</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mb-2.5">
                         <button type="button" onclick="setBlockTimePreset(6, 24)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700">Full Day (6A-12A)</button>
                         <button type="button" onclick="setBlockTimePreset(6, 12)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700">Morning (6A-12P)</button>
                         <button type="button" onclick="setBlockTimePreset(12, 18)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700">Afternoon (12P-6P)</button>
                         <button type="button" onclick="setBlockTimePreset(18, 23)" class="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700">Evening (6P-11P)</button>
                     </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 mb-1">From Time Slot</label>
+                            <select id="block-start-slot" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-800">
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 mb-1">To Time Slot</label>
+                            <select id="block-end-slot" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-800">
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">From Time Slot</label>
-                        <select id="block-start-slot" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium">
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">To Time Slot</label>
-                        <select id="block-end-slot" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium">
-                        </select>
-                    </div>
-                </div>
-
-                <button type="submit" class="w-full py-2.5 bg-red-600 hover:bg-red-500 text-white font-heading font-bold text-xs rounded-lg transition-all shadow-md mt-2 flex items-center justify-center gap-1.5">
-                    <span class="material-symbols-outlined text-[16px]">lock</span>
+                <button type="submit" class="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-heading font-bold text-sm rounded-xl transition-all shadow-md mt-2 flex items-center justify-center gap-2 cursor-pointer">
+                    <span class="material-symbols-outlined text-[18px]">lock</span>
                     Apply Court Block (Live)
                 </button>
             </form>
@@ -941,6 +953,51 @@
                 fetchLiveDashboardData();
                 alert('🎉 Promotional Announcement published to live website!');
             }
+        }
+
+        function selectBlockCourt(courtNum) {
+            document.getElementById('block-court-select').value = courtNum;
+            document.getElementById('block-court-label').textContent = courtNum === 0 ? 'Selected: All 11 Courts' : `Selected: Court ${courtNum}`;
+            const chips = document.querySelectorAll('#court-chip-group .court-chip');
+            chips.forEach((chip, idx) => {
+                const isSelected = (idx === 0 && courtNum === 0) || (idx === courtNum);
+                if (isSelected) {
+                    chip.className = 'court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center ' + (courtNum === 0 ? 'bg-slate-900 text-white border-slate-900 shadow-sm ring-2 ring-slate-400/40' : 'bg-blue-700 text-white border-blue-700 shadow-sm ring-2 ring-blue-400/40');
+                    chip.textContent = (courtNum === 0 ? '✓ All 11 Courts' : `✓ Court ${courtNum}`);
+                } else {
+                    chip.className = 'court-chip py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100';
+                    chip.textContent = idx === 0 ? 'All 11 Courts' : `Court ${idx}`;
+                }
+            });
+        }
+
+        function selectBlockScope(scope) {
+            document.getElementById('block-scope-select').value = scope;
+            const btnDate = document.getElementById('scope-btn-date');
+            const btnAll = document.getElementById('scope-btn-all');
+            if (scope === 'DATE') {
+                btnDate.className = 'py-2 px-3 rounded-lg text-xs font-bold border transition-all text-left bg-white text-blue-900 border-blue-500 shadow-xs ring-1 ring-blue-500/20 flex items-center justify-between';
+                btnDate.innerHTML = `<span id="scope-date-label">Selected Date Only (${selectedDateStr})</span><span class="text-blue-600 font-extrabold">✓</span>`;
+                btnAll.className = 'py-2 px-3 rounded-lg text-xs font-bold border transition-all text-left bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/60 flex items-center justify-between';
+                btnAll.innerHTML = `<span>All Dates (Indefinite)</span>`;
+            } else {
+                btnAll.className = 'py-2 px-3 rounded-lg text-xs font-bold border transition-all text-left bg-white text-red-900 border-red-500 shadow-xs ring-1 ring-red-500/20 flex items-center justify-between';
+                btnAll.innerHTML = `<span>All Dates (Indefinite Recurring)</span><span class="text-red-600 font-extrabold">✓</span>`;
+                btnDate.className = 'py-2 px-3 rounded-lg text-xs font-bold border transition-all text-left bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/60 flex items-center justify-between';
+                btnDate.innerHTML = `<span id="scope-date-label">Selected Date Only</span>`;
+            }
+        }
+
+        function selectBlockReason(reason, btn) {
+            document.getElementById('block-reason-select').value = reason;
+            const chips = document.querySelectorAll('#reason-chip-group .reason-chip');
+            chips.forEach(c => {
+                c.className = 'reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 truncate';
+                c.textContent = c.textContent.replace(/^✓\s*/, '');
+            });
+            btn.className = 'reason-chip py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left bg-red-700 text-white border-red-700 shadow-xs truncate';
+            btn.textContent = '✓ ' + btn.textContent;
+            toggleCustomBlockReason(reason);
         }
 
         function populateBlockTimeSlots() {

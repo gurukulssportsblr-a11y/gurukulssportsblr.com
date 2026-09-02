@@ -153,16 +153,20 @@ export default function AdminDashboardPage() {
     if (isAuthenticated) {
       fetchDashboardData();
 
-      const handleFocus = () => fetchDashboardData(true);
+      const handleFocus = () => {
+        if (activeModal === 'none') fetchDashboardData(true);
+      };
       window.addEventListener('focus', handleFocus);
-      const interval = setInterval(() => fetchDashboardData(true), 8000);
+      const interval = setInterval(() => {
+        if (activeModal === 'none') fetchDashboardData(true);
+      }, 8000);
 
       return () => {
         window.removeEventListener('focus', handleFocus);
         clearInterval(interval);
       };
     }
-  }, [isAuthenticated, fetchDashboardData]);
+  }, [isAuthenticated, fetchDashboardData, activeModal]);
 
   // Day Name Computation
   const dayName = useMemo(() => {
@@ -1103,55 +1107,111 @@ export default function AdminDashboardPage() {
             </div>
 
             <form onSubmit={handleBlockCourtSubmit} className="space-y-4 mb-6 pb-6 border-b border-slate-200">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Select Court(s)</label>
-                  <select
-                    value={blockCourtNum}
-                    onChange={(e) => setBlockCourtNum(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold"
-                  >
-                    <option value="0">All 11 Courts</option>
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((n) => (
-                      <option key={n} value={n}>
-                        Court {n}
-                      </option>
-                    ))}
-                  </select>
+              {/* 1. Court Selector Matrix */}
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700">1. Select Court(s) to Block</label>
+                  <span className="text-[11px] font-bold text-blue-700">
+                    {blockCourtNum === 0 ? 'Selected: All 11 Courts' : `Selected: Court ${blockCourtNum}`}
+                  </span>
                 </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Date Scope</label>
-                  <select
-                    value={blockAllDates ? 'ALL' : 'DATE'}
-                    onChange={(e) => setBlockAllDates(e.target.value === 'ALL')}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium"
+                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setBlockCourtNum(0)}
+                    className={`py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center ${
+                      blockCourtNum === 0
+                        ? 'bg-slate-900 text-white border-slate-900 shadow-sm ring-2 ring-slate-400/40'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
+                    }`}
                   >
-                    <option value="DATE">Selected Date Only ({selectedDate})</option>
-                    <option value="ALL">All Dates (Indefinite Maintenance)</option>
-                  </select>
+                    {blockCourtNum === 0 && '✓ '}All 11 Courts
+                  </button>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((n) => {
+                    const isSelected = blockCourtNum === n;
+                    return (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setBlockCourtNum(n)}
+                        className={`py-2 px-1.5 rounded-lg text-[11px] font-bold border transition-all text-center ${
+                          isSelected
+                            ? 'bg-blue-700 text-white border-blue-700 shadow-sm ring-2 ring-blue-400/40'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
+                        }`}
+                      >
+                        {isSelected && '✓ '}Court {n}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
+              {/* 2. Date Scope */}
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">2. Date Scope</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBlockAllDates(false)}
+                    className={`py-2 px-3 rounded-lg text-xs font-bold border transition-all text-left flex items-center justify-between ${
+                      !blockAllDates
+                        ? 'bg-white text-blue-900 border-blue-500 shadow-xs ring-1 ring-blue-500/20'
+                        : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/60'
+                    }`}
+                  >
+                    <span>Selected Date Only ({selectedDate})</span>
+                    {!blockAllDates && <span className="text-blue-600 font-extrabold">✓</span>}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBlockAllDates(true)}
+                    className={`py-2 px-3 rounded-lg text-xs font-bold border transition-all text-left flex items-center justify-between ${
+                      blockAllDates
+                        ? 'bg-white text-red-900 border-red-500 shadow-xs ring-1 ring-red-500/20'
+                        : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/60'
+                    }`}
+                  >
+                    <span>All Dates (Indefinite Recurring)</span>
+                    {blockAllDates && <span className="text-red-600 font-extrabold">✓</span>}
+                  </button>
+                </div>
+              </div>
+
+              {/* 3. Reason for Blocking */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Reason for Blocking</label>
-                <select
-                  value={blockReason}
-                  onChange={(e) => setBlockReason(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium"
-                >
-                  <option value="Court Maintenance">Court Mat Maintenance &amp; Cleaning</option>
-                  <option value="State Tournament">State Badminton Tournament</option>
-                  <option value="Academy Coaching Camp">Academy Coaching Camp</option>
-                  <option value="Private Corporate Event">Private Corporate Event</option>
-                  <option value="Floodlight &amp; Electrical Repair">Floodlight &amp; Electrical Repair</option>
-                  <option value="Custom">Custom Reason (Type below)...</option>
-                </select>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">3. Reason for Blocking</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                  {[
+                    { label: 'Court Mat Cleaning', value: 'Court Maintenance' },
+                    { label: 'State Tournament', value: 'State Tournament' },
+                    { label: 'Coaching Camp', value: 'Academy Coaching Camp' },
+                    { label: 'Corporate Event', value: 'Private Corporate Event' },
+                    { label: 'Floodlight Repair', value: 'Floodlight & Electrical Repair' },
+                    { label: 'Custom Reason...', value: 'Custom' },
+                  ].map((r) => {
+                    const isSelected = blockReason === r.value;
+                    return (
+                      <button
+                        key={r.value}
+                        type="button"
+                        onClick={() => setBlockReason(r.value)}
+                        className={`py-2 px-2 rounded-lg text-[11px] font-bold border transition-all text-left truncate ${
+                          isSelected
+                            ? 'bg-red-700 text-white border-red-700 shadow-xs'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        {isSelected && '✓ '}{r.label}
+                      </button>
+                    );
+                  })}
+                </div>
                 {blockReason === 'Custom' && (
                   <input
                     type="text"
                     required
-                    placeholder="Enter custom blocking reason"
+                    placeholder="Type custom reason (e.g. Roof repair, Net replacement)"
                     value={blockCustomReason}
                     onChange={(e) => setBlockCustomReason(e.target.value)}
                     className="w-full mt-2 px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-slate-800"
@@ -1159,10 +1219,17 @@ export default function AdminDashboardPage() {
                 )}
               </div>
 
-              {/* Quick Time Presets */}
+              {/* 4. Time Range & Quick Presets */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Quick Time Presets</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700">4. Time Range</label>
+                  <span className="text-[11px] font-bold text-slate-700">
+                    {blockStart > 12 ? `${blockStart - 12}:00 PM` : `${blockStart}:00 AM`} to{' '}
+                    {blockEnd === 24 ? '12:00 AM Midnight' : blockEnd > 12 ? `${blockEnd - 12}:00 PM` : `${blockEnd}:00 AM`}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mb-2.5">
                   <button
                     type="button"
                     onClick={() => { setBlockStart(6); setBlockEnd(24); }}
@@ -1208,49 +1275,48 @@ export default function AdminDashboardPage() {
                     Evening (6 PM - 11 PM)
                   </button>
                 </div>
-              </div>
 
-              {/* Custom From & To Hours */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">From Time Slot</label>
-                  <select
-                    value={blockStart}
-                    onChange={(e) => setBlockStart(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium"
-                  >
-                    {TIME_ROWS.map((row) => (
-                      <option key={row.hour} value={row.hour}>
-                        {row.display}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">To Time Slot</label>
-                  <select
-                    value={blockEnd}
-                    onChange={(e) => setBlockEnd(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium"
-                  >
-                    {TIME_ROWS.map((row) => (
-                      <option key={row.hour + 1} value={row.hour + 1}>
-                        {row.hour + 1 === 24
-                          ? '12:00 AM (Midnight)'
-                          : row.hour + 1 > 12
-                          ? `${String(row.hour + 1 - 12).padStart(2, '0')}:00 PM`
-                          : `${String(row.hour + 1).padStart(2, '0')}:00 AM`}
-                      </option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1">From Time</label>
+                    <select
+                      value={blockStart}
+                      onChange={(e) => setBlockStart(Number(e.target.value))}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-800"
+                    >
+                      {TIME_ROWS.map((row) => (
+                        <option key={row.hour} value={row.hour}>
+                          {row.display}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1">To Time</label>
+                    <select
+                      value={blockEnd}
+                      onChange={(e) => setBlockEnd(Number(e.target.value))}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-800"
+                    >
+                      {TIME_ROWS.map((row) => (
+                        <option key={row.hour + 1} value={row.hour + 1}>
+                          {row.hour + 1 === 24
+                            ? '12:00 AM (Midnight)'
+                            : row.hour + 1 > 12
+                            ? `${String(row.hour + 1 - 12).padStart(2, '0')}:00 PM`
+                            : `${String(row.hour + 1).padStart(2, '0')}:00 AM`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-lg shadow-md mt-2 flex items-center justify-center gap-1.5"
+                className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold text-sm rounded-xl shadow-md mt-2 flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[16px]">lock</span>
+                <span className="material-symbols-outlined text-[18px]">lock</span>
                 Apply Court Block (Live)
               </button>
             </form>
