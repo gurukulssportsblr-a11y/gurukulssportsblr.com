@@ -1471,7 +1471,6 @@ export default function AdminDashboardPage() {
                   required
                   value={walkinName}
                   onChange={(e) => setWalkinName(e.target.value)}
-                  placeholder="e.g. Ramesh Kumar"
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium"
                 />
               </div>

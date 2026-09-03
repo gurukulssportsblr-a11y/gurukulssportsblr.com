@@ -616,7 +616,6 @@ export default function BookingSystem() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Ramesh Kumar"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all"
@@ -631,7 +630,6 @@ export default function BookingSystem() {
                     type="tel"
                     required
                     maxLength={10}
-                    placeholder="e.g. 9876543210"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all"

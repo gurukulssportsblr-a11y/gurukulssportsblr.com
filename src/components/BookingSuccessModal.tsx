@@ -109,7 +109,7 @@ export default function BookingSuccessModal({
               ⚠️ Strict 10-Minute Arrival Rule
             </p>
             <p>
-              Please arrive at the arena at least 5 minutes before your slot starts.
+              Please arrive at the arena at least 10 minutes before your slot starts.
               <span className="font-bold text-[#B45309] block mt-1">
                 If you are late by 10 minutes, your booking is forfeited and you will lose your slot.
               </span>
