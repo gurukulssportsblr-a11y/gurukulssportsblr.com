@@ -212,3 +212,12 @@ CREATE TABLE public.site_settings (
   1. Migrated blocked court storage to the persistent `site_settings` JSONB table with sub-10ms atomic updates.
   2. Overhauled the **Block Courts Modal** in [`src/app/admin/page.tsx`](file:///home/jeremy/projects/GurukulSprots/src/app/admin/page.tsx) and [`public/admin.html`](file:///home/jeremy/projects/GurukulSprots/public/admin.html) with all 18 hourly slots (06:00 AM to 12:00 AM Midnight), 1-click quick presets (*Full Day, Morning, Afternoon, Evening*), custom reason inputs, and a live list of active blocked courts with 1-click **Remove Block** buttons.
   3. Added strict court-specific filtering (`b.court_number === currentCourtNumber || b.court_number === 0`) in [`src/components/BookingSystem.tsx`](file:///home/jeremy/projects/GurukulSprots/src/components/BookingSystem.tsx) and [`index.html`](file:///home/jeremy/projects/GurukulSprots/index.html).
+
+### Incident 9: Cleaned Checkout Form Placeholders & Adjusted Early Arrival Requirement
+- **Symptom:** The customer booking form displayed confusing mock placeholders (`e.g. Ramesh Kumar` and `e.g. 9876543210`), and the early arrival instruction conflicted with the 10-minute slot forfeit rule (instructed arriving 5 minutes before instead of 10 minutes).
+- **Root Causes Discovered:**
+  1. Hardcoded placeholder strings in [`src/components/BookingSystem.tsx`](file:///home/jeremy/projects/GurukulSprots/src/components/BookingSystem.tsx), [`src/app/admin/page.tsx`](file:///home/jeremy/projects/GurukulSprots/src/app/admin/page.tsx), and [`public/admin.html`](file:///home/jeremy/projects/GurukulSprots/public/admin.html) populated the name and phone fields with example values that users had to clear or found misleading.
+  2. In [`src/components/BookingSuccessModal.tsx`](file:///home/jeremy/projects/GurukulSprots/src/components/BookingSuccessModal.tsx), the warning text recommended arriving 5 minutes early, whereas the arena rules enforce a strict 10-minute early arrival requirement before slot forfeiture.
+- **Technical Fix:**
+  1. Removed placeholder text from the player name and phone number inputs across the customer portal and admin walk-in forms for a clean input experience.
+  2. Updated the arrival policy in [`src/components/BookingSuccessModal.tsx`](file:///home/jeremy/projects/GurukulSprots/src/components/BookingSuccessModal.tsx) to explicitly require arriving **at least 10 minutes before** the reserved slot starts.
