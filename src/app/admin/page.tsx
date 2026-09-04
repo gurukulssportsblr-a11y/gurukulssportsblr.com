@@ -93,28 +93,163 @@ export default function AdminDashboardPage() {
   const [walkinCourt, setWalkinCourt] = useState(1);
   const [walkinSlot, setWalkinSlot] = useState('06:00 AM');
 
-  // Check login on mount
+  const [sessionId, setSessionId] = useState('');
+  const [isLockedOut, setIsLockedOut] = useState(false);
+  const [showOvertakeModal, setShowOvertakeModal] = useState(false);
+  const [overtakePassword, setOvertakePassword] = useState('');
+  const [overtakeError, setOvertakeError] = useState('');
+  const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
+
+  // Check login on mount and validate with server
   useEffect(() => {
     const auth = sessionStorage.getItem('gs_admin_auth');
-    if (auth === 'true') {
-      setIsAuthenticated(true);
+    const sid = sessionStorage.getItem('gs_admin_session_id');
+    if (auth === 'true' && sid) {
+      fetch('/api/admin-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'heartbeat', sessionId: sid }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.valid) {
+            setIsAuthenticated(true);
+            setSessionId(sid);
+          } else {
+            sessionStorage.removeItem('gs_admin_auth');
+            sessionStorage.removeItem('gs_admin_session_id');
+            setIsAuthenticated(false);
+            setSessionId('');
+          }
+        })
+        .catch(() => {
+          setIsAuthenticated(true);
+          setSessionId(sid);
+        });
     }
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Heartbeat keep-alive every 15 seconds while active
+  useEffect(() => {
+    if (!isAuthenticated || !sessionId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/admin-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'heartbeat', sessionId }),
+        });
+        const data = await res.json();
+        if (data && data.valid === false) {
+          sessionStorage.removeItem('gs_admin_auth');
+          sessionStorage.removeItem('gs_admin_session_id');
+          setIsAuthenticated(false);
+          setSessionId('');
+          setLoginError(data.message || 'You have been logged out because another administrator took over the session.');
+        }
+      } catch (err) {
+        // Transient network issue, ignore
+      }
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated, sessionId]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loginEmail.trim() === 'gurukulssportsblr@gmail.com' && loginPass.trim() === 'G#r#kul$Sp0rt$@blr') {
-      sessionStorage.setItem('gs_admin_auth', 'true');
-      setIsAuthenticated(true);
-      setLoginError('');
-    } else {
-      setLoginError('Invalid email or password.');
+    setLoginError('');
+    setIsLockedOut(false);
+    setIsSubmittingLogin(true);
+
+    try {
+      const res = await fetch('/api/admin-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'login',
+          email: loginEmail.trim(),
+          password: loginPass.trim(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success && data.sessionId) {
+        sessionStorage.setItem('gs_admin_auth', 'true');
+        sessionStorage.setItem('gs_admin_session_id', data.sessionId);
+        setSessionId(data.sessionId);
+        setIsAuthenticated(true);
+        setLoginError('');
+        setIsLockedOut(false);
+      } else if (data.locked) {
+        setIsLockedOut(true);
+        setLoginError(data.message || 'Host Portal is currently in use by an active administrator. Only one person can access at a time.');
+      } else {
+        setLoginError(data.error || 'Invalid email or password.');
+      }
+    } catch (err: any) {
+      setLoginError(err.message || 'Failed to connect to server.');
+    } finally {
+      setIsSubmittingLogin(false);
     }
   };
 
-  const handleLogout = () => {
+  const handleEmergencyOvertake = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setOvertakeError('');
+    setIsSubmittingLogin(true);
+
+    try {
+      const res = await fetch('/api/admin-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'login',
+          email: loginEmail.trim(),
+          password: loginPass.trim(),
+          forceOvertake: true,
+          forceOvertakePassword: overtakePassword.trim(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success && data.sessionId) {
+        sessionStorage.setItem('gs_admin_auth', 'true');
+        sessionStorage.setItem('gs_admin_session_id', data.sessionId);
+        setSessionId(data.sessionId);
+        setIsAuthenticated(true);
+        setLoginError('');
+        setIsLockedOut(false);
+        setShowOvertakeModal(false);
+        setOvertakePassword('');
+      } else {
+        setOvertakeError(data.error || 'Incorrect Emergency Override Password.');
+      }
+    } catch (err: any) {
+      setOvertakeError(err.message || 'Failed to connect to server.');
+    } finally {
+      setIsSubmittingLogin(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    if (sessionId) {
+      try {
+        await fetch('/api/admin-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'logout', sessionId }),
+        });
+      } catch (e) {
+        // Ignore
+      }
+    }
     sessionStorage.removeItem('gs_admin_auth');
+    sessionStorage.removeItem('gs_admin_session_id');
     setIsAuthenticated(false);
+    setSessionId('');
   };
 
   // Fetch all live operational data from backend APIs
@@ -397,10 +532,33 @@ export default function AdminDashboardPage() {
           <h2 className="font-heading font-extrabold text-2xl text-slate-900">Host Control Portal</h2>
           <p className="text-xs text-slate-500 mt-1 mb-6">Gurukul's Sports Academy Thubrahalli</p>
 
-          {loginError && (
+          {loginError && !isLockedOut && (
             <div className="p-3 mb-4 rounded-xl bg-red-50 text-red-700 text-xs font-semibold text-left flex items-center gap-2 border border-red-200">
               <span className="material-symbols-outlined text-[18px]">error</span>
               <span>{loginError}</span>
+            </div>
+          )}
+
+          {isLockedOut && (
+            <div className="p-4 mb-5 rounded-2xl bg-amber-50 border border-amber-200 text-left text-xs text-amber-900 space-y-2.5">
+              <div className="flex items-center gap-2 font-bold text-amber-800 text-sm">
+                <span className="material-symbols-outlined text-[20px]">lock_person</span>
+                <span>Host Portal In Use (Single User Lock)</span>
+              </div>
+              <p className="leading-relaxed">
+                Another administrator is currently active on the host portal. Only <strong>one person</strong> can access at a time to prevent conflicting updates.
+              </p>
+              <p className="text-[11px] text-amber-700">
+                Wait for the active session to end, or perform an authorized Emergency Force Takeover.
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowOvertakeModal(true)}
+                className="w-full py-2.5 px-3 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[16px]">bolt</span>
+                Emergency Force Takeover
+              </button>
             </div>
           )}
 
@@ -433,16 +591,90 @@ export default function AdminDashboardPage() {
 
             <button
               type="submit"
-              className="w-full py-3.5 bg-slate-900 hover:bg-blue-600 text-white font-heading font-bold text-sm rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mt-2"
+              disabled={isSubmittingLogin}
+              className="w-full py-3.5 bg-slate-900 hover:bg-blue-600 text-white font-heading font-bold text-sm rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mt-2 cursor-pointer disabled:opacity-50"
             >
-              <span className="material-symbols-outlined text-[18px]">lock_open</span>
-              Unlock Host Control Panel
+              <span className="material-symbols-outlined text-[18px]">
+                {isSubmittingLogin ? 'hourglass_top' : 'lock_open'}
+              </span>
+              {isSubmittingLogin ? 'Verifying Session...' : 'Unlock Host Control Panel'}
             </button>
           </form>
 
+          {/* Emergency Force Takeover Modal */}
+          {showOvertakeModal && (
+            <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 text-left">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-heading font-extrabold text-base text-slate-900 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-red-600 text-[22px]">bolt</span>
+                    Emergency Force Takeover
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowOvertakeModal(false);
+                      setOvertakeError('');
+                    }}
+                    className="text-slate-400 hover:text-slate-600 text-sm font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+                  Entering the emergency override password will <strong>immediately terminate</strong> the other administrator's session and grant you exclusive access.
+                </p>
+
+                {overtakeError && (
+                  <div className="p-2.5 mb-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold flex items-center gap-1.5 border border-red-200">
+                    <span className="material-symbols-outlined text-[16px]">error</span>
+                    <span>{overtakeError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleEmergencyOvertake} className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Emergency Override Password
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      autoFocus
+                      placeholder="Enter override password"
+                      value={overtakePassword}
+                      onChange={(e) => setOvertakePassword(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:border-red-600 focus:ring-2 focus:ring-red-600/20 outline-none"
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowOvertakeModal(false);
+                        setOvertakeError('');
+                      }}
+                      className="flex-1 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmittingLogin}
+                      className="flex-1 py-2 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-700 text-white flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">lock_reset</span>
+                      {isSubmittingLogin ? 'Taking Over...' : 'Take Over'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
           <p className="text-[11px] text-slate-400 mt-6 flex items-center justify-center gap-1">
             <span className="material-symbols-outlined text-[14px]">shield</span>
-            Authorized Arena Staff Only • 256-Bit Encrypted
+            Authorized Arena Staff Only • Single-Session Protected
           </p>
         </div>
       </div>

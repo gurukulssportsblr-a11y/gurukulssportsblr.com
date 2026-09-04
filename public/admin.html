@@ -79,6 +79,24 @@
                 <span id="login-error-text">Invalid login credentials</span>
             </div>
 
+            <!-- Lockout Banner -->
+            <div id="login-lockout-banner" class="hidden p-4 mb-5 rounded-2xl bg-amber-50 border border-amber-200 text-left text-xs text-amber-900 space-y-2.5">
+                <div class="flex items-center gap-2 font-bold text-amber-800 text-sm">
+                    <span class="material-symbols-outlined text-[20px]">lock_person</span>
+                    <span>Host Portal In Use (Single User Lock)</span>
+                </div>
+                <p class="leading-relaxed">
+                    Another administrator is currently active on the host portal. Only <strong>one person</strong> can access at a time to prevent conflicting updates.
+                </p>
+                <p class="text-[11px] text-amber-700">
+                    Wait for their session to end, or perform an authorized Emergency Force Takeover.
+                </p>
+                <button type="button" onclick="openEmergencyModal()" class="w-full py-2.5 px-3 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer">
+                    <span class="material-symbols-outlined text-[16px]">bolt</span>
+                    Emergency Force Takeover
+                </button>
+            </div>
+
             <form id="admin-login-form" class="space-y-4 text-left">
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Official Email</label>
@@ -89,15 +107,50 @@
                     <input type="password" id="login-password" required placeholder="Enter password" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all">
                 </div>
                 
-                <button type="submit" class="w-full py-3.5 bg-slate-900 hover:bg-blue-600 text-white font-heading font-bold text-sm rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mt-2">
+                <button type="submit" id="login-submit-btn" class="w-full py-3.5 bg-slate-900 hover:bg-blue-600 text-white font-heading font-bold text-sm rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mt-2 cursor-pointer">
                     <span class="material-symbols-outlined text-[18px]">lock_open</span>
-                    Unlock Host Control Panel
+                    <span id="login-submit-text">Unlock Host Control Panel</span>
                 </button>
             </form>
 
+            <!-- Emergency Takeover Modal -->
+            <div id="emergency-modal" class="hidden fixed inset-0 z-60 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+                <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 text-left">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-heading font-extrabold text-base text-slate-900 flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-red-600 text-[22px]">bolt</span>
+                            Emergency Force Takeover
+                        </h3>
+                        <button type="button" onclick="closeEmergencyModal()" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+                    </div>
+                    <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+                        Entering the emergency override password will <strong>immediately terminate</strong> the other administrator's session and grant you exclusive access.
+                    </p>
+
+                    <div id="emergency-error" class="hidden p-2.5 mb-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold flex items-center gap-1.5 border border-red-200">
+                        <span class="material-symbols-outlined text-[16px]">error</span>
+                        <span id="emergency-error-text">Incorrect password</span>
+                    </div>
+
+                    <form id="emergency-form" onsubmit="handleEmergencySubmit(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Emergency Override Password</label>
+                            <input type="password" id="emergency-override-pass" required placeholder="Enter override password" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:border-red-600 focus:ring-2 focus:ring-red-600/20 outline-none">
+                        </div>
+                        <div class="flex gap-2 pt-1">
+                            <button type="button" onclick="closeEmergencyModal()" class="flex-1 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">Cancel</button>
+                            <button type="submit" id="emergency-submit-btn" class="flex-1 py-2 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-700 text-white flex items-center justify-center gap-1 cursor-pointer">
+                                <span class="material-symbols-outlined text-[16px]">lock_reset</span>
+                                <span>Take Over</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <p class="text-[11px] text-slate-400 mt-6 flex items-center justify-center gap-1">
                 <span class="material-symbols-outlined text-[14px]">shield</span>
-                Authorized Arena Staff Only • Full Live Database Sync
+                Authorized Arena Staff Only • Single-Session Protected
             </p>
         </div>
     </div>
@@ -660,34 +713,178 @@
         let blockedSlots = [];
         let allBookings = [];
 
-        function checkAuth() {
-            const isAuth = sessionStorage.getItem('gs_admin_auth');
-            const loginModal = document.getElementById('login-modal');
-            if (isAuth === 'true') {
-                loginModal.classList.add('hidden');
-                fetchLiveDashboardData();
-            } else {
-                loginModal.classList.remove('hidden');
-            }
+        let currentAdminSessionId = '';
+        let adminHeartbeatTimer = null;
+
+        function openEmergencyModal() {
+            document.getElementById('emergency-modal').classList.remove('hidden');
+            document.getElementById('emergency-error').classList.add('hidden');
+            document.getElementById('emergency-override-pass').value = '';
+            document.getElementById('emergency-override-pass').focus();
         }
 
-        document.getElementById('admin-login-form').addEventListener('submit', (e) => {
+        function closeEmergencyModal() {
+            document.getElementById('emergency-modal').classList.add('hidden');
+        }
+
+        async function checkAuth() {
+            const isAuth = sessionStorage.getItem('gs_admin_auth');
+            const sid = sessionStorage.getItem('gs_admin_session_id');
+            const loginModal = document.getElementById('login-modal');
+
+            if (isAuth === 'true' && sid) {
+                try {
+                    const res = await fetch('/api/admin-session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'heartbeat', sessionId: sid })
+                    });
+                    const data = await res.json();
+                    if (data && data.valid) {
+                        currentAdminSessionId = sid;
+                        loginModal.classList.add('hidden');
+                        fetchLiveDashboardData();
+                        startAdminHeartbeat();
+                        return;
+                    }
+                } catch (e) {
+                    // Ignore transient network errors
+                }
+            }
+
+            sessionStorage.removeItem('gs_admin_auth');
+            sessionStorage.removeItem('gs_admin_session_id');
+            loginModal.classList.remove('hidden');
+        }
+
+        function startAdminHeartbeat() {
+            if (adminHeartbeatTimer) clearInterval(adminHeartbeatTimer);
+            adminHeartbeatTimer = setInterval(async () => {
+                if (!currentAdminSessionId) return;
+                try {
+                    const res = await fetch('/api/admin-session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'heartbeat', sessionId: currentAdminSessionId })
+                    });
+                    const data = await res.json();
+                    if (data && data.valid === false) {
+                        clearInterval(adminHeartbeatTimer);
+                        sessionStorage.removeItem('gs_admin_auth');
+                        sessionStorage.removeItem('gs_admin_session_id');
+                        currentAdminSessionId = '';
+                        alert('⚠️ You have been logged out because another administrator took over the session.');
+                        location.reload();
+                    }
+                } catch (e) {}
+            }, 15000);
+        }
+
+        document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value.trim();
             const pass = document.getElementById('login-password').value.trim();
+            const submitBtn = document.getElementById('login-submit-btn');
+            const submitText = document.getElementById('login-submit-text');
+            const errorDiv = document.getElementById('login-error');
+            const errorText = document.getElementById('login-error-text');
+            const lockoutBanner = document.getElementById('login-lockout-banner');
 
-            if (email === 'gurukulssportsblr@gmail.com' && pass === 'G#r#kul$Sp0rt$@blr') {
-                sessionStorage.setItem('gs_admin_auth', 'true');
-                document.getElementById('login-modal').classList.add('hidden');
-                document.getElementById('login-error').classList.add('hidden');
-                fetchLiveDashboardData();
-            } else {
-                document.getElementById('login-error').classList.remove('hidden');
+            errorDiv.classList.add('hidden');
+            lockoutBanner.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitText.textContent = 'Verifying Session...';
+
+            try {
+                const res = await fetch('/api/admin-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'login', email, password: pass })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success && data.sessionId) {
+                    sessionStorage.setItem('gs_admin_auth', 'true');
+                    sessionStorage.setItem('gs_admin_session_id', data.sessionId);
+                    currentAdminSessionId = data.sessionId;
+                    document.getElementById('login-modal').classList.add('hidden');
+                    fetchLiveDashboardData();
+                    startAdminHeartbeat();
+                } else if (data.locked) {
+                    lockoutBanner.classList.remove('hidden');
+                } else {
+                    errorText.textContent = data.error || 'Invalid login credentials';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorText.textContent = 'Failed to connect to server';
+                errorDiv.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitText.textContent = 'Unlock Host Control Panel';
             }
         });
 
-        function logoutAdmin() {
+        async function handleEmergencySubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-password').value.trim();
+            const overridePass = document.getElementById('emergency-override-pass').value.trim();
+            const submitBtn = document.getElementById('emergency-submit-btn');
+            const errorDiv = document.getElementById('emergency-error');
+            const errorText = document.getElementById('emergency-error-text');
+
+            errorDiv.classList.add('hidden');
+            submitBtn.disabled = true;
+
+            try {
+                const res = await fetch('/api/admin-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'login',
+                        email,
+                        password: pass,
+                        forceOvertake: true,
+                        forceOvertakePassword: overridePass
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success && data.sessionId) {
+                    sessionStorage.setItem('gs_admin_auth', 'true');
+                    sessionStorage.setItem('gs_admin_session_id', data.sessionId);
+                    currentAdminSessionId = data.sessionId;
+                    closeEmergencyModal();
+                    document.getElementById('login-modal').classList.add('hidden');
+                    fetchLiveDashboardData();
+                    startAdminHeartbeat();
+                } else {
+                    errorText.textContent = data.error || 'Incorrect override password';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorText.textContent = 'Connection error';
+                errorDiv.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function logoutAdmin() {
+            if (currentAdminSessionId) {
+                try {
+                    await fetch('/api/admin-session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'logout', sessionId: currentAdminSessionId })
+                    });
+                } catch (e) {}
+            }
             sessionStorage.removeItem('gs_admin_auth');
+            sessionStorage.removeItem('gs_admin_session_id');
             location.reload();
         }
 

@@ -201,6 +201,7 @@ CREATE TABLE public.site_settings (
 ### Host Control Login Credentials:
 - **Email:** `gurukulssportsblr@gmail.com`
 - **Password:** `G#r#kul$Sp0rt$@blr`
+- **Emergency Override Password (Force Takeover):** `Ace_V1j1th`
 
 ### Incident 8: Block Court Feature Missing Supabase Storage & Restricted Time Dropdown
 - **Symptom:** Blocking courts in the admin console was slow, frequently failed to persist across serverless restarts, and the modal dropdown only allowed selecting 5 arbitrary morning/evening hours instead of the exact desired time slot.
@@ -221,3 +222,13 @@ CREATE TABLE public.site_settings (
 - **Technical Fix:**
   1. Removed placeholder text from the player name and phone number inputs across the customer portal and admin walk-in forms for a clean input experience.
   2. Updated the arrival policy in [`src/components/BookingSuccessModal.tsx`](file:///home/jeremy/projects/GurukulSprots/src/components/BookingSuccessModal.tsx) to explicitly require arriving **at least 10 minutes before** the reserved slot starts.
+
+### Incident 10: Enforced Single Active Admin Session with Strict Mutex Lock & Emergency Override
+- **Symptom:** Multiple administrators could log in and interact with the Host Portal simultaneously from different devices or browser tabs, risking concurrent booking overwrites and pricing conflicts.
+- **Root Causes Discovered:**
+  1. Authentication was solely validated client-side against static browser `sessionStorage`, without a centralized server-side mutex or lease coordinator.
+- **Technical Fix:**
+  1. Created server-side session coordinator at [`src/app/api/admin-session/route.ts`](file:///home/jeremy/projects/GurukulSprots/src/app/api/admin-session/route.ts) and store methods in [`src/lib/server-store.ts`](file:///home/jeremy/projects/GurukulSprots/src/lib/server-store.ts) persisting an `admin_active_session` lease to Supabase `site_settings`.
+  2. Implemented strict lockout logic: If an active session is detected within a 90-second heartbeat window, any subsequent login attempt is rejected with a clear "Host Portal In Use" warning.
+  3. Integrated an **Emergency Force Takeover** capability requiring secret password `Ace_V1j1th`. Supplying this key immediately invalidates the conflicting administrator's session and reassigns exclusive ownership to the new caller.
+  4. Configured automated 15-second background heartbeats on active dashboards; if a session is overtaken or terminated, the previous user is immediately logged out with an alert.

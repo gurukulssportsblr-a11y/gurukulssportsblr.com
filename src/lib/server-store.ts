@@ -29,6 +29,13 @@ export interface PromoBannerSettings {
   updated_at?: string;
 }
 
+export interface AdminSessionRecord {
+  sessionId: string;
+  userEmail: string;
+  startedAt: number;
+  lastHeartbeat: number;
+}
+
 export interface BookingSlotRecord {
   id?: string;
   booking_id?: string;
@@ -64,6 +71,7 @@ const globalStore = global as unknown as {
   _gsPricingRules?: PricingRule[];
   _gsBlockedSlots?: BlockedSlot[];
   _gsPromoBanner?: PromoBannerSettings;
+  _gsAdminSession?: AdminSessionRecord | null;
   _gsMockSlots?: BookingSlotRecord[];
   _gsMockBookings?: BookingRecord[];
 };
@@ -421,3 +429,100 @@ export function cancelMockBooking(idOrCode: string) {
     });
   }
 }
+
+// ==============================================================================
+// SINGLE ACTIVE ADMIN SESSION MANAGEMENT (OPTION 2: STRICT MUTEX LOCKOUT)
+// ==============================================================================
+export const ADMIN_SESSION_TIMEOUT_MS = 90_000; // 90 seconds inactivity timeout
+
+export async function getAdminActiveSession(): Promise<AdminSessionRecord | null> {
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createServerClient();
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'admin_active_session')
+        .maybeSingle();
+
+      if (!error && data && data.value && data.value.sessionId) {
+        globalStore._gsAdminSession = data.value as AdminSessionRecord;
+        return globalStore._gsAdminSession;
+      }
+    } catch (err) {
+      console.warn('Supabase admin session read error:', err);
+    }
+  }
+  return globalStore._gsAdminSession || null;
+}
+
+export async function saveAdminSession(session: AdminSessionRecord | null): Promise<void> {
+  globalStore._gsAdminSession = session;
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createServerClient();
+      await supabase.from('site_settings').upsert({
+        key: 'admin_active_session',
+        value: session || {},
+        updated_at: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.warn('Supabase admin session save error:', err);
+    }
+  }
+}
+
+export async function attemptAdminLogin(email: string, forceOvertake: boolean = false): Promise<{
+  success: boolean;
+  sessionId?: string;
+  locked?: boolean;
+  activeSince?: number;
+  message?: string;
+}> {
+  const current = await getAdminActiveSession();
+  const now = Date.now();
+
+  const isCurrentActive =
+    current && current.sessionId && typeof current.lastHeartbeat === 'number' && now - current.lastHeartbeat < ADMIN_SESSION_TIMEOUT_MS;
+
+  if (isCurrentActive && !forceOvertake) {
+    return {
+      success: false,
+      locked: true,
+      activeSince: current.startedAt,
+      message: 'Host Portal is currently in use by an active administrator. Only one person can access at a time.',
+    };
+  }
+
+  const newSession: AdminSessionRecord = {
+    sessionId: crypto.randomUUID(),
+    userEmail: email,
+    startedAt: now,
+    lastHeartbeat: now,
+  };
+
+  await saveAdminSession(newSession);
+  return { success: true, sessionId: newSession.sessionId };
+}
+
+export async function heartbeatAdminSession(sessionId: string): Promise<{ valid: boolean; message?: string }> {
+  const current = await getAdminActiveSession();
+  if (!current || !current.sessionId || current.sessionId !== sessionId) {
+    return {
+      valid: false,
+      message: 'Your session has ended because another administrator took over or logged out.',
+    };
+  }
+
+  current.lastHeartbeat = Date.now();
+  await saveAdminSession(current);
+  return { valid: true };
+}
+
+export async function logoutAdminSession(sessionId?: string): Promise<void> {
+  const current = await getAdminActiveSession();
+  if (!sessionId || (current && current.sessionId === sessionId)) {
+    await saveAdminSession(null);
+  }
+}
+
