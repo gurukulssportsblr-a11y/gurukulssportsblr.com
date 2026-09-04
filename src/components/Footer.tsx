@@ -11,7 +11,7 @@ export default function Footer() {
               src="/logo.jpeg"
             />
             <span className="text-title-md font-title-md font-bold text-surface-container-lowest tracking-tight">
-              Gurukul's Sports ®
+              Gurukul&apos;s Sports<sup className="text-xs ml-0.5">®</sup>
             </span>
           </a>
           <p className="font-body-md text-sm text-surface-dim max-w-sm leading-relaxed">
@@ -144,7 +144,7 @@ export default function Footer() {
 
       <div className="border-t border-surface-container-lowest/10 py-6 px-margin-mobile md:px-margin-desktop text-center">
         <p className="font-label-sm text-xs text-surface-dim/70">
-          © {new Date().getFullYear()} Gurukul's Sports ®. Premier Athletics &amp; Hospitality. All rights reserved.
+          © {new Date().getFullYear()} Gurukul&apos;s Sports<sup className="text-[10px] ml-0.5">®</sup>. Premier Athletics &amp; Hospitality. All rights reserved.
         </p>
       </div>
     </footer>

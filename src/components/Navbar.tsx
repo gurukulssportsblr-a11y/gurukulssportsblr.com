@@ -47,7 +47,7 @@ export default function Navbar() {
             src="/logo.jpeg"
           />
           <span className="text-title-md font-title-md font-bold text-on-surface tracking-tight">
-            Gurukul's Sports ®
+            Gurukul&apos;s Sports<sup className="text-xs ml-0.5">®</sup>
           </span>
         </a>
 
