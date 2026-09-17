@@ -236,7 +236,7 @@ export default function CancelBookingModal({
                           className="px-2.5 py-1 text-xs text-[#2563EB] hover:bg-[#2563EB]/10 rounded font-medium flex items-center gap-1"
                         >
                           <span className="material-symbols-outlined text-[14px]">print</span>
-                          Print Receipt
+                          Print Booking Slip
                         </button>
                         <button
                           onClick={() => handleCancel(booking.id)}

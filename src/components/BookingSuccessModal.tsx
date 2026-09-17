@@ -124,7 +124,7 @@ export default function BookingSuccessModal({
             className="flex-1 py-3 px-4 rounded-lg border border-outline-variant font-label-md text-sm text-[#0F172A] hover:bg-surface-container-high transition-colors flex items-center justify-center gap-2"
           >
             <span className="material-symbols-outlined text-[18px]">print</span>
-            Print / Save Receipt
+            Print / Save Booking Slip
           </button>
           <button
             onClick={onClose}
