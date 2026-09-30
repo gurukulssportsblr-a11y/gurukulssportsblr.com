@@ -94,6 +94,7 @@ export default function AdminDashboardPage() {
   const [walkinSlot, setWalkinSlot] = useState('06:00 AM');
 
   const [sessionId, setSessionId] = useState('');
+  const [userRole, setUserRole] = useState<'admin' | 'staff'>('admin');
   const [isLockedOut, setIsLockedOut] = useState(false);
   const [showOvertakeModal, setShowOvertakeModal] = useState(false);
   const [overtakePassword, setOvertakePassword] = useState('');
@@ -104,6 +105,9 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const auth = sessionStorage.getItem('gs_admin_auth');
     const sid = sessionStorage.getItem('gs_admin_session_id');
+    const savedRole = (sessionStorage.getItem('gs_admin_role') as 'admin' | 'staff') || 'admin';
+    setUserRole(savedRole);
+
     if (auth === 'true' && sid) {
       fetch('/api/admin-session', {
         method: 'POST',
@@ -115,9 +119,14 @@ export default function AdminDashboardPage() {
           if (data && data.valid) {
             setIsAuthenticated(true);
             setSessionId(sid);
+            if (data.role) {
+              setUserRole(data.role);
+              sessionStorage.setItem('gs_admin_role', data.role);
+            }
           } else {
             sessionStorage.removeItem('gs_admin_auth');
             sessionStorage.removeItem('gs_admin_session_id');
+            sessionStorage.removeItem('gs_admin_role');
             setIsAuthenticated(false);
             setSessionId('');
           }
@@ -144,9 +153,13 @@ export default function AdminDashboardPage() {
         if (data && data.valid === false) {
           sessionStorage.removeItem('gs_admin_auth');
           sessionStorage.removeItem('gs_admin_session_id');
+          sessionStorage.removeItem('gs_admin_role');
           setIsAuthenticated(false);
           setSessionId('');
           setLoginError(data.message || 'You have been logged out because another administrator took over the session.');
+        } else if (data && data.role) {
+          setUserRole(data.role);
+          sessionStorage.setItem('gs_admin_role', data.role);
         }
       } catch (err) {
         // Transient network issue, ignore
@@ -176,17 +189,20 @@ export default function AdminDashboardPage() {
       const data = await res.json();
 
       if (res.ok && data.success && data.sessionId) {
+        const role = data.role || 'admin';
         sessionStorage.setItem('gs_admin_auth', 'true');
         sessionStorage.setItem('gs_admin_session_id', data.sessionId);
+        sessionStorage.setItem('gs_admin_role', role);
+        setUserRole(role);
         setSessionId(data.sessionId);
         setIsAuthenticated(true);
         setLoginError('');
         setIsLockedOut(false);
       } else if (data.locked) {
         setIsLockedOut(true);
-        setLoginError(data.message || 'Host Portal is currently in use by an active administrator. Only one person can access at a time.');
+        setLoginError(data.message || 'Host Portal is currently in use by an active session. Only one person can access at a time.');
       } else {
-        setLoginError(data.error || 'Invalid email or password.');
+        setLoginError(data.error || 'Invalid email/username or password.');
       }
     } catch (err: any) {
       setLoginError(err.message || 'Failed to connect to server.');
@@ -216,8 +232,11 @@ export default function AdminDashboardPage() {
       const data = await res.json();
 
       if (res.ok && data.success && data.sessionId) {
+        const role = data.role || 'admin';
         sessionStorage.setItem('gs_admin_auth', 'true');
         sessionStorage.setItem('gs_admin_session_id', data.sessionId);
+        sessionStorage.setItem('gs_admin_role', role);
+        setUserRole(role);
         setSessionId(data.sessionId);
         setIsAuthenticated(true);
         setLoginError('');
@@ -248,7 +267,9 @@ export default function AdminDashboardPage() {
     }
     sessionStorage.removeItem('gs_admin_auth');
     sessionStorage.removeItem('gs_admin_session_id');
+    sessionStorage.removeItem('gs_admin_role');
     setIsAuthenticated(false);
+    setUserRole('admin');
     setSessionId('');
   };
 
@@ -349,6 +370,10 @@ export default function AdminDashboardPage() {
 
   // Cancel Slot Booking
   const handleCancelBooking = async (bookingId: string, courtNum: number, slotTime: string) => {
+    if (userRole !== 'admin') {
+      alert('Action restricted: Staff accounts cannot cancel bookings.');
+      return;
+    }
     if (!window.confirm(`Cancel booking for Court ${courtNum} at ${slotTime}? This will immediately free the slot for customers.`)) return;
 
     try {
@@ -372,6 +397,10 @@ export default function AdminDashboardPage() {
 
   // Unblock Slot
   const handleUnblock = async (blockId: string) => {
+    if (userRole !== 'admin') {
+      alert('Action restricted: Staff accounts cannot unblock courts.');
+      return;
+    }
     if (!window.confirm('Remove this court block?')) return;
     try {
       const res = await fetch(`/api/blocked-slots?id=${blockId}`, { method: 'DELETE' });
@@ -387,6 +416,10 @@ export default function AdminDashboardPage() {
   // Save Pricing Rule
   const handleSavePricingRule = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (userRole !== 'admin') {
+      alert('Action restricted: Staff accounts cannot modify pricing.');
+      return;
+    }
     if (newRuleStart >= newRuleEnd) {
       alert('Start time must be earlier than End time.');
       return;
@@ -417,6 +450,10 @@ export default function AdminDashboardPage() {
   };
 
   const handleDeleteRule = async (id: string) => {
+    if (userRole !== 'admin') {
+      alert('Action restricted: Staff accounts cannot delete pricing rules.');
+      return;
+    }
     if (!window.confirm('Delete this pricing rule?')) return;
     try {
       await fetch(`/api/pricing-rules?id=${id}`, { method: 'DELETE' });
@@ -429,6 +466,10 @@ export default function AdminDashboardPage() {
   // Save Promo Banner
   const handleSavePromoBanner = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (userRole !== 'admin') {
+      alert('Action restricted: Staff accounts cannot modify promotional banners.');
+      return;
+    }
     try {
       const res = await fetch('/api/promo-banner', {
         method: 'POST',
@@ -449,6 +490,10 @@ export default function AdminDashboardPage() {
   // Block Court Submit
   const handleBlockCourtSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (userRole !== 'admin') {
+      alert('Action restricted: Staff accounts cannot block courts.');
+      return;
+    }
     if (blockStart >= blockEnd) {
       alert('From time must be earlier than To time.');
       return;
@@ -565,11 +610,12 @@ export default function AdminDashboardPage() {
           <form onSubmit={handleLogin} className="space-y-4 text-left">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-                Official Email
+                Email / Username
               </label>
               <input
-                type="email"
+                type="text"
                 required
+                placeholder="Enter email or username (e.g. staff)"
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all"
@@ -699,6 +745,15 @@ export default function AdminDashboardPage() {
                 <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/30 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live Register
                 </span>
+                {userRole === 'staff' ? (
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-bold tracking-wider border border-amber-500/40 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">badge</span> Staff Mode (View &amp; Walk-in Only)
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[11px] font-bold tracking-wider border border-blue-500/40 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">shield_person</span> Admin Mode (Full Access)
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-400 font-medium">
                 11 BWF Synthetic Badminton Courts • Arena Operations Dashboard
@@ -707,33 +762,37 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="flex items-center flex-wrap gap-2.5">
-            <button
-              onClick={() => setActiveModal('pricing')}
-              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm"
-            >
-              <span className="material-symbols-outlined text-[18px]">percent</span>
-              Slot Pricing &amp; Discounts
-            </button>
+            {userRole === 'admin' && (
+              <>
+                <button
+                  onClick={() => setActiveModal('pricing')}
+                  className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-[18px]">percent</span>
+                  Slot Pricing &amp; Discounts
+                </button>
 
-            <button
-              onClick={() => setActiveModal('promo')}
-              className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm"
-            >
-              <span className="material-symbols-outlined text-[18px]">campaign</span>
-              Promo Banner &amp; Pop-up
-            </button>
+                <button
+                  onClick={() => setActiveModal('promo')}
+                  className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-[18px]">campaign</span>
+                  Promo Banner &amp; Pop-up
+                </button>
 
-            <button
-              onClick={() => setActiveModal('block')}
-              className="px-3.5 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm"
-            >
-              <span className="material-symbols-outlined text-[18px]">block</span>
-              Block Courts (Maintenance)
-            </button>
+                <button
+                  onClick={() => setActiveModal('block')}
+                  className="px-3.5 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-[18px]">block</span>
+                  Block Courts (Maintenance)
+                </button>
+              </>
+            )}
 
             <button
               onClick={() => setActiveModal('walkin')}
-              className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg border border-white/20 transition-all flex items-center gap-1.5"
+              className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px]">add_circle</span>
               + Walk-in Booking
@@ -843,24 +902,12 @@ export default function AdminDashboardPage() {
 
       {/* KPI Cards */}
       <main className="max-w-[1700px] mx-auto px-4 lg:px-8 py-6 space-y-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div className={`grid gap-4 ${userRole === 'staff' ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-5'}`}>
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Booked Slots</p>
             <div className="flex items-baseline justify-between mt-1">
               <h3 className="font-heading font-extrabold text-2xl text-slate-900">{totalBookedCount}</h3>
               <span className="text-xs text-slate-400 font-medium">/ 198 total</span>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Day's Revenue</p>
-            <div className="flex items-baseline justify-between mt-1">
-              <h3 className="font-heading font-extrabold text-2xl text-emerald-600">
-                ₹{totalRevenue.toLocaleString('en-IN')}
-              </h3>
-              <span className="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-bold">
-                LIVE
-              </span>
             </div>
           </div>
 
@@ -872,39 +919,63 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Pricing Rules</p>
-            <div className="flex items-baseline justify-between mt-1">
-              <h3 className="font-heading font-extrabold text-2xl text-amber-600">
-                {pricingRules.filter((r) => r.is_active).length}
-              </h3>
-              <span
-                className="text-xs text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-semibold cursor-pointer hover:underline"
-                onClick={() => setActiveModal('pricing')}
-              >
-                Configure
-              </span>
+          {userRole === 'staff' ? (
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Available Slots</p>
+              <div className="flex items-baseline justify-between mt-1">
+                <h3 className="font-heading font-extrabold text-2xl text-emerald-600">{198 - totalBookedCount}</h3>
+                <span className="text-xs text-slate-400 font-medium">Open to Book</span>
+              </div>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Day's Revenue</p>
+                <div className="flex items-baseline justify-between mt-1">
+                  <h3 className="font-heading font-extrabold text-2xl text-emerald-600">
+                    ₹{totalRevenue.toLocaleString('en-IN')}
+                  </h3>
+                  <span className="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-bold">
+                    LIVE
+                  </span>
+                </div>
+              </div>
 
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm col-span-2 sm:col-span-1">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Promo Banner</p>
-            <div className="flex items-baseline justify-between mt-1">
-              <h3
-                className={`font-heading font-extrabold text-lg ${
-                  promoBanner.enabled ? 'text-emerald-600' : 'text-slate-400'
-                }`}
-              >
-                {promoBanner.enabled ? 'ACTIVE' : 'DISABLED'}
-              </h3>
-              <span
-                className="text-xs text-slate-400 font-medium cursor-pointer hover:underline"
-                onClick={() => setActiveModal('promo')}
-              >
-                Edit
-              </span>
-            </div>
-          </div>
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Pricing Rules</p>
+                <div className="flex items-baseline justify-between mt-1">
+                  <h3 className="font-heading font-extrabold text-2xl text-amber-600">
+                    {pricingRules.filter((r) => r.is_active).length}
+                  </h3>
+                  <span
+                    className="text-xs text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-semibold cursor-pointer hover:underline"
+                    onClick={() => setActiveModal('pricing')}
+                  >
+                    Configure
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm col-span-2 sm:col-span-1">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Promo Banner</p>
+                <div className="flex items-baseline justify-between mt-1">
+                  <h3
+                    className={`font-heading font-extrabold text-lg ${
+                      promoBanner.enabled ? 'text-emerald-600' : 'text-slate-400'
+                    }`}
+                  >
+                    {promoBanner.enabled ? 'ACTIVE' : 'DISABLED'}
+                  </h3>
+                  <span
+                    className="text-xs text-slate-400 font-medium cursor-pointer hover:underline"
+                    onClick={() => setActiveModal('promo')}
+                  >
+                    Edit
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* 11-Court Register Table Matrix */}
@@ -961,13 +1032,15 @@ export default function AdminDashboardPage() {
                               </span>
                               <div className="flex justify-between items-center text-[9px] text-amber-800">
                                 <span className="truncate">{blockMatch.reason}</span>
-                                <button
-                                  onClick={() => handleUnblock(blockMatch.id)}
-                                  title="Unblock this court"
-                                  className="text-red-600 hover:underline font-extrabold"
-                                >
-                                  ✕
-                                </button>
+                                {userRole === 'admin' && (
+                                  <button
+                                    onClick={() => handleUnblock(blockMatch.id)}
+                                    title="Unblock this court"
+                                    className="text-red-600 hover:underline font-extrabold"
+                                  >
+                                    ✕
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </td>
@@ -993,19 +1066,21 @@ export default function AdminDashboardPage() {
                               </div>
                               <div className="flex justify-between items-center text-[9px] text-slate-400">
                                 <span className="truncate">{booking.customer_phone}</span>
-                                <button
-                                  onClick={() =>
-                                    handleCancelBooking(
-                                      booking.booking_id || booking.id,
-                                      courtNum,
-                                      row.display
-                                    )
-                                  }
-                                  title="Cancel Booking & Free Slot"
-                                  className="text-red-400 hover:text-red-300 font-bold hover:underline"
-                                >
-                                  ✕ Cancel
-                                </button>
+                                {userRole === 'admin' && (
+                                  <button
+                                    onClick={() =>
+                                      handleCancelBooking(
+                                        booking.booking_id || booking.id,
+                                        courtNum,
+                                        row.display
+                                      )
+                                    }
+                                    title="Cancel Booking & Free Slot"
+                                    className="text-red-400 hover:text-red-300 font-bold hover:underline"
+                                  >
+                                    ✕ Cancel
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </td>
@@ -1078,7 +1153,7 @@ export default function AdminDashboardPage() {
       </main>
 
       {/* MODAL 1: PRICING RULES */}
-      {activeModal === 'pricing' && (
+      {activeModal === 'pricing' && userRole === 'admin' && (
         <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center pb-4 border-b border-slate-200 mb-5">
@@ -1235,7 +1310,7 @@ export default function AdminDashboardPage() {
       )}
 
       {/* MODAL 2: PROMO BANNER */}
-      {activeModal === 'promo' && (
+      {activeModal === 'promo' && userRole === 'admin' && (
         <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center pb-4 border-b border-slate-200 mb-5">
@@ -1322,7 +1397,7 @@ export default function AdminDashboardPage() {
       )}
 
       {/* MODAL 3: BLOCK COURTS */}
-      {activeModal === 'block' && (
+      {activeModal === 'block' && userRole === 'admin' && (
         <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center pb-4 border-b border-slate-200 mb-5">

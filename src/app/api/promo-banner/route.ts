@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 import { NextResponse } from 'next/server';
-import { getPromoBanner, savePromoBanner } from '@/lib/server-store';
+import { getPromoBanner, savePromoBanner, assertAdminPrivilege } from '@/lib/server-store';
 
 export async function GET() {
   try {
@@ -15,6 +15,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const check = await assertAdminPrivilege();
+    if (!check.authorized) {
+      return NextResponse.json({ error: check.error }, { status: 403 });
+    }
+
     const body = await req.json();
     const updated = await savePromoBanner(body);
     return NextResponse.json({ success: true, banner: updated });

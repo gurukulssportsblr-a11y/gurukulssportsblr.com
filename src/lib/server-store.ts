@@ -32,6 +32,7 @@ export interface PromoBannerSettings {
 export interface AdminSessionRecord {
   sessionId: string;
   userEmail: string;
+  role: 'admin' | 'staff';
   startedAt: number;
   lastHeartbeat: number;
 }
@@ -472,9 +473,14 @@ export async function saveAdminSession(session: AdminSessionRecord | null): Prom
   }
 }
 
-export async function attemptAdminLogin(email: string, forceOvertake: boolean = false): Promise<{
+export async function attemptAdminLogin(
+  email: string,
+  forceOvertake: boolean = false,
+  role: 'admin' | 'staff' = 'admin'
+): Promise<{
   success: boolean;
   sessionId?: string;
+  role?: 'admin' | 'staff';
   locked?: boolean;
   activeSince?: number;
   message?: string;
@@ -483,40 +489,58 @@ export async function attemptAdminLogin(email: string, forceOvertake: boolean = 
   const now = Date.now();
 
   const isCurrentActive =
-    current && current.sessionId && typeof current.lastHeartbeat === 'number' && now - current.lastHeartbeat < ADMIN_SESSION_TIMEOUT_MS;
+    current &&
+    current.sessionId &&
+    typeof current.lastHeartbeat === 'number' &&
+    now - current.lastHeartbeat < ADMIN_SESSION_TIMEOUT_MS;
 
   if (isCurrentActive && !forceOvertake) {
+    const isOtherAdmin = current.role === 'admin';
     return {
       success: false,
       locked: true,
       activeSince: current.startedAt,
-      message: 'Host Portal is currently in use by an active administrator. Only one person can access at a time.',
+      message: `Host Portal is currently in use by an active ${isOtherAdmin ? 'administrator' : 'staff user'}. Only one person can access at a time.`,
     };
   }
 
   const newSession: AdminSessionRecord = {
     sessionId: crypto.randomUUID(),
     userEmail: email,
+    role: role,
     startedAt: now,
     lastHeartbeat: now,
   };
 
   await saveAdminSession(newSession);
-  return { success: true, sessionId: newSession.sessionId };
+  return { success: true, sessionId: newSession.sessionId, role: newSession.role };
 }
 
-export async function heartbeatAdminSession(sessionId: string): Promise<{ valid: boolean; message?: string }> {
+export async function heartbeatAdminSession(
+  sessionId: string
+): Promise<{ valid: boolean; role?: 'admin' | 'staff'; message?: string }> {
   const current = await getAdminActiveSession();
   if (!current || !current.sessionId || current.sessionId !== sessionId) {
     return {
       valid: false,
-      message: 'Your session has ended because another administrator took over or logged out.',
+      message: 'Your session has ended because another administrator or staff took over or logged out.',
     };
   }
 
   current.lastHeartbeat = Date.now();
   await saveAdminSession(current);
-  return { valid: true };
+  return { valid: true, role: current.role || 'admin' };
+}
+
+export async function assertAdminPrivilege(): Promise<{ authorized: boolean; error?: string }> {
+  const current = await getAdminActiveSession();
+  if (current && current.role === 'staff') {
+    return {
+      authorized: false,
+      error: 'Access denied: Staff accounts are restricted to viewing bookings and walk-in reservations only.',
+    };
+  }
+  return { authorized: true };
 }
 
 export async function logoutAdminSession(sessionId?: string): Promise<void> {

@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 import { NextResponse } from 'next/server';
-import { getBlockedSlots, addBlockedSlot, removeBlockedSlot } from '@/lib/server-store';
+import { getBlockedSlots, addBlockedSlot, removeBlockedSlot, assertAdminPrivilege } from '@/lib/server-store';
 
 export async function GET(req: Request) {
   try {
@@ -17,6 +17,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const check = await assertAdminPrivilege();
+    if (!check.authorized) {
+      return NextResponse.json({ error: check.error }, { status: 403 });
+    }
+
     const body = await req.json();
     const { court_number, block_date, start_hour, end_hour, reason } = body;
 
@@ -40,6 +45,11 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const check = await assertAdminPrivilege();
+    if (!check.authorized) {
+      return NextResponse.json({ error: check.error }, { status: 403 });
+    }
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     if (!id) {

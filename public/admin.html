@@ -99,8 +99,8 @@
 
             <form id="admin-login-form" class="space-y-4 text-left">
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Official Email</label>
-                    <input type="email" id="login-email" required value="gurukulssportsblr@gmail.com" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Email / Username</label>
+                    <input type="text" id="login-email" required placeholder="Enter email or username (e.g. staff)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all">
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Password</label>
@@ -169,28 +169,31 @@
                         <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/30 flex items-center gap-1">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live Database Linked
                         </span>
+                        <span id="header-role-badge" class="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[11px] font-bold tracking-wider border border-blue-500/40 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[14px]">shield_person</span> Admin Mode (Full Access)
+                        </span>
                     </div>
                     <p class="text-xs text-slate-400 font-medium">11 BWF Synthetic Badminton Courts • Arena Operations Dashboard</p>
                 </div>
             </div>
 
             <div class="flex items-center flex-wrap gap-2.5">
-                <button onclick="openPricingModal()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-heading font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
+                <button id="btn-pricing-modal" onclick="openPricingModal()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-heading font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
                     <span class="material-symbols-outlined text-[18px]">percent</span>
                     Slot Pricing &amp; Discounts
                 </button>
 
-                <button onclick="openPromoModal()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-heading font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
+                <button id="btn-promo-modal" onclick="openPromoModal()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-heading font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
                     <span class="material-symbols-outlined text-[18px]">campaign</span>
                     Promo Banner &amp; Pop-up
                 </button>
 
-                <button onclick="openBlockModal()" class="px-3.5 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-heading font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
+                <button id="btn-block-modal" onclick="openBlockModal()" class="px-3.5 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-heading font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
                     <span class="material-symbols-outlined text-[18px]">block</span>
                     Block Courts (Maintenance)
                 </button>
 
-                <button onclick="openWalkinModal()" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-heading font-bold rounded-lg border border-white/20 transition-all flex items-center gap-1.5">
+                <button id="btn-walkin-modal" onclick="openWalkinModal()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-heading font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm cursor-pointer">
                     <span class="material-symbols-outlined text-[18px]">add_circle</span>
                     + Walk-in Booking
                 </button>
@@ -268,20 +271,12 @@
     <!-- 4. KEY METRICS CARDS -->
     <main class="max-w-[1700px] mx-auto px-4 lg:px-8 py-6 space-y-6">
         
-        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 no-print">
+        <div id="kpi-cards-container" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 no-print">
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Booked Slots</p>
                 <div class="flex items-baseline justify-between mt-1">
                     <h3 id="stat-booked-count" class="font-heading font-extrabold text-2xl text-slate-900">0</h3>
                     <span class="text-xs text-slate-400 font-medium">/ 198 total</span>
-                </div>
-            </div>
-
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Day's Revenue</p>
-                <div class="flex items-baseline justify-between mt-1">
-                    <h3 id="stat-revenue" class="font-heading font-extrabold text-2xl text-emerald-600">₹0</h3>
-                    <span class="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-bold">LIVE</span>
                 </div>
             </div>
 
@@ -293,7 +288,23 @@
                 </div>
             </div>
 
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div id="kpi-available" class="hidden bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Available Slots</p>
+                <div class="flex items-baseline justify-between mt-1">
+                    <h3 id="stat-available" class="font-heading font-extrabold text-2xl text-emerald-600">198</h3>
+                    <span class="text-xs text-slate-400 font-medium">Open to Book</span>
+                </div>
+            </div>
+
+            <div id="kpi-revenue" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Day's Revenue</p>
+                <div class="flex items-baseline justify-between mt-1">
+                    <h3 id="stat-revenue" class="font-heading font-extrabold text-2xl text-emerald-600">₹0</h3>
+                    <span class="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-bold">LIVE</span>
+                </div>
+            </div>
+
+            <div id="kpi-pricing" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Pricing Rules</p>
                 <div class="flex items-baseline justify-between mt-1">
                     <h3 id="stat-pricing-rules" class="font-heading font-extrabold text-2xl text-amber-600">0</h3>
@@ -301,7 +312,7 @@
                 </div>
             </div>
 
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm col-span-2 sm:col-span-1">
+            <div id="kpi-banner" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm col-span-2 sm:col-span-1">
                 <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Promo Banner</p>
                 <div class="flex items-baseline justify-between mt-1">
                     <h3 id="stat-banner-status" class="font-heading font-extrabold text-lg text-slate-400">DISABLED</h3>
@@ -727,9 +738,50 @@
             document.getElementById('emergency-modal').classList.add('hidden');
         }
 
+        let currentUserRole = sessionStorage.getItem('gs_admin_role') || 'admin';
+
+        function applyRoleUI(role) {
+            currentUserRole = role || 'admin';
+            const isStaff = currentUserRole === 'staff';
+
+            const badge = document.getElementById('header-role-badge');
+            if (badge) {
+                if (isStaff) {
+                    badge.className = 'px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-bold tracking-wider border border-amber-500/40 flex items-center gap-1';
+                    badge.innerHTML = '<span class="material-symbols-outlined text-[14px]">badge</span> Staff Mode (View &amp; Walk-in Only)';
+                } else {
+                    badge.className = 'px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[11px] font-bold tracking-wider border border-blue-500/40 flex items-center gap-1';
+                    badge.innerHTML = '<span class="material-symbols-outlined text-[14px]">shield_person</span> Admin Mode (Full Access)';
+                }
+            }
+
+            const btnPricing = document.getElementById('btn-pricing-modal');
+            const btnPromo = document.getElementById('btn-promo-modal');
+            const btnBlock = document.getElementById('btn-block-modal');
+            if (btnPricing) btnPricing.style.display = isStaff ? 'none' : 'flex';
+            if (btnPromo) btnPromo.style.display = isStaff ? 'none' : 'flex';
+            if (btnBlock) btnBlock.style.display = isStaff ? 'none' : 'flex';
+
+            const kpiContainer = document.getElementById('kpi-cards-container');
+            if (kpiContainer) {
+                kpiContainer.className = isStaff ? 'grid grid-cols-1 sm:grid-cols-3 gap-4 no-print' : 'grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 no-print';
+            }
+
+            const kpiRevenue = document.getElementById('kpi-revenue');
+            const kpiPricing = document.getElementById('kpi-pricing');
+            const kpiBanner = document.getElementById('kpi-banner');
+            const kpiAvailable = document.getElementById('kpi-available');
+            if (kpiRevenue) kpiRevenue.style.display = isStaff ? 'none' : 'block';
+            if (kpiPricing) kpiPricing.style.display = isStaff ? 'none' : 'block';
+            if (kpiBanner) kpiBanner.style.display = isStaff ? 'none' : 'block';
+            if (kpiAvailable) kpiAvailable.style.display = isStaff ? 'block' : 'none';
+        }
+
         async function checkAuth() {
             const isAuth = sessionStorage.getItem('gs_admin_auth');
             const sid = sessionStorage.getItem('gs_admin_session_id');
+            currentUserRole = sessionStorage.getItem('gs_admin_role') || 'admin';
+            applyRoleUI(currentUserRole);
             const loginModal = document.getElementById('login-modal');
 
             if (isAuth === 'true' && sid) {
@@ -742,6 +794,11 @@
                     const data = await res.json();
                     if (data && data.valid) {
                         currentAdminSessionId = sid;
+                        if (data.role) {
+                            currentUserRole = data.role;
+                            sessionStorage.setItem('gs_admin_role', data.role);
+                            applyRoleUI(data.role);
+                        }
                         loginModal.classList.add('hidden');
                         fetchLiveDashboardData();
                         startAdminHeartbeat();
@@ -754,6 +811,7 @@
 
             sessionStorage.removeItem('gs_admin_auth');
             sessionStorage.removeItem('gs_admin_session_id');
+            sessionStorage.removeItem('gs_admin_role');
             loginModal.classList.remove('hidden');
         }
 
@@ -772,9 +830,14 @@
                         clearInterval(adminHeartbeatTimer);
                         sessionStorage.removeItem('gs_admin_auth');
                         sessionStorage.removeItem('gs_admin_session_id');
+                        sessionStorage.removeItem('gs_admin_role');
                         currentAdminSessionId = '';
                         alert('⚠️ You have been logged out because another administrator took over the session.');
                         location.reload();
+                    } else if (data && data.role) {
+                        currentUserRole = data.role;
+                        sessionStorage.setItem('gs_admin_role', data.role);
+                        applyRoleUI(data.role);
                     }
                 } catch (e) {}
             }, 15000);
@@ -805,9 +868,13 @@
                 const data = await res.json();
 
                 if (res.ok && data.success && data.sessionId) {
+                    const role = data.role || 'admin';
                     sessionStorage.setItem('gs_admin_auth', 'true');
                     sessionStorage.setItem('gs_admin_session_id', data.sessionId);
+                    sessionStorage.setItem('gs_admin_role', role);
                     currentAdminSessionId = data.sessionId;
+                    currentUserRole = role;
+                    applyRoleUI(role);
                     document.getElementById('login-modal').classList.add('hidden');
                     fetchLiveDashboardData();
                     startAdminHeartbeat();
@@ -854,9 +921,13 @@
                 const data = await res.json();
 
                 if (res.ok && data.success && data.sessionId) {
+                    const role = data.role || 'admin';
                     sessionStorage.setItem('gs_admin_auth', 'true');
                     sessionStorage.setItem('gs_admin_session_id', data.sessionId);
+                    sessionStorage.setItem('gs_admin_role', role);
                     currentAdminSessionId = data.sessionId;
+                    currentUserRole = role;
+                    applyRoleUI(role);
                     closeEmergencyModal();
                     document.getElementById('login-modal').classList.add('hidden');
                     fetchLiveDashboardData();
@@ -885,6 +956,7 @@
             }
             sessionStorage.removeItem('gs_admin_auth');
             sessionStorage.removeItem('gs_admin_session_id');
+            sessionStorage.removeItem('gs_admin_role');
             location.reload();
         }
 
@@ -998,7 +1070,7 @@
                                     </span>
                                     <div class="flex justify-between items-center text-[9px] text-amber-800">
                                         <span class="truncate">${blockMatch.reason}</span>
-                                        <button onclick="unblockSlot('${blockMatch.id}')" title="Unblock this court" class="text-red-600 hover:underline font-extrabold">✕</button>
+                                        ${currentUserRole === 'admin' ? `<button onclick="unblockSlot('${blockMatch.id}')" title="Unblock this court" class="text-red-600 hover:underline font-extrabold">✕</button>` : ''}
                                     </div>
                                 </div>
                             </td>
@@ -1018,9 +1090,11 @@
                                     </div>
                                     <div class="flex justify-between items-center text-[9px] text-slate-400">
                                         <span class="truncate">${booking.customer_phone}</span>
-                                        <button onclick="cancelSlotBooking('${booking.booking_id || booking.id}', ${courtNum}, '${row.display}')" title="Cancel Booking & Free Slot" class="text-red-400 hover:text-red-300 font-bold hover:underline">
-                                            ✕ Cancel
-                                        </button>
+                                        ${currentUserRole === 'admin' ? `
+                                            <button onclick="cancelSlotBooking('${booking.booking_id || booking.id}', ${courtNum}, '${row.display}')" title="Cancel Booking & Free Slot" class="text-red-400 hover:text-red-300 font-bold hover:underline">
+                                                ✕ Cancel
+                                            </button>
+                                        ` : ''}
                                     </div>
                                 </div>
                             </td>
@@ -1066,6 +1140,8 @@
             document.getElementById('stat-booked-count').textContent = totalBooked;
             document.getElementById('stat-revenue').textContent = '₹' + totalRevenue.toLocaleString('en-IN');
             document.getElementById('stat-occupancy').textContent = Math.round((totalBooked / 198) * 100) + '%';
+            const statAvail = document.getElementById('stat-available');
+            if (statAvail) statAvail.textContent = 198 - totalBooked;
         }
 
         function quickBookPrompt(courtNum, displayTime) {
@@ -1077,6 +1153,10 @@
         }
 
         async function cancelSlotBooking(bookingId, courtNum, slotTime) {
+            if (currentUserRole !== 'admin') {
+                alert('Action restricted: Staff accounts cannot cancel bookings.');
+                return;
+            }
             if (!confirm(`Cancel booking for Court ${courtNum} at ${slotTime}? This will free the slot immediately on the live website.`)) return;
 
             const res = await fetch('/api/cancel', {
@@ -1095,6 +1175,10 @@
         }
 
         async function unblockSlot(blockId) {
+            if (currentUserRole !== 'admin') {
+                alert('Action restricted: Staff accounts cannot unblock courts.');
+                return;
+            }
             if (!confirm('Unblock this court?')) return;
             await fetch(`/api/blocked-slots?id=${blockId}`, { method: 'DELETE' });
             fetchLiveDashboardData();
@@ -1404,12 +1488,24 @@
         }
 
         function openPricingModal() {
+            if (currentUserRole !== 'admin') {
+                alert('Action restricted: Staff accounts cannot configure pricing.');
+                return;
+            }
             openModal('pricing-modal');
         }
         function openPromoModal() {
+            if (currentUserRole !== 'admin') {
+                alert('Action restricted: Staff accounts cannot modify promotional banners.');
+                return;
+            }
             openModal('promo-modal');
         }
         function openBlockModal() {
+            if (currentUserRole !== 'admin') {
+                alert('Action restricted: Staff accounts cannot block courts.');
+                return;
+            }
             openModal('block-modal');
         }
         function openWalkinModal() {

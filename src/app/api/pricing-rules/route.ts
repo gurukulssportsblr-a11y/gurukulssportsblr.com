@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 import { NextResponse } from 'next/server';
-import { getPricingRules, savePricingRule, deletePricingRule } from '@/lib/server-store';
+import { getPricingRules, savePricingRule, deletePricingRule, assertAdminPrivilege } from '@/lib/server-store';
 
 export async function GET() {
   try {
@@ -15,6 +15,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const check = await assertAdminPrivilege();
+    if (!check.authorized) {
+      return NextResponse.json({ error: check.error }, { status: 403 });
+    }
+
     const body = await req.json();
     const { rule_name, start_hour, end_hour, price_per_hour, court_scope, is_active, id } = body;
 
@@ -40,6 +45,11 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const check = await assertAdminPrivilege();
+    if (!check.authorized) {
+      return NextResponse.json({ error: check.error }, { status: 403 });
+    }
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     if (!id) {
