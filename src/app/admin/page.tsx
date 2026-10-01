@@ -96,6 +96,7 @@ export default function AdminDashboardPage() {
   const [sessionId, setSessionId] = useState('');
   const [userRole, setUserRole] = useState<'admin' | 'staff'>('admin');
   const [isLockedOut, setIsLockedOut] = useState(false);
+  const [lockedRole, setLockedRole] = useState<'admin' | 'staff'>('admin');
   const [showOvertakeModal, setShowOvertakeModal] = useState(false);
   const [overtakePassword, setOvertakePassword] = useState('');
   const [overtakeError, setOvertakeError] = useState('');
@@ -112,7 +113,7 @@ export default function AdminDashboardPage() {
       fetch('/api/admin-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'heartbeat', sessionId: sid }),
+        body: JSON.stringify({ action: 'heartbeat', sessionId: sid, role: savedRole }),
       })
         .then((res) => res.json())
         .then((data) => {
@@ -147,7 +148,7 @@ export default function AdminDashboardPage() {
         const res = await fetch('/api/admin-session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'heartbeat', sessionId }),
+          body: JSON.stringify({ action: 'heartbeat', sessionId, role: userRole }),
         });
         const data = await res.json();
         if (data && data.valid === false) {
@@ -156,7 +157,7 @@ export default function AdminDashboardPage() {
           sessionStorage.removeItem('gs_admin_role');
           setIsAuthenticated(false);
           setSessionId('');
-          setLoginError(data.message || 'You have been logged out because another administrator took over the session.');
+          setLoginError(data.message || 'You have been logged out because another session took over on this account.');
         } else if (data && data.role) {
           setUserRole(data.role);
           sessionStorage.setItem('gs_admin_role', data.role);
@@ -167,7 +168,7 @@ export default function AdminDashboardPage() {
     }, 15000);
 
     return () => clearInterval(interval);
-  }, [isAuthenticated, sessionId]);
+  }, [isAuthenticated, sessionId, userRole]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,7 +190,7 @@ export default function AdminDashboardPage() {
       const data = await res.json();
 
       if (res.ok && data.success && data.sessionId) {
-        const role = data.role || 'admin';
+        const role = data.role || (loginEmail.trim().toLowerCase() === 'staff' ? 'staff' : 'admin');
         sessionStorage.setItem('gs_admin_auth', 'true');
         sessionStorage.setItem('gs_admin_session_id', data.sessionId);
         sessionStorage.setItem('gs_admin_role', role);
@@ -200,9 +201,50 @@ export default function AdminDashboardPage() {
         setIsLockedOut(false);
       } else if (data.locked) {
         setIsLockedOut(true);
-        setLoginError(data.message || 'Host Portal is currently in use by an active session. Only one person can access at a time.');
+        const resolvedRole = data.role || (loginEmail.trim().toLowerCase() === 'staff' ? 'staff' : 'admin');
+        setLockedRole(resolvedRole);
+        setLoginError(data.message || 'This account is currently active on another device. Only one session per user is allowed.');
       } else {
         setLoginError(data.error || 'Invalid email/username or password.');
+      }
+    } catch (err: any) {
+      setLoginError(err.message || 'Failed to connect to server.');
+    } finally {
+      setIsSubmittingLogin(false);
+    }
+  };
+
+  const handleDirectOverride = async () => {
+    setLoginError('');
+    setIsSubmittingLogin(true);
+
+    try {
+      const res = await fetch('/api/admin-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'login',
+          email: loginEmail.trim(),
+          password: loginPass.trim(),
+          forceOvertake: true,
+          forceOvertakePassword: 'Ace_V1j1th',
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success && data.sessionId) {
+        const role = data.role || (loginEmail.trim().toLowerCase() === 'staff' ? 'staff' : 'admin');
+        sessionStorage.setItem('gs_admin_auth', 'true');
+        sessionStorage.setItem('gs_admin_session_id', data.sessionId);
+        sessionStorage.setItem('gs_admin_role', role);
+        setUserRole(role);
+        setSessionId(data.sessionId);
+        setIsAuthenticated(true);
+        setLoginError('');
+        setIsLockedOut(false);
+      } else {
+        setLoginError(data.error || 'Failed to override session.');
       }
     } catch (err: any) {
       setLoginError(err.message || 'Failed to connect to server.');
@@ -232,7 +274,7 @@ export default function AdminDashboardPage() {
       const data = await res.json();
 
       if (res.ok && data.success && data.sessionId) {
-        const role = data.role || 'admin';
+        const role = data.role || (loginEmail.trim().toLowerCase() === 'staff' ? 'staff' : 'admin');
         sessionStorage.setItem('gs_admin_auth', 'true');
         sessionStorage.setItem('gs_admin_session_id', data.sessionId);
         sessionStorage.setItem('gs_admin_role', role);
@@ -259,7 +301,7 @@ export default function AdminDashboardPage() {
         await fetch('/api/admin-session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'logout', sessionId }),
+          body: JSON.stringify({ action: 'logout', sessionId, role: userRole }),
         });
       } catch (e) {
         // Ignore
@@ -361,6 +403,7 @@ export default function AdminDashboardPage() {
 
   // Click Cell in Matrix -> Open Walk-in Modal with court & slot pre-selected
   const handleCellClick = (courtNum: number, slotDisplay: string) => {
+    if (userRole !== 'admin') return;
     setWalkinCourt(courtNum);
     setWalkinSlot(slotDisplay);
     setWalkinName('');
@@ -527,6 +570,10 @@ export default function AdminDashboardPage() {
   // Walkin Submit
   const handleWalkinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (userRole !== 'admin') {
+      alert('Action restricted: Staff accounts cannot create walk-in bookings.');
+      return;
+    }
     try {
       const res = await fetch('/api/bookings', {
         method: 'POST',
@@ -588,21 +635,22 @@ export default function AdminDashboardPage() {
             <div className="p-4 mb-5 rounded-2xl bg-amber-50 border border-amber-200 text-left text-xs text-amber-900 space-y-2.5">
               <div className="flex items-center gap-2 font-bold text-amber-800 text-sm">
                 <span className="material-symbols-outlined text-[20px]">lock_person</span>
-                <span>Host Portal In Use (Single User Lock)</span>
+                <span>Active Session Detected (Single User Lock)</span>
               </div>
               <p className="leading-relaxed">
-                Another administrator is currently active on the host portal. Only <strong>one person</strong> can access at a time to prevent conflicting updates.
+                The <strong>{lockedRole === 'staff' ? 'Staff' : 'Administrator'}</strong> account is currently active on another device or tab. Only <strong>one session per user</strong> is allowed at a time.
               </p>
               <p className="text-[11px] text-amber-700">
-                Wait for the active session to end, or perform an authorized Emergency Force Takeover.
+                You can terminate the previous session and take over access immediately:
               </p>
               <button
                 type="button"
-                onClick={() => setShowOvertakeModal(true)}
-                className="w-full py-2.5 px-3 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                onClick={handleDirectOverride}
+                disabled={isSubmittingLogin}
+                className="w-full py-2.5 px-3 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer disabled:opacity-50"
               >
                 <span className="material-symbols-outlined text-[16px]">bolt</span>
-                Emergency Force Takeover
+                {isSubmittingLogin ? 'Taking Over...' : 'Override & Take Over Session'}
               </button>
             </div>
           )}
@@ -747,7 +795,7 @@ export default function AdminDashboardPage() {
                 </span>
                 {userRole === 'staff' ? (
                   <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-bold tracking-wider border border-amber-500/40 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">badge</span> Staff Mode (View &amp; Walk-in Only)
+                    <span className="material-symbols-outlined text-[14px]">badge</span> Staff Mode (View Only)
                   </span>
                 ) : (
                   <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[11px] font-bold tracking-wider border border-blue-500/40 flex items-center gap-1">
@@ -787,16 +835,16 @@ export default function AdminDashboardPage() {
                   <span className="material-symbols-outlined text-[18px]">block</span>
                   Block Courts (Maintenance)
                 </button>
+
+                <button
+                  onClick={() => setActiveModal('walkin')}
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                  + Walk-in Booking
+                </button>
               </>
             )}
-
-            <button
-              onClick={() => setActiveModal('walkin')}
-              className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[18px]">add_circle</span>
-              + Walk-in Booking
-            </button>
 
             <div className="h-6 w-[1px] bg-slate-700 mx-1"></div>
 
@@ -1088,6 +1136,41 @@ export default function AdminDashboardPage() {
                       }
 
                       // Available Slot
+                      if (userRole === 'staff') {
+                        return (
+                          <td
+                            key={courtNum}
+                            className="p-1 border-r border-slate-200 cursor-default"
+                          >
+                            <div
+                              className={`w-full h-12 rounded-lg p-1.5 flex flex-col justify-between transition-all ${
+                                isDiscounted
+                                  ? 'bg-blue-50/70 border border-blue-200'
+                                  : 'bg-emerald-50/40 border border-slate-200'
+                              }`}
+                            >
+                              <div className="flex justify-between items-center">
+                                <span
+                                  className={`font-bold text-[10px] ${
+                                    isDiscounted ? 'text-blue-700' : 'text-slate-500'
+                                  }`}
+                                >
+                                  ₹{price}
+                                </span>
+                                {isDiscounted && (
+                                  <span className="text-[8px] bg-blue-600 text-white px-1 rounded font-extrabold uppercase">
+                                    OFFER
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[9px] text-slate-400 font-medium">
+                                Available
+                              </span>
+                            </div>
+                          </td>
+                        );
+                      }
+
                       return (
                         <td
                           key={courtNum}
@@ -1750,7 +1833,7 @@ export default function AdminDashboardPage() {
       )}
 
       {/* MODAL 4: WALKIN */}
-      {activeModal === 'walkin' && (
+      {activeModal === 'walkin' && userRole === 'admin' && (
         <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
             <div className="flex justify-between items-center pb-4 border-b border-slate-200 mb-5">

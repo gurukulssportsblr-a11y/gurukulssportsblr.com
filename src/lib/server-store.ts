@@ -73,6 +73,7 @@ const globalStore = global as unknown as {
   _gsBlockedSlots?: BlockedSlot[];
   _gsPromoBanner?: PromoBannerSettings;
   _gsAdminSession?: AdminSessionRecord | null;
+  _gsStaffSession?: AdminSessionRecord | null;
   _gsMockSlots?: BookingSlotRecord[];
   _gsMockBookings?: BookingRecord[];
 };
@@ -432,51 +433,66 @@ export function cancelMockBooking(idOrCode: string) {
 }
 
 // ==============================================================================
-// SINGLE ACTIVE ADMIN SESSION MANAGEMENT (OPTION 2: STRICT MUTEX LOCKOUT)
+// PER-USER SINGLE ACTIVE SESSION MANAGEMENT (ONE SESSION PER USER ROLE)
 // ==============================================================================
 export const ADMIN_SESSION_TIMEOUT_MS = 90_000; // 90 seconds inactivity timeout
 
-export async function getAdminActiveSession(): Promise<AdminSessionRecord | null> {
+export async function getUserActiveSession(role: 'admin' | 'staff'): Promise<AdminSessionRecord | null> {
+  const key = role === 'admin' ? 'admin_active_session' : 'staff_active_session';
+  const mem = role === 'admin' ? globalStore._gsAdminSession : globalStore._gsStaffSession;
+
   if (isSupabaseConfigured) {
     try {
       const supabase = createServerClient();
       const { data, error } = await supabase
         .from('site_settings')
         .select('value')
-        .eq('key', 'admin_active_session')
+        .eq('key', key)
         .maybeSingle();
 
       if (!error && data && data.value && data.value.sessionId) {
-        globalStore._gsAdminSession = data.value as AdminSessionRecord;
-        return globalStore._gsAdminSession;
+        const record = data.value as AdminSessionRecord;
+        if (role === 'admin') globalStore._gsAdminSession = record;
+        else globalStore._gsStaffSession = record;
+        return record;
+      } else if (!error && data && (!data.value || !data.value.sessionId)) {
+        if (role === 'admin') globalStore._gsAdminSession = null;
+        else globalStore._gsStaffSession = null;
+        return null;
       }
     } catch (err) {
-      console.warn('Supabase admin session read error:', err);
+      console.warn(`Supabase ${role} session read error:`, err);
     }
   }
-  return globalStore._gsAdminSession || null;
+  return mem || null;
 }
 
-export async function saveAdminSession(session: AdminSessionRecord | null): Promise<void> {
-  globalStore._gsAdminSession = session;
+export async function saveUserSession(role: 'admin' | 'staff', session: AdminSessionRecord | null): Promise<void> {
+  const key = role === 'admin' ? 'admin_active_session' : 'staff_active_session';
+  if (role === 'admin') {
+    globalStore._gsAdminSession = session;
+  } else {
+    globalStore._gsStaffSession = session;
+  }
+
   if (isSupabaseConfigured) {
     try {
       const supabase = createServerClient();
       await supabase.from('site_settings').upsert({
-        key: 'admin_active_session',
+        key,
         value: session || {},
         updated_at: new Date().toISOString(),
       });
     } catch (err) {
-      console.warn('Supabase admin session save error:', err);
+      console.warn(`Supabase ${role} session save error:`, err);
     }
   }
 }
 
-export async function attemptAdminLogin(
+export async function attemptUserLogin(
   email: string,
-  forceOvertake: boolean = false,
-  role: 'admin' | 'staff' = 'admin'
+  role: 'admin' | 'staff',
+  forceOvertake: boolean = false
 ): Promise<{
   success: boolean;
   sessionId?: string;
@@ -485,7 +501,7 @@ export async function attemptAdminLogin(
   activeSince?: number;
   message?: string;
 }> {
-  const current = await getAdminActiveSession();
+  const current = await getUserActiveSession(role);
   const now = Date.now();
 
   const isCurrentActive =
@@ -495,58 +511,109 @@ export async function attemptAdminLogin(
     now - current.lastHeartbeat < ADMIN_SESSION_TIMEOUT_MS;
 
   if (isCurrentActive && !forceOvertake) {
-    const isOtherAdmin = current.role === 'admin';
+    const accountName = role === 'admin' ? 'Administrator (gurukulssportsblr@gmail.com)' : 'Staff (staff)';
     return {
       success: false,
       locked: true,
+      role,
       activeSince: current.startedAt,
-      message: `Host Portal is currently in use by an active ${isOtherAdmin ? 'administrator' : 'staff user'}. Only one person can access at a time.`,
+      message: `${accountName} is currently active on another device or browser. Only one concurrent session is permitted for this user.`,
     };
   }
 
   const newSession: AdminSessionRecord = {
     sessionId: crypto.randomUUID(),
     userEmail: email,
-    role: role,
+    role,
     startedAt: now,
     lastHeartbeat: now,
   };
 
-  await saveAdminSession(newSession);
+  await saveUserSession(role, newSession);
   return { success: true, sessionId: newSession.sessionId, role: newSession.role };
 }
 
-export async function heartbeatAdminSession(
-  sessionId: string
+export async function heartbeatUserSession(
+  sessionId: string,
+  role?: 'admin' | 'staff'
 ): Promise<{ valid: boolean; role?: 'admin' | 'staff'; message?: string }> {
-  const current = await getAdminActiveSession();
-  if (!current || !current.sessionId || current.sessionId !== sessionId) {
+  let targetRole: 'admin' | 'staff' | null = role || null;
+  let current: AdminSessionRecord | null = null;
+
+  if (targetRole) {
+    current = await getUserActiveSession(targetRole);
+  } else {
+    const adminSess = await getUserActiveSession('admin');
+    if (adminSess && adminSess.sessionId === sessionId) {
+      targetRole = 'admin';
+      current = adminSess;
+    } else {
+      const staffSess = await getUserActiveSession('staff');
+      if (staffSess && staffSess.sessionId === sessionId) {
+        targetRole = 'staff';
+        current = staffSess;
+      }
+    }
+  }
+
+  if (!current || !current.sessionId || current.sessionId !== sessionId || !targetRole) {
     return {
       valid: false,
-      message: 'Your session has ended because another administrator or staff took over or logged out.',
+      message: 'Your session has ended because another session took over or logged out on this account.',
     };
   }
 
   current.lastHeartbeat = Date.now();
-  await saveAdminSession(current);
-  return { valid: true, role: current.role || 'admin' };
+  await saveUserSession(targetRole, current);
+  return { valid: true, role: current.role || targetRole };
 }
 
-export async function assertAdminPrivilege(): Promise<{ authorized: boolean; error?: string }> {
-  const current = await getAdminActiveSession();
-  if (current && current.role === 'staff') {
-    return {
-      authorized: false,
-      error: 'Access denied: Staff accounts are restricted to viewing bookings and walk-in reservations only.',
-    };
+export async function logoutUserSession(sessionId?: string, role?: 'admin' | 'staff'): Promise<void> {
+  if (role) {
+    const current = await getUserActiveSession(role);
+    if (!sessionId || (current && current.sessionId === sessionId)) {
+      await saveUserSession(role, null);
+    }
+    return;
+  }
+
+  const adminSess = await getUserActiveSession('admin');
+  if (!sessionId || (adminSess && adminSess.sessionId === sessionId)) {
+    await saveUserSession('admin', null);
+  }
+  const staffSess = await getUserActiveSession('staff');
+  if (!sessionId || (staffSess && staffSess.sessionId === sessionId)) {
+    await saveUserSession('staff', null);
+  }
+}
+
+// Backward compatibility helpers
+export async function getAdminActiveSession(): Promise<AdminSessionRecord | null> {
+  return getUserActiveSession('admin');
+}
+export async function saveAdminSession(session: AdminSessionRecord | null): Promise<void> {
+  return saveUserSession('admin', session);
+}
+export async function attemptAdminLogin(email: string, forceOvertake: boolean = false, role: 'admin' | 'staff' = 'admin') {
+  return attemptUserLogin(email, role, forceOvertake);
+}
+export async function heartbeatAdminSession(sessionId: string, role?: 'admin' | 'staff') {
+  return heartbeatUserSession(sessionId, role);
+}
+export async function logoutAdminSession(sessionId?: string, role?: 'admin' | 'staff') {
+  return logoutUserSession(sessionId, role);
+}
+
+export async function assertAdminPrivilege(sessionId?: string): Promise<{ authorized: boolean; error?: string }> {
+  if (sessionId) {
+    const staff = await getUserActiveSession('staff');
+    if (staff && staff.sessionId === sessionId) {
+      return {
+        authorized: false,
+        error: 'Access denied: Staff accounts are restricted to viewing bookings only.',
+      };
+    }
   }
   return { authorized: true };
-}
-
-export async function logoutAdminSession(sessionId?: string): Promise<void> {
-  const current = await getAdminActiveSession();
-  if (!sessionId || (current && current.sessionId === sessionId)) {
-    await saveAdminSession(null);
-  }
 }
 

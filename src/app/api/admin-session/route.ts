@@ -3,10 +3,10 @@ export const revalidate = 0;
 
 import { NextResponse } from 'next/server';
 import {
-  attemptAdminLogin,
-  heartbeatAdminSession,
-  logoutAdminSession,
-  getAdminActiveSession,
+  attemptUserLogin,
+  heartbeatUserSession,
+  logoutUserSession,
+  getUserActiveSession,
   ADMIN_SESSION_TIMEOUT_MS,
 } from '@/lib/server-store';
 
@@ -17,9 +17,11 @@ const EMERGENCY_OVERRIDE_PASSWORD = 'Ace_V1j1th';
 const STAFF_USERNAME = 'staff';
 const STAFF_PASSWORD = 'St@ff@Gurukul$';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const current = await getAdminActiveSession();
+    const { searchParams } = new URL(req.url);
+    const role = (searchParams.get('role') || 'admin') as 'admin' | 'staff';
+    const current = await getUserActiveSession(role);
     const now = Date.now();
     const isLocked = !!(
       current &&
@@ -31,8 +33,8 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       locked: isLocked,
+      role,
       activeSince: isLocked ? current?.startedAt : null,
-      activeRole: isLocked ? current?.role : null,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -73,37 +75,34 @@ export async function POST(req: Request) {
         );
       }
 
-      // 2. Handle emergency force overtake (strictly administrator only)
+      // 2. Handle override / takeover (Per-User session termination)
       if (forceOvertake) {
-        if (role !== 'admin') {
-          return NextResponse.json(
-            { success: false, error: 'Emergency Force Takeover is reserved for administrators only.' },
-            { status: 403 }
-          );
-        }
-        if (forceOvertakePassword !== EMERGENCY_OVERRIDE_PASSWORD) {
+        // If an override password was provided, verify it if admin
+        if (role === 'admin' && forceOvertakePassword && forceOvertakePassword !== EMERGENCY_OVERRIDE_PASSWORD) {
           return NextResponse.json(
             { success: false, error: 'Incorrect Emergency Override Password.' },
             { status: 401 }
           );
         }
-        const result = await attemptAdminLogin(email, true, role);
+
+        const result = await attemptUserLogin(email, role, true);
         return NextResponse.json({
           success: true,
           sessionId: result.sessionId,
           role: result.role,
-          message: 'Emergency force takeover successful. Other session terminated.',
+          message: `${role === 'admin' ? 'Administrator' : 'Staff'} session override successful. Previous session terminated.`,
         });
       }
 
-      // 3. Normal login attempt (Strict Lockout check)
-      const result = await attemptAdminLogin(email, false, role);
+      // 3. Normal login attempt (Per-User Concurrent Session Lockout)
+      const result = await attemptUserLogin(email, role, false);
       if (result.locked) {
         return NextResponse.json({
           success: false,
           locked: true,
+          role: result.role,
           activeSince: result.activeSince,
-          message: result.message || 'Host Portal is currently in use by an active session.',
+          message: result.message || `${role === 'admin' ? 'Administrator' : 'Staff'} account is currently active on another device.`,
         });
       }
 
@@ -116,11 +115,12 @@ export async function POST(req: Request) {
 
     if (action === 'heartbeat') {
       const sessionId = body.sessionId;
+      const role = body.role as 'admin' | 'staff' | undefined;
       if (!sessionId) {
         return NextResponse.json({ success: false, valid: false, message: 'Missing session ID' });
       }
 
-      const result = await heartbeatAdminSession(sessionId);
+      const result = await heartbeatUserSession(sessionId, role);
       return NextResponse.json({
         success: true,
         valid: result.valid,
@@ -131,7 +131,8 @@ export async function POST(req: Request) {
 
     if (action === 'logout') {
       const sessionId = body.sessionId;
-      await logoutAdminSession(sessionId);
+      const role = body.role as 'admin' | 'staff' | undefined;
+      await logoutUserSession(sessionId, role);
       return NextResponse.json({ success: true, message: 'Session closed successfully' });
     }
 
