@@ -9,8 +9,33 @@ interface PricingRule {
   start_hour: number;
   end_hour: number;
   price_per_hour: number;
-  court_scope: 'ALL' | 'CUSTOM';
+  court_scope: string;
   is_active: boolean;
+}
+
+function isCourtInRuleScope(scope: string, courtNumber: number): boolean {
+  if (!scope || scope === 'ALL') return true;
+  if (scope === 'CUSTOM') return courtNumber <= 5;
+  const courts = scope
+    .split(',')
+    .map((s) => parseInt(s.trim().replace(/\D/g, ''), 10))
+    .filter((n) => !isNaN(n));
+  if (courts.length > 0) {
+    return courts.includes(courtNumber);
+  }
+  return false;
+}
+
+function formatCourtScopeLabel(scope: string): string {
+  if (!scope || scope === 'ALL') return 'All 11 Courts';
+  if (scope === 'CUSTOM') return 'Courts 1–5';
+  const parts = scope
+    .split(',')
+    .map((s) => s.trim().replace(/^c/i, ''))
+    .filter(Boolean);
+  if (parts.length === 1) return `Court ${parts[0]} Only`;
+  if (parts.length === 11) return 'All 11 Courts';
+  return `Courts: ${parts.map((c) => `C${c}`).join(', ')}`;
 }
 
 interface BlockedSlot {
@@ -77,7 +102,31 @@ export default function AdminDashboardPage() {
   const [newRulePrice, setNewRulePrice] = useState(200);
   const [newRuleStart, setNewRuleStart] = useState(6);
   const [newRuleEnd, setNewRuleEnd] = useState(15);
-  const [newRuleScope, setNewRuleScope] = useState<'ALL' | 'CUSTOM'>('ALL');
+  const [newRuleScope, setNewRuleScope] = useState<string>('ALL');
+
+  const toggleRuleCourt = (courtNum: number) => {
+    const str = String(courtNum);
+    if (newRuleScope === 'ALL' || newRuleScope === 'CUSTOM') {
+      setNewRuleScope(str);
+      return;
+    }
+    const currentCourts = newRuleScope
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (currentCourts.includes(str)) {
+      const remaining = currentCourts.filter((c) => c !== str);
+      setNewRuleScope(remaining.length > 0 ? remaining.join(',') : 'ALL');
+    } else {
+      currentCourts.push(str);
+      currentCourts.sort((a, b) => Number(a) - Number(b));
+      if (currentCourts.length === 11) {
+        setNewRuleScope('ALL');
+      } else {
+        setNewRuleScope(currentCourts.join(','));
+      }
+    }
+  };
 
   const [blockCourtNum, setBlockCourtNum] = useState<number>(0);
   const [blockDate, setBlockDate] = useState(selectedDate);
@@ -385,10 +434,19 @@ export default function AdminDashboardPage() {
       let isDiscounted = false;
       let ruleName = '';
 
-      for (const rule of pricingRules) {
+      // Sort rules so specific court rules take precedence over general 'ALL' rules
+      const sortedRules = [...pricingRules].sort((a, b) => {
+        const aIsAll = !a.court_scope || a.court_scope === 'ALL';
+        const bIsAll = !b.court_scope || b.court_scope === 'ALL';
+        if (!aIsAll && bIsAll) return -1;
+        if (aIsAll && !bIsAll) return 1;
+        return 0;
+      });
+
+      for (const rule of sortedRules) {
         if (!rule.is_active) continue;
         if (hour >= rule.start_hour && hour < rule.end_hour) {
-          if (rule.court_scope === 'ALL' || (rule.court_scope === 'CUSTOM' && courtNum <= 5)) {
+          if (isCourtInRuleScope(rule.court_scope, courtNum)) {
             price = Number(rule.price_per_hour);
             isDiscounted = price < 300;
             ruleName = rule.rule_name;
@@ -1326,27 +1384,53 @@ export default function AdminDashboardPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Applicable Courts</label>
-                <div className="flex items-center gap-3">
-                  <label className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-800">
-                    <input
-                      type="radio"
-                      name="courtScope"
-                      checked={newRuleScope === 'ALL'}
-                      onChange={() => setNewRuleScope('ALL')}
-                    />{' '}
-                    All 11 Courts
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700">
+                    Applicable Courts for this Discount
                   </label>
-                  <label className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-800">
-                    <input
-                      type="radio"
-                      name="courtScope"
-                      checked={newRuleScope === 'CUSTOM'}
-                      onChange={() => setNewRuleScope('CUSTOM')}
-                    />{' '}
-                    Courts 1–5 Only
-                  </label>
+                  <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                    {formatCourtScopeLabel(newRuleScope)}
+                  </span>
                 </div>
+                <div className="flex flex-wrap gap-1.5 p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setNewRuleScope('ALL')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      newRuleScope === 'ALL'
+                        ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-700'
+                        : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100'
+                    }`}
+                  >
+                    All 11 Courts
+                  </button>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((c) => {
+                    const isSelected =
+                      newRuleScope !== 'ALL' &&
+                      newRuleScope !== 'CUSTOM' &&
+                      newRuleScope
+                        .split(',')
+                        .map((s) => s.trim())
+                        .includes(String(c));
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => toggleRuleCourt(c)}
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-700'
+                            : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100'
+                        }`}
+                      >
+                        Court {c}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  💡 Select individual courts (e.g. Court 1 @ ₹180, Court 2 @ ₹200) or toggle multiple courts.
+                </p>
               </div>
 
               <button
@@ -1376,7 +1460,9 @@ export default function AdminDashboardPage() {
                     </div>
                     <p className="text-[11px] text-slate-500 mt-0.5">
                       {rule.start_hour}:00 to {rule.end_hour}:00 •{' '}
-                      {rule.court_scope === 'ALL' ? 'All 11 Courts' : 'Courts 1–5'}
+                      <span className="font-semibold text-blue-700">
+                        {formatCourtScopeLabel(rule.court_scope)}
+                      </span>
                     </p>
                   </div>
                   <button

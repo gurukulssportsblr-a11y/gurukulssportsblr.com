@@ -8,7 +8,7 @@ export default function Facilities() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
         {/* Facility Card 1 - Badminton */}
         <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/50 overflow-hidden hover:shadow-[0_8px_30px_rgba(15,23,42,0.08)] transition-all duration-300 flex flex-col group hover:-translate-y-1">
           <div className="h-48 bg-[#0F172A] relative overflow-hidden flex items-center justify-center">
@@ -83,6 +83,30 @@ export default function Facilities() {
             </div>
             <p className="font-body-md text-body-md text-on-surface-variant flex-1">
               Dedicated high-ceiling zone featuring premium ITTF approved tables with specialized grip flooring for optimal movement.
+            </p>
+          </div>
+        </div>
+
+        {/* Facility Card 4 - Martial Arts */}
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/50 overflow-hidden hover:shadow-[0_8px_30px_rgba(15,23,42,0.08)] transition-all duration-300 flex flex-col group hover:-translate-y-1">
+          <div className="h-48 bg-[#0F172A] relative overflow-hidden flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#0F172A] via-[#831843]/40 to-[#E11D48]/30 opacity-90"></div>
+            <span className="material-symbols-outlined absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-[72px] text-white/40 group-hover:scale-110 group-hover:text-[#FB7185]/80 transition-all duration-500">
+              sports_martial_arts
+            </span>
+            <span className="absolute bottom-3 left-4 px-2.5 py-1 bg-white/10 backdrop-blur-md text-white text-xs font-semibold rounded-md border border-white/20">
+              Training Arena
+            </span>
+          </div>
+          <div className="p-6 flex-1 flex flex-col">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-title-md text-title-md text-[#0F172A] font-bold">Martial Arts</h3>
+              <span className="px-2.5 py-1 bg-surface-container-high text-on-surface-variant text-[11px] font-bold rounded-full uppercase tracking-wider">
+                Pro Dojo
+              </span>
+            </div>
+            <p className="font-body-md text-body-md text-on-surface-variant flex-1">
+              Dedicated Martial Arts training arena equipped with safety tatami mats, punching bags, and gear. Professional coaching and self-defense batches available.
             </p>
           </div>
         </div>

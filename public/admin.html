@@ -413,15 +413,29 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Applicable Courts</label>
-                    <div class="flex items-center gap-3">
-                        <label class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-800">
-                            <input type="radio" name="court-scope" value="ALL" checked class="text-blue-600"> All 11 Courts
-                        </label>
-                        <label class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-800">
-                            <input type="radio" name="court-scope" value="CUSTOM" class="text-blue-600"> Courts 1–5 Only
-                        </label>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs font-bold text-slate-700">Applicable Courts for this Discount</label>
+                        <span id="rule-court-scope-badge" class="text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">All 11 Courts</span>
                     </div>
+                    <div class="flex flex-wrap gap-1.5 p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                        <button type="button" id="court-scope-btn-all" onclick="setPricingCourtScope('ALL')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-blue-600 text-white shadow-sm ring-1 ring-blue-700">
+                            All 11 Courts
+                        </button>
+                        <button type="button" id="court-scope-btn-1" onclick="togglePricingRuleCourt(1)" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border border-slate-300 hover:bg-slate-100">Court 1</button>
+                        <button type="button" id="court-scope-btn-2" onclick="togglePricingRuleCourt(2)" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border border-slate-300 hover:bg-slate-100">Court 2</button>
+                        <button type="button" id="court-scope-btn-3" onclick="togglePricingRuleCourt(3)" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border border-slate-300 hover:bg-slate-100">Court 3</button>
+                        <button type="button" id="court-scope-btn-4" onclick="togglePricingRuleCourt(4)" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border border-slate-300 hover:bg-slate-100">Court 4</button>
+                        <button type="button" id="court-scope-btn-5" onclick="togglePricingRuleCourt(5)" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border border-slate-300 hover:bg-slate-100">Court 5</button>
+                        <button type="button" id="court-scope-btn-6" onclick="togglePricingRuleCourt(6)" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border border-slate-300 hover:bg-slate-100">Court 6</button>
+                        <button type="button" id="court-scope-btn-7" onclick="togglePricingRuleCourt(7)" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border border-slate-300 hover:bg-slate-100">Court 7</button>
+                        <button type="button" id="court-scope-btn-8" onclick="togglePricingRuleCourt(8)" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border border-slate-300 hover:bg-slate-100">Court 8</button>
+                        <button type="button" id="court-scope-btn-9" onclick="togglePricingRuleCourt(9)" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border border-slate-300 hover:bg-slate-100">Court 9</button>
+                        <button type="button" id="court-scope-btn-10" onclick="togglePricingRuleCourt(10)" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border border-slate-300 hover:bg-slate-100">Court 10</button>
+                        <button type="button" id="court-scope-btn-11" onclick="togglePricingRuleCourt(11)" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border border-slate-300 hover:bg-slate-100">Court 11</button>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-1">
+                        💡 Select individual courts (e.g. Court 1 @ ₹180, Court 2 @ ₹200) or toggle multiple courts.
+                    </p>
                 </div>
 
                 <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-heading font-bold text-xs rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm">
@@ -1088,15 +1102,108 @@
             }
         }
 
+        let currentPricingRuleScope = 'ALL';
+
+        function isCourtInRuleScope(scope, courtNumber) {
+            if (!scope || scope === 'ALL') return true;
+            if (scope === 'CUSTOM') return courtNumber <= 5;
+            const courts = scope
+                .split(',')
+                .map(s => parseInt(s.trim().replace(/\D/g, ''), 10))
+                .filter(n => !isNaN(n));
+            if (courts.length > 0) {
+                return courts.includes(courtNumber);
+            }
+            return false;
+        }
+
+        function formatCourtScopeLabel(scope) {
+            if (!scope || scope === 'ALL') return 'All 11 Courts';
+            if (scope === 'CUSTOM') return 'Courts 1–5';
+            const parts = scope
+                .split(',')
+                .map(s => s.trim().replace(/^c/i, ''))
+                .filter(Boolean);
+            if (parts.length === 1) return `Court ${parts[0]} Only`;
+            if (parts.length === 11) return 'All 11 Courts';
+            return `Courts: ${parts.map(c => `C${c}`).join(', ')}`;
+        }
+
+        function setPricingCourtScope(scope) {
+            currentPricingRuleScope = scope;
+            updatePricingCourtButtonsUI();
+        }
+
+        function togglePricingRuleCourt(courtNum) {
+            const str = String(courtNum);
+            if (currentPricingRuleScope === 'ALL' || currentPricingRuleScope === 'CUSTOM') {
+                currentPricingRuleScope = str;
+            } else {
+                let currentCourts = currentPricingRuleScope
+                    .split(',')
+                    .map(s => s.trim())
+                    .filter(Boolean);
+                if (currentCourts.includes(str)) {
+                    currentCourts = currentCourts.filter(c => c !== str);
+                    currentPricingRuleScope = currentCourts.length > 0 ? currentCourts.join(',') : 'ALL';
+                } else {
+                    currentCourts.push(str);
+                    currentCourts.sort((a, b) => Number(a) - Number(b));
+                    if (currentCourts.length === 11) {
+                        currentPricingRuleScope = 'ALL';
+                    } else {
+                        currentPricingRuleScope = currentCourts.join(',');
+                    }
+                }
+            }
+            updatePricingCourtButtonsUI();
+        }
+
+        function updatePricingCourtButtonsUI() {
+            const badge = document.getElementById('rule-court-scope-badge');
+            if (badge) {
+                badge.textContent = formatCourtScopeLabel(currentPricingRuleScope);
+            }
+            const allBtn = document.getElementById('court-scope-btn-all');
+            if (allBtn) {
+                if (currentPricingRuleScope === 'ALL') {
+                    allBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-blue-600 text-white shadow-sm ring-1 ring-blue-700';
+                } else {
+                    allBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border border-slate-300 hover:bg-slate-100';
+                }
+            }
+            for (let c = 1; c <= 11; c++) {
+                const btn = document.getElementById(`court-scope-btn-${c}`);
+                if (!btn) continue;
+                const isSelected = currentPricingRuleScope !== 'ALL' &&
+                    currentPricingRuleScope !== 'CUSTOM' &&
+                    currentPricingRuleScope.split(',').map(s => s.trim()).includes(String(c));
+                if (isSelected) {
+                    btn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-blue-600 text-white shadow-sm ring-1 ring-blue-700';
+                } else {
+                    btn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-white text-slate-700 border border-slate-300 hover:bg-slate-100';
+                }
+            }
+        }
+
         function calculateSlotPrice(courtNum, hour) {
             let price = 300;
             let isDiscounted = false;
             let ruleName = '';
 
-            for (const rule of pricingRules) {
+            // Sort rules so specific court rules take precedence over general 'ALL' rules
+            const sortedRules = [...pricingRules].sort((a, b) => {
+                const aIsAll = !a.court_scope || a.court_scope === 'ALL';
+                const bIsAll = !b.court_scope || b.court_scope === 'ALL';
+                if (!aIsAll && bIsAll) return -1;
+                if (aIsAll && !bIsAll) return 1;
+                return 0;
+            });
+
+            for (const rule of sortedRules) {
                 if (!rule.is_active) continue;
                 if (hour >= rule.start_hour && hour < rule.end_hour) {
-                    if (rule.court_scope === 'ALL' || (rule.court_scope === 'CUSTOM' && courtNum <= 5)) {
+                    if (isCourtInRuleScope(rule.court_scope, courtNum)) {
                         price = Number(rule.price_per_hour);
                         isDiscounted = price < 300;
                         ruleName = rule.rule_name;
@@ -1278,7 +1385,7 @@
                             <span class="font-bold text-xs text-slate-900">${rule.rule_name}</span>
                             <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-extrabold rounded">₹${rule.price_per_hour}/hr</span>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-0.5">${rule.start_hour}:00 to ${rule.end_hour}:00 • ${rule.court_scope === 'ALL' ? 'All 11 Courts' : 'Courts 1–5'}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">${rule.start_hour}:00 to ${rule.end_hour}:00 • <span class="font-semibold text-blue-700">${formatCourtScopeLabel(rule.court_scope)}</span></p>
                     </div>
                     <button onclick="deletePricingRule('${rule.id}')" class="p-1 hover:bg-red-50 text-red-500 rounded text-xs font-bold">
                         Delete
@@ -1296,7 +1403,7 @@
             const price = parseInt(document.getElementById('rule-price').value, 10);
             const startHour = parseInt(document.getElementById('rule-start-slot').value, 10);
             const endHour = parseInt(document.getElementById('rule-end-slot').value, 10);
-            const courtScope = document.querySelector('input[name="court-scope"]:checked').value;
+            const courtScope = currentPricingRuleScope;
 
             if (startHour >= endHour) {
                 alert('Start time must be earlier than End time.');
@@ -1318,6 +1425,7 @@
 
             if (res.ok) {
                 closeModal('pricing-modal');
+                setPricingCourtScope('ALL');
                 fetchLiveDashboardData();
                 alert('✅ Pricing rule saved & applied to the live timetable and customer portal!');
             }
@@ -1577,6 +1685,7 @@
                 alert('Action restricted: Staff accounts cannot configure pricing.');
                 return;
             }
+            setPricingCourtScope('ALL');
             openModal('pricing-modal');
         }
         function openPromoModal() {

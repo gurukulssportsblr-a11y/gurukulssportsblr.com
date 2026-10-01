@@ -7,7 +7,7 @@ export interface PricingRule {
   start_hour: number;
   end_hour: number;
   price_per_hour: number;
-  court_scope: 'ALL' | 'CUSTOM';
+  court_scope: string; // 'ALL' | 'CUSTOM' | '1' | '2' ... | comma-separated list like '1,2,3'
   is_active: boolean;
 }
 
@@ -179,6 +179,19 @@ export async function deletePricingRule(id: string): Promise<boolean> {
   return true;
 }
 
+export function isCourtInRuleScope(scope: string, courtNumber: number): boolean {
+  if (!scope || scope === 'ALL') return true;
+  if (scope === 'CUSTOM') return courtNumber <= 5;
+  const courts = scope
+    .split(',')
+    .map((s) => parseInt(s.trim().replace(/\D/g, ''), 10))
+    .filter((n) => !isNaN(n));
+  if (courts.length > 0) {
+    return courts.includes(courtNumber);
+  }
+  return false;
+}
+
 export function calculateSlotPriceFromRules(
   rules: PricingRule[],
   courtNumber: number,
@@ -188,10 +201,19 @@ export function calculateSlotPriceFromRules(
   let isDiscounted = false;
   let ruleName = '';
 
-  for (const rule of rules) {
+  // Sort rules so specific court rules take precedence over 'ALL' rules
+  const sortedRules = [...rules].sort((a, b) => {
+    const aIsAll = !a.court_scope || a.court_scope === 'ALL';
+    const bIsAll = !b.court_scope || b.court_scope === 'ALL';
+    if (!aIsAll && bIsAll) return -1;
+    if (aIsAll && !bIsAll) return 1;
+    return 0;
+  });
+
+  for (const rule of sortedRules) {
     if (!rule.is_active) continue;
     if (hour >= rule.start_hour && hour < rule.end_hour) {
-      if (rule.court_scope === 'ALL' || (rule.court_scope === 'CUSTOM' && courtNumber <= 5)) {
+      if (isCourtInRuleScope(rule.court_scope, courtNumber)) {
         price = Number(rule.price_per_hour);
         isDiscounted = price < 300;
         ruleName = rule.rule_name;
