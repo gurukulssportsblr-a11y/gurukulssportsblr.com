@@ -147,10 +147,11 @@ export default function BookingSystem() {
   }, [courts, surfaceFilter]);
 
   // Helper to compute slot pricing dynamically
+  // Helper to compute slot pricing dynamically (30-minute duration)
   const getSlotPricing = useCallback(
     (slotStr: string) => {
       const hour = parseSlotToHour(slotStr);
-      let price = currentCourt.price_per_hour || 300;
+      let hourlyPrice = currentCourt.price_per_hour || 300;
       let isDiscounted = false;
       let ruleName = '';
 
@@ -167,20 +168,22 @@ export default function BookingSystem() {
         if (!rule.is_active) continue;
         if (hour >= rule.start_hour && hour < rule.end_hour) {
           if (isCourtInRuleScope(rule.court_scope, currentCourtNumber)) {
-            price = Number(rule.price_per_hour);
-            isDiscounted = price < (currentCourt.price_per_hour || 300);
+            hourlyPrice = Number(rule.price_per_hour);
+            isDiscounted = hourlyPrice < (currentCourt.price_per_hour || 300);
             ruleName = rule.rule_name;
             break;
           }
         }
       }
+      // 30-minute slot rate is half of hourly rate
+      const price = Math.round(hourlyPrice / 2);
       return { price, isDiscounted, ruleName };
     },
     [currentCourt, currentCourtNumber, pricingRules]
   );
 
   // Pricing calculation
-  const totalHours = selectedSlots.length;
+  const totalHours = selectedSlots.length * 0.5;
   const totalAmount = useMemo(() => {
     return selectedSlots.reduce((sum, slot) => sum + getSlotPricing(slot).price, 0);
   }, [selectedSlots, getSlotPricing]);
@@ -188,12 +191,15 @@ export default function BookingSystem() {
   // Toggle slot selection
   const toggleSlot = (slot: string) => {
     if (isSlotPassed(slot, selectedDate)) return;
-    if (bookedSlots.includes(slot)) return;
-    if (blockedSlots.some((b) => b.slot_time === slot)) return;
+    const norm = normalizeSlot(slot);
+    if (bookedSlots.some((bs) => normalizeSlot(bs) === norm)) return;
+    if (blockedSlots.some((b) => normalizeSlot(b.slot_time) === norm)) return;
 
     setErrorMessage('');
     setSelectedSlots((prev) =>
-      prev.includes(slot) ? prev.filter((s) => s !== slot) : [...prev, slot].sort()
+      prev.includes(slot)
+        ? prev.filter((s) => s !== slot)
+        : [...prev, slot].sort((a, b) => parseSlotToHour(a) - parseSlotToHour(b))
     );
   };
 
@@ -621,7 +627,9 @@ export default function BookingSystem() {
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
                 <div className="flex justify-between text-slate-600">
                   <span>Total Duration:</span>
-                  <span className="font-bold text-slate-900">{totalHours} Hour(s)</span>
+                  <span className="font-bold text-slate-900">
+                    {totalHours === 0.5 ? '30 Mins (0.5 hr)' : totalHours === 1 ? '1 Hour' : `${totalHours} Hours`}
+                  </span>
                 </div>
                 <div className="flex justify-between items-baseline pt-2 border-t border-slate-200 text-base">
                   <span className="font-bold text-slate-900">Grand Total:</span>

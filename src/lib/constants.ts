@@ -1,25 +1,43 @@
 export const MORNING_SLOTS = [
   '06:00 AM',
+  '06:30 AM',
   '07:00 AM',
+  '07:30 AM',
   '08:00 AM',
+  '08:30 AM',
   '09:00 AM',
+  '09:30 AM',
   '10:00 AM',
+  '10:30 AM',
   '11:00 AM',
+  '11:30 AM',
 ];
 
 export const AFTERNOON_EVENING_SLOTS = [
   '12:00 PM',
+  '12:30 PM',
   '01:00 PM',
+  '01:30 PM',
   '02:00 PM',
+  '02:30 PM',
   '03:00 PM',
+  '03:30 PM',
   '04:00 PM',
+  '04:30 PM',
   '05:00 PM',
+  '05:30 PM',
   '06:00 PM',
+  '06:30 PM',
   '07:00 PM',
+  '07:30 PM',
   '08:00 PM',
+  '08:30 PM',
   '09:00 PM',
+  '09:30 PM',
   '10:00 PM',
+  '10:30 PM',
   '11:00 PM',
+  '11:30 PM',
 ];
 
 export const ALL_TIME_SLOTS = [...MORNING_SLOTS, ...AFTERNOON_EVENING_SLOTS];
@@ -46,14 +64,20 @@ export const DEFAULT_COURTS: DefaultCourt[] = [
   { id: 'c11', court_number: 11, name: 'Court 11', surface_type: 'Synthetic', price_per_hour: 300 },
 ];
 
+export function normalizeSlot(s: string): string {
+  if (!s) return '';
+  return s.trim().replace(/^0/, '').toUpperCase();
+}
+
 export function parseSlotToHour(slotStr: string): number {
   const match = slotStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
   if (!match) return 0;
   let hour = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10) || 0;
   const period = match[3].toUpperCase();
   if (period === 'PM' && hour < 12) hour += 12;
   if (period === 'AM' && hour === 12) hour = 0;
-  return hour;
+  return hour + minutes / 60;
 }
 
 export function getNowInIST(): Date {
@@ -73,12 +97,11 @@ export function isSlotPassed(slotStr: string, dateStr: string): boolean {
     if (dateStr < todayStr) return true;
     if (dateStr > todayStr) return false;
 
-    // For today, compare current hour in IST
+    // For today, compare decimal hour with current decimal time in IST
     const slotHour = parseSlotToHour(slotStr);
-    const currentHour = istNow.getHours();
-    return slotHour <= currentHour;
+    const currentDecimalHour = istNow.getHours() + istNow.getMinutes() / 60;
+    return slotHour <= currentDecimalHour;
   } catch {
     return false;
   }
 }
-

@@ -38,6 +38,20 @@ function formatCourtScopeLabel(scope: string): string {
   return `Courts: ${parts.map((c) => `C${c}`).join(', ')}`;
 }
 
+function normalizeSlot(s?: string): string {
+  if (!s) return '';
+  return s.trim().replace(/^0/, '').toLowerCase();
+}
+
+function formatHourDecimal(h: number): string {
+  if (h === 24) return '12:00 AM (Midnight)';
+  const hourPart = Math.floor(h);
+  const minPart = h % 1 !== 0 ? '30' : '00';
+  const ampm = hourPart >= 12 && hourPart < 24 ? 'PM' : 'AM';
+  const displayHour = hourPart === 0 ? 12 : hourPart > 12 ? hourPart - 12 : hourPart;
+  return `${String(displayHour).padStart(2, '0')}:${minPart} ${ampm}`;
+}
+
 interface BlockedSlot {
   id: string;
   court_number: number;
@@ -56,24 +70,42 @@ interface PromoBannerData {
 }
 
 const TIME_ROWS = [
-  { label: '6-7 AM', hour: 6, display: '06:00 AM' },
-  { label: '7-8 AM', hour: 7, display: '07:00 AM' },
-  { label: '8-9 AM', hour: 8, display: '08:00 AM' },
-  { label: '9-10 AM', hour: 9, display: '09:00 AM' },
-  { label: '10-11 AM', hour: 10, display: '10:00 AM' },
-  { label: '11 AM-12 PM', hour: 11, display: '11:00 AM' },
-  { label: '12-1 PM', hour: 12, display: '12:00 PM' },
-  { label: '1-2 PM', hour: 13, display: '01:00 PM' },
-  { label: '2-3 PM', hour: 14, display: '02:00 PM' },
-  { label: '3-4 PM', hour: 15, display: '03:00 PM' },
-  { label: '4-5 PM', hour: 16, display: '04:00 PM' },
-  { label: '5-6 PM', hour: 17, display: '05:00 PM' },
-  { label: '6-7 PM', hour: 18, display: '06:00 PM' },
-  { label: '7-8 PM', hour: 19, display: '07:00 PM' },
-  { label: '8-9 PM', hour: 20, display: '08:00 PM' },
-  { label: '9-10 PM', hour: 21, display: '09:00 PM' },
-  { label: '10-11 PM', hour: 22, display: '10:00 PM' },
-  { label: '11 PM-12 AM', hour: 23, display: '11:00 PM' },
+  { label: '6:00 - 6:30 AM', hour: 6.0, display: '06:00 AM' },
+  { label: '6:30 - 7:00 AM', hour: 6.5, display: '06:30 AM' },
+  { label: '7:00 - 7:30 AM', hour: 7.0, display: '07:00 AM' },
+  { label: '7:30 - 8:00 AM', hour: 7.5, display: '07:30 AM' },
+  { label: '8:00 - 8:30 AM', hour: 8.0, display: '08:00 AM' },
+  { label: '8:30 - 9:00 AM', hour: 8.5, display: '08:30 AM' },
+  { label: '9:00 - 9:30 AM', hour: 9.0, display: '09:00 AM' },
+  { label: '9:30 - 10:00 AM', hour: 9.5, display: '09:30 AM' },
+  { label: '10:00 - 10:30 AM', hour: 10.0, display: '10:00 AM' },
+  { label: '10:30 - 11:00 AM', hour: 10.5, display: '10:30 AM' },
+  { label: '11:00 - 11:30 AM', hour: 11.0, display: '11:00 AM' },
+  { label: '11:30 AM - 12:00 PM', hour: 11.5, display: '11:30 AM' },
+  { label: '12:00 - 12:30 PM', hour: 12.0, display: '12:00 PM' },
+  { label: '12:30 - 1:00 PM', hour: 12.5, display: '12:30 PM' },
+  { label: '1:00 - 1:30 PM', hour: 13.0, display: '01:00 PM' },
+  { label: '1:30 - 2:00 PM', hour: 13.5, display: '01:30 PM' },
+  { label: '2:00 - 2:30 PM', hour: 14.0, display: '02:00 PM' },
+  { label: '2:30 - 3:00 PM', hour: 14.5, display: '02:30 PM' },
+  { label: '3:00 - 3:30 PM', hour: 15.0, display: '03:00 PM' },
+  { label: '3:30 - 4:00 PM', hour: 15.5, display: '03:30 PM' },
+  { label: '4:00 - 4:30 PM', hour: 16.0, display: '04:00 PM' },
+  { label: '4:30 - 5:00 PM', hour: 16.5, display: '04:30 PM' },
+  { label: '5:00 - 5:30 PM', hour: 17.0, display: '05:00 PM' },
+  { label: '5:30 - 6:00 PM', hour: 17.5, display: '05:30 PM' },
+  { label: '6:00 - 6:30 PM', hour: 18.0, display: '06:00 PM' },
+  { label: '6:30 - 7:00 PM', hour: 18.5, display: '06:30 PM' },
+  { label: '7:00 - 7:30 PM', hour: 19.0, display: '07:00 PM' },
+  { label: '7:30 - 8:00 PM', hour: 19.5, display: '07:30 PM' },
+  { label: '8:00 - 8:30 PM', hour: 20.0, display: '08:00 PM' },
+  { label: '8:30 - 9:00 PM', hour: 20.5, display: '08:30 PM' },
+  { label: '9:00 - 9:30 PM', hour: 21.0, display: '09:00 PM' },
+  { label: '9:30 - 10:00 PM', hour: 21.5, display: '09:30 PM' },
+  { label: '10:00 - 10:30 PM', hour: 22.0, display: '10:00 PM' },
+  { label: '10:30 - 11:00 PM', hour: 22.5, display: '10:30 PM' },
+  { label: '11:00 - 11:30 PM', hour: 23.0, display: '11:00 PM' },
+  { label: '11:30 PM - 12:00 AM', hour: 23.5, display: '11:30 PM' },
 ];
 
 export default function AdminDashboardPage() {
@@ -427,11 +459,10 @@ export default function AdminDashboardPage() {
     }
   }, [selectedDate]);
 
-  // Pricing helper
+  // Pricing helper (30-minute slot duration)
   const getSlotPrice = useCallback(
     (courtNum: number, hour: number) => {
-      let price = 300;
-      let isDiscounted = false;
+      let hourlyPrice = 300;
       let ruleName = '';
 
       // Sort rules so specific court rules take precedence over general 'ALL' rules
@@ -447,13 +478,14 @@ export default function AdminDashboardPage() {
         if (!rule.is_active) continue;
         if (hour >= rule.start_hour && hour < rule.end_hour) {
           if (isCourtInRuleScope(rule.court_scope, courtNum)) {
-            price = Number(rule.price_per_hour);
-            isDiscounted = price < 300;
+            hourlyPrice = Number(rule.price_per_hour);
             ruleName = rule.rule_name;
             break;
           }
         }
       }
+      const price = Math.round(hourlyPrice / 2);
+      const isDiscounted = price < 150;
       return { price, isDiscounted, ruleName };
     },
     [pricingRules]
@@ -660,11 +692,14 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Total booked calculation for KPI
+  // Total booked calculation for KPI (11 courts * 36 half-hour slots = 396 slots)
   const totalBookedCount = allBookings.length;
-  const occupancyPercentage = Math.round((totalBookedCount / 198) * 100);
+  const occupancyPercentage = Math.round((totalBookedCount / 396) * 100);
   const totalRevenue = allBookings.reduce((sum, b) => {
-    const hour = TIME_ROWS.find((t) => t.display === b.slot_time)?.hour || 6;
+    const hour =
+      TIME_ROWS.find(
+        (t) => t.display === b.slot_time || normalizeSlot(t.display) === normalizeSlot(b.slot_time)
+      )?.hour || 6;
     return sum + getSlotPrice(b.court_number, hour).price;
   }, 0);
 
@@ -1155,7 +1190,10 @@ export default function AdminDashboardPage() {
 
                       // Check if booked
                       const booking = allBookings.find(
-                        (b) => b.court_number === courtNum && b.slot_time === row.display
+                        (b) =>
+                          b.court_number === courtNum &&
+                          (b.slot_time === row.display ||
+                            normalizeSlot(b.slot_time) === normalizeSlot(row.display))
                       );
 
                       if (booking) {
@@ -1796,7 +1834,7 @@ export default function AdminDashboardPage() {
                       onClick={() => setOpenBlockDropdown(openBlockDropdown === 'fromTime' ? 'none' : 'fromTime')}
                       className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-left flex justify-between items-center text-slate-800 hover:bg-slate-100 transition-colors shadow-xs"
                     >
-                      <span>{TIME_ROWS.find((r) => r.hour === blockStart)?.display || `${blockStart}:00`}</span>
+                      <span>{TIME_ROWS.find((r) => r.hour === blockStart)?.display || formatHourDecimal(blockStart)}</span>
                       <span className="material-symbols-outlined text-[18px] text-slate-500">expand_more</span>
                     </button>
                     {openBlockDropdown === 'fromTime' && (
@@ -1821,25 +1859,14 @@ export default function AdminDashboardPage() {
                       onClick={() => setOpenBlockDropdown(openBlockDropdown === 'toTime' ? 'none' : 'toTime')}
                       className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-left flex justify-between items-center text-slate-800 hover:bg-slate-100 transition-colors shadow-xs"
                     >
-                      <span>
-                        {blockEnd === 24
-                          ? '12:00 AM (Midnight)'
-                          : blockEnd > 12
-                          ? `${String(blockEnd - 12).padStart(2, '0')}:00 PM`
-                          : `${String(blockEnd).padStart(2, '0')}:00 AM`}
-                      </span>
+                      <span>{formatHourDecimal(blockEnd)}</span>
                       <span className="material-symbols-outlined text-[18px] text-slate-500">expand_more</span>
                     </button>
                     {openBlockDropdown === 'toTime' && (
                       <div className="absolute left-0 top-[calc(100%+4px)] w-full bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-56 overflow-y-auto py-1 ring-1 ring-slate-900/5">
                         {TIME_ROWS.map((row) => {
-                          const endH = row.hour + 1;
-                          const label =
-                            endH === 24
-                              ? '12:00 AM (Midnight)'
-                              : endH > 12
-                              ? `${String(endH - 12).padStart(2, '0')}:00 PM`
-                              : `${String(endH).padStart(2, '0')}:00 AM`;
+                          const endH = row.hour + 0.5;
+                          const label = formatHourDecimal(endH);
                           return (
                             <div
                               key={endH}

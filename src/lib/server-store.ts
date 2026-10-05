@@ -197,7 +197,7 @@ export function calculateSlotPriceFromRules(
   courtNumber: number,
   hour: number
 ): { price: number; isDiscounted: boolean; ruleName: string } {
-  let price = 300;
+  let hourlyPrice = 300;
   let isDiscounted = false;
   let ruleName = '';
 
@@ -214,14 +214,16 @@ export function calculateSlotPriceFromRules(
     if (!rule.is_active) continue;
     if (hour >= rule.start_hour && hour < rule.end_hour) {
       if (isCourtInRuleScope(rule.court_scope, courtNumber)) {
-        price = Number(rule.price_per_hour);
-        isDiscounted = price < 300;
+        hourlyPrice = Number(rule.price_per_hour);
+        isDiscounted = hourlyPrice < 300;
         ruleName = rule.rule_name;
         break;
       }
     }
   }
 
+  // 30-minute slot price is half of the hourly rate
+  const price = Math.round(hourlyPrice / 2);
   return { price, isDiscounted, ruleName };
 }
 

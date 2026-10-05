@@ -343,8 +343,8 @@ export async function POST(req: Request) {
             customer_name: customerName.trim(),
             customer_phone: customerPhone.trim(),
             booking_date: bookingDate,
-            total_hours: selectedSlots.length,
-            price_per_hour: Math.round(totalCalculatedAmount / selectedSlots.length),
+            total_hours: Math.max(1, Math.round(selectedSlots.length * 0.5)),
+            price_per_hour: Math.round(totalCalculatedAmount / (selectedSlots.length * 0.5)),
             total_amount: totalCalculatedAmount,
             status: 'confirmed',
           })
