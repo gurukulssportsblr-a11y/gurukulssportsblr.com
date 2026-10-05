@@ -289,3 +289,60 @@ The system architecture fully supports changing slot time durations from 1 hour 
   - Display individual 30-min slot pricing (`₹150` standard or `₹100 OFFER`).
 - **Booking Summary Card:**
   - Format duration dynamically: `0.5 Hours` (1 slot), `1 Hour` (2 slots), `1.5 Hours` (3 slots), etc.
+
+---
+
+## 9. Implementation Report & Supabase Verification: 30-Minute Slot Duration Transition
+
+### Implementation Status: COMPLETED & VERIFIED
+
+The platform has transitioned from 18 1-hour slots to 36 30-minute slots (`06:00 AM` to `11:30 PM`).
+
+#### Detailed Changes Implemented:
+
+1. **Time Slots Catalog & Constants ([`src/lib/constants.ts`](file:///home/jeremy/projects/GurukulSprots/src/lib/constants.ts))**:
+   - `MORNING_SLOTS`: Expanded to 12 slots (`06:00 AM`, `06:30 AM`, ..., `11:30 AM`).
+   - `AFTERNOON_EVENING_SLOTS`: Expanded to 24 slots (`12:00 PM`, `12:30 PM`, ..., `11:30 PM`).
+   - `ALL_TIME_SLOTS`: Aggregates all 36 slots.
+   - `parseSlotToHour`: Evaluates decimal hours (`hour + minutes / 60`) so that half-hour slots evaluate correctly (e.g., `06:30 AM` -> `6.5`).
+   - `isSlotPassed`: Compares decimal hour with IST current time (`istNow.getHours() + istNow.getMinutes() / 60`), allowing fine-grained expiry down to 30-minute intervals.
+   - `normalizeSlot`: Strips leading zeros and normalizes slot case for robust matching.
+
+2. **Dynamic Half-Hour Pricing ([`src/lib/server-store.ts`](file:///home/jeremy/projects/GurukulSprots/src/lib/server-store.ts) & [`src/components/BookingSystem.tsx`](file:///home/jeremy/projects/GurukulSprots/src/components/BookingSystem.tsx))**:
+   - Baseline pricing for a 30-minute slot is **₹150** (half of ₹300/hr baseline rate).
+   - Active pricing offer rules (e.g. ₹200/hr) evaluate dynamically to **₹100 per 30-minute slot** (`Math.round(hourlyPrice / 2)`).
+   - Total hours calculated accurately as `selectedSlots.length * 0.5`.
+   - Duration displays cleanly: `30 Mins (0.5 hr)`, `1 Hour`, `1.5 Hours`, `2 Hours`, etc.
+
+3. **Supabase PostgreSQL Schema Compatibility ([`src/app/api/bookings/route.ts`](file:///home/jeremy/projects/GurukulSprots/src/app/api/bookings/route.ts))**:
+   - **`booking_slots.slot_time`**: Uses `TEXT` / `VARCHAR(20)`. Persists half-hour strings (`06:30 AM`, `07:30 AM`, etc.) natively without schema changes.
+   - **`bookings.total_hours`**: PostgreSQL schema type is `INTEGER`. To ensure compatibility and avoid HTTP 400 rejection (`invalid input syntax for type integer: 0.5`), the API safely inserts `Math.max(1, Math.round(selectedSlots.length * 0.5))` into `total_hours` while the full fractional breakdown is preserved in `selectedSlots` and customer invoices.
+   - **`site_settings`**: Court blocks are stored in JSON format with half-hour decimal boundaries (`start_hour: 6.5`, `end_hour: 7.0`).
+   - **Live Verification**: Successfully verified direct insertion and deletion of half-hour slots into Supabase with live credentials.
+
+4. **Host Control Dashboard ([`src/app/admin/page.tsx`](file:///home/jeremy/projects/GurukulSprots/src/app/admin/page.tsx) & [`public/admin.html`](file:///home/jeremy/projects/GurukulSprots/public/admin.html))**:
+   - **Timetable Matrix Grid**: Expanded to 36 rows with sticky time headers for both courts 1–5 and 6–11.
+   - **Capacity Denominator**: Scaled from 198 slots to **396 total court-slots/day** (11 courts × 36 half-hour slots).
+   - **Block Modal & Dropdowns**: Updated with `formatHourDecimal()` to support 0.5-hour steps (`6:00 - 6:30 AM`, `6:30 - 7:00 AM`, etc.) and presets.
+   - **Walk-in Booking Modal**: Pre-populates all 36 half-hour slots.
+
+5. **Static Customer Booking Portal ([`index.html`](file:///home/jeremy/projects/GurukulSprots/index.html))**:
+   - Rendered 36 slot buttons under Morning and Afternoon/Evening.
+   - Displayed individual 30-minute rate tags (`₹150`).
+   - Dynamic real-time summary card updating duration (`30 Mins (0.5 hr)`, `1 Hour`, etc.), fee labels (`₹150/slot`), and grand total.
+   - Chronological slot sorting on selection.
+
+---
+
+## 10. Facility Expansion & Granular Court-Specific Discounts
+
+### 1. Martial Arts Training Arena Added
+- **Facility Card**: Added dedicated Martial Arts facility to [`src/components/Facilities.tsx`](file:///home/jeremy/projects/GurukulSprots/src/components/Facilities.tsx) and [`index.html`](file:///home/jeremy/projects/GurukulSprots/index.html).
+- **Official Description**:
+  > *"Dedicated Martial Arts training arena equipped with safety tatami mats, punching bags, and gear. Professional coaching and self-defense batches available."*
+- **Iconography**: Material symbol `sports_martial_arts` styled with brand blue accents.
+
+### 2. Granular Court-Specific Pricing Discounts
+- **Court Scope Selection**: Administrators can now apply pricing rules to specific individual courts, subsets (e.g. Courts 1–5, Court 3 only, Court 11 only), or all 11 courts.
+- **Precedence Logic**: Specific court rules override general `ALL` rules, enabling special promotional pricing on designated courts while maintaining standard rates on others.
+- **Rule Scope Helper Functions**: `isCourtInRuleScope` and `formatCourtScopeLabel` guarantee consistent discount application across API endpoints, Next.js React app, and the standalone admin portal.
