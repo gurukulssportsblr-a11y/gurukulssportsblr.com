@@ -232,3 +232,60 @@ CREATE TABLE public.site_settings (
   2. Implemented strict lockout logic: If an active session is detected within a 90-second heartbeat window, any subsequent login attempt is rejected with a clear "Host Portal In Use" warning.
   3. Integrated an **Emergency Force Takeover** capability requiring secret password `Ace_V1j1th`. Supplying this key immediately invalidates the conflicting administrator's session and reassigns exclusive ownership to the new caller.
   4. Configured automated 15-second background heartbeats on active dashboards; if a session is overtaken or terminated, the previous user is immediately logged out with an alert.
+
+---
+
+## 8. Architectural Specification: 30-Minute Slot Duration Transition
+
+### Feasibility: YES
+The system architecture fully supports changing slot time durations from 1 hour to 30-minute slots. Because individual slot reservations are persisted as decoupled rows in the `booking_slots` relational table using text labels (`slot_time`), 30-minute intervals can be integrated with zero disruption to the underlying booking lifecycle.
+
+---
+
+### Required Modifications Breakdown
+
+#### 1. Database Schema & Data Types (Supabase PostgreSQL)
+- **`bookings.total_hours` Column Migration:**
+  - Currently defined as `INTEGER DEFAULT 1`.
+  - Booking 30-minute increments requires fractional hours (e.g. `0.5`, `1.5`, `2.5`). Run the following migration:
+    ```sql
+    ALTER TABLE public.bookings ALTER COLUMN total_hours TYPE NUMERIC(4, 1);
+    ```
+- **`booking_slots.slot_time` Column:**
+  - Already defined as `VARCHAR(20)`. No migration required; natively stores `'06:30 AM'`, `'07:30 PM'`, etc.
+- **Legacy Bookings Compatibility:**
+  - Existing bookings with hourly labels (e.g. `'06:00 AM'`) remain valid. An optional one-time script can duplicate existing 1-hour slots to cover both sub-slots (e.g. `'06:00 AM'` and `'06:30 AM'`) so past reservations don't leave unexpected 30-minute gaps.
+
+#### 2. Slot Constants & Time Engine
+- **Slot Catalog Expansion ([`src/lib/constants.ts`](file:///home/jeremy/projects/GurukulSprots/src/lib/constants.ts)):**
+  - Expand daily slots from 18 to 36 slots (6:00 AM – 12:00 AM Midnight):
+    - **Morning (12 slots):** `06:00 AM`, `06:30 AM`, `07:00 AM`, `07:30 AM`, `08:00 AM`, `08:30 AM`, `09:00 AM`, `09:30 AM`, `10:00 AM`, `10:30 AM`, `11:00 AM`, `11:30 AM`.
+    - **Afternoon / Evening (24 slots):** `12:00 PM`, `12:30 PM`, `01:00 PM`, `01:30 PM`, ..., `11:30 PM`.
+- **Time Parser & Expiration Logic (`parseSlotToHour`, `isSlotPassed`):**
+  - Update `parseSlotToHour()` to calculate decimal hours: `hour + minutes / 60` (e.g. `06:30 AM` returns `6.5`).
+  - Update `isSlotPassed()` to compare current IST hour and minutes so that at 6:15 AM, `06:00 AM` is disabled while `06:30 AM` remains bookable.
+
+#### 3. Pricing Engine & Calculation
+- **Per-Slot Rate Derivation:**
+  - Standard rate: If baseline is ₹300/hour, each 30-minute slot is billed at **₹150** (`price_per_hour / 2`).
+  - Discounted rate: If a rule specifies ₹200/hour, each 30-minute slot is billed at **₹100**.
+- **Rule Scope Matching (`calculateSlotPrice`):**
+  - Check whether `slotDecimalHour >= rule.start_hour && slotDecimalHour < rule.end_hour`.
+- **Total Calculation ([`src/components/BookingSystem.tsx`](file:///home/jeremy/projects/GurukulSprots/src/components/BookingSystem.tsx), [`index.html`](file:///home/jeremy/projects/GurukulSprots/index.html), [`src/app/api/bookings/route.ts`](file:///home/jeremy/projects/GurukulSprots/src/app/api/bookings/route.ts)):**
+  - Total Hours: `selectedSlots.length * 0.5`.
+  - Total Amount: Sum of individual slot rates or `selectedSlots.length * (slot_rate)`.
+
+#### 4. Host Control Timetable & Matrix Grid ([`src/app/admin/page.tsx`](file:///home/jeremy/projects/GurukulSprots/src/app/admin/page.tsx) & [`public/admin.html`](file:///home/jeremy/projects/GurukulSprots/public/admin.html))
+- **Matrix Row Generation (`TIME_ROWS`):**
+  - Expand timetable grid from 18 rows to 36 rows (`06:00 - 06:30 AM`, `06:30 - 07:00 AM`, etc.).
+- **Walk-in Modal Selection:**
+  - Update the slot selector dropdown in the Walk-in Booking Modal to show all 36 30-minute intervals.
+- **Maintenance Block Generator ([`src/app/api/blocked-slots/route.ts`](file:///home/jeremy/projects/GurukulSprots/src/app/api/blocked-slots/route.ts)):**
+  - When blocking a court for a time window (e.g. 6:00 to 9:00), generate both `:00` and `:30` sub-slots (`6:00 AM`, `6:30 AM`, `7:00 AM`, `7:30 AM`, `8:00 AM`, `8:30 AM`).
+
+#### 5. Customer Booking Interface ([`src/components/BookingSystem.tsx`](file:///home/jeremy/projects/GurukulSprots/src/components/BookingSystem.tsx), [`index.html`](file:///home/jeremy/projects/GurukulSprots/index.html))
+- **Slot Buttons Grid:**
+  - Render 36 slot buttons grouped into Morning and Afternoon/Evening sections with responsive wrapping (`min-w-[80px]`).
+  - Display individual 30-min slot pricing (`₹150` standard or `₹100 OFFER`).
+- **Booking Summary Card:**
+  - Format duration dynamically: `0.5 Hours` (1 slot), `1 Hour` (2 slots), `1.5 Hours` (3 slots), etc.
