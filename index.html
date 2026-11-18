@@ -281,183 +281,144 @@
 <!-- BEGIN: Booking Section -->
 <section class="py-stack-lg bg-surface-container-low border-y border-outline-variant/30" id="book-court">
 <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
-<div class="mb-10">
-<h2 class="font-headline-lg text-headline-lg text-[#0F172A]">Reserve Your Badminton Court</h2>
-<p class="font-body-md text-body-md text-on-surface-variant mt-2">Select your preferred date, court surface, and time slots below.</p>
+<div class="mb-10 text-center">
+<span class="inline-block px-3 py-1 bg-[#2563EB]/10 text-[#2563EB] text-xs font-label-md font-bold rounded-full mb-3 uppercase tracking-wider">
+  Instant Online Reservation
+</span>
+<h2 class="font-headline-lg text-headline-lg text-[#0F172A]">Book Badminton Court</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-xl mx-auto">Choose your date and duration, pick a time slot, and reserve verified available courts at Gurukul's Sports Academy.</p>
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 <!-- Left: Selection Controls -->
-<div class="lg:col-span-2 space-y-8">
-<!-- Date Selector -->
-<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50">
-<div class="flex items-center justify-between mb-4"><h3 class="font-title-md text-title-md text-[#0F172A]">1. Select Date</h3></div>
-<div class="relative max-w-md">
-<label class="block font-label-sm text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider" for="booking-date-picker">Choose your preferred date</label>
-<div class="relative">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">calendar_today</span>
-<input class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant/50 rounded-lg font-title-md text-[#0F172A] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all cursor-pointer" id="booking-date-picker" type="date" value="2023-10-24">
-</div>
-<p class="mt-2 font-label-sm text-label-sm text-on-surface-variant">Available slots will update based on your selection.</p>
-</div>
+<div class="lg:col-span-2 space-y-6">
+  <!-- Step 1: Date Selector -->
+  <div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/50 shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+      <h3 class="font-title-md text-title-md font-bold text-[#0F172A] flex items-center gap-2">
+        <span class="w-7 h-7 rounded-full bg-[#0F172A] text-white text-xs flex items-center justify-center font-bold">1</span>
+        Select Date
+      </h3>
+      <div class="flex items-center gap-2">
+        <button id="quick-date-today" type="button" class="px-3 py-1 text-xs font-bold rounded-lg bg-[#0F172A] text-white transition-colors">Today</button>
+        <button id="quick-date-tomorrow" type="button" class="px-3 py-1 text-xs font-bold rounded-lg bg-surface-container text-[#0F172A] hover:bg-surface-container-high transition-colors">Tomorrow</button>
+      </div>
+    </div>
+    <div class="relative">
+      <input class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl font-title-md text-sm text-[#0F172A] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/40 transition-all cursor-pointer" id="booking-date-picker" type="date">
+    </div>
+  </div>
+
+  <!-- Step 2: Duration Selector -->
+  <div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/50 shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+      <h3 class="font-title-md text-title-md font-bold text-[#0F172A] flex items-center gap-2">
+        <span class="w-7 h-7 rounded-full bg-[#0F172A] text-white text-xs flex items-center justify-center font-bold">2</span>
+        Select Duration
+      </h3>
+      <span class="text-xs font-semibold text-slate-500">Min 30 mins • Max 4 hours • 30m steps</span>
+    </div>
+    <div id="duration-selector-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+      <!-- Duration pills injected by JS -->
+    </div>
+  </div>
+
+  <!-- Step 3: Time Slot Matrix -->
+  <div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/50 shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+      <h3 id="step3-title" class="font-title-md text-title-md font-bold text-[#0F172A] flex items-center gap-2">
+        <span class="w-7 h-7 rounded-full bg-[#0F172A] text-white text-xs flex items-center justify-center font-bold">3</span>
+        Select Time Slot
+      </h3>
+      <div class="flex items-center gap-2 text-xs text-slate-500">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span>Select slot to check live court availability</span>
+      </div>
+    </div>
+    <div id="time-slots-container" class="space-y-5">
+      <!-- Time slots injected by JS -->
+    </div>
+  </div>
+
+  <!-- Step 4: Available Courts (Database Verified) -->
+  <div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/50 shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+      <h3 class="font-title-md text-title-md font-bold text-[#0F172A] flex items-center gap-2">
+        <span class="w-7 h-7 rounded-full bg-[#0F172A] text-white text-xs flex items-center justify-center font-bold">4</span>
+        Select Available Court
+      </h3>
+      <div id="db-verified-badge" class="hidden inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-bold">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>Database Verified</span>
+      </div>
+    </div>
+    <div id="available-courts-container">
+      <!-- Injected by JS: either prompt, message, or court cards -->
+    </div>
+  </div>
 </div>
 
-<!-- Court Selector -->
-<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50">
-<div class="flex items-center justify-between mb-4">
-<h3 class="font-title-md text-title-md text-[#0F172A]">2. Select Court</h3>
-</div>
-<div id="court-selector-grid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-  <button class="py-3 px-4 rounded-lg bg-[#0F172A] text-white border border-[#0F172A] flex flex-col items-center transition-colors">
-    <span class="font-label-md text-label-md font-bold">Court 1</span>
-    <span class="text-[10px] opacity-80 uppercase tracking-wider mt-1">Synthetic</span>
-  </button>
-  <button class="py-3 px-4 rounded-lg bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] flex flex-col items-center transition-colors">
-    <span class="font-label-md text-label-md font-bold">Court 2</span>
-    <span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span>
-  </button>
-  <button class="py-3 px-4 rounded-lg bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] flex flex-col items-center transition-colors">
-    <span class="font-label-md text-label-md font-bold">Court 3</span>
-    <span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span>
-  </button>
-  <button class="py-3 px-4 rounded-lg bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] flex flex-col items-center transition-colors">
-    <span class="font-label-md text-label-md font-bold">Court 4</span>
-    <span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span>
-  </button>
-  <button class="py-3 px-4 rounded-lg bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] flex flex-col items-center transition-colors">
-    <span class="font-label-md text-label-md font-bold">Court 5</span>
-    <span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span>
-  </button>
-  <button class="py-3 px-4 rounded-lg bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] flex flex-col items-center transition-colors">
-    <span class="font-label-md text-label-md font-bold">Court 6</span>
-    <span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span>
-  </button>
-  <button class="py-3 px-4 rounded-lg bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] flex flex-col items-center transition-colors">
-    <span class="font-label-md text-label-md font-bold">Court 7</span>
-    <span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span>
-  </button>
-  <button class="py-3 px-4 rounded-lg bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] flex flex-col items-center transition-colors">
-    <span class="font-label-md text-label-md font-bold">Court 8</span>
-    <span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span>
-  </button>
-  <button class="py-3 px-4 rounded-lg bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] flex flex-col items-center transition-colors">
-    <span class="font-label-md text-label-md font-bold">Court 9</span>
-    <span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span>
-  </button>
-  <button class="py-3 px-4 rounded-lg bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] flex flex-col items-center transition-colors">
-    <span class="font-label-md text-label-md font-bold">Court 10</span>
-    <span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span>
-  </button>
-  <button class="py-3 px-4 rounded-lg bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] flex flex-col items-center transition-colors">
-    <span class="font-label-md text-label-md font-bold">Court 11</span>
-    <span class="text-[10px] opacity-70 uppercase tracking-wider mt-1">Synthetic</span>
-  </button>
-</div>
-</div>
-<!-- Time Slots -->
-<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50">
-<div class="flex items-center justify-between mb-4">
-<h3 id="step3-court-title" class="font-title-md text-title-md text-[#0F172A]">3. Select Time Slots for Court 1</h3>
-<div class="flex items-center gap-3">
-<div class="flex items-center gap-1 font-label-sm text-label-sm"><div class="w-3 h-3 rounded bg-[#10B981]/10 border border-[#10B981]/20"></div> Available</div>
-<div class="flex items-center gap-1 font-label-sm text-label-sm"><div class="w-3 h-3 rounded bg-[#0F172A]"></div> Selected</div>
-<div class="flex items-center gap-1 font-label-sm text-label-sm"><div class="w-3 h-3 rounded bg-[#F1F5F9] border border-[#E2E8F0]"></div> Booked</div>
-</div>
-</div>
-<div class="space-y-4">
-<div>
-<h4 class="font-label-sm text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider">Morning (6:00 AM – 12:00 PM)</h4>
-<div class="flex flex-wrap gap-2">
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">6:00 AM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">6:30 AM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">7:00 AM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">7:30 AM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">8:00 AM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">8:30 AM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">9:00 AM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">9:30 AM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">10:00 AM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">10:30 AM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">11:00 AM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">11:30 AM</button>
-</div>
-</div>
-<div class="pt-2 border-t border-outline-variant/30">
-<h4 class="font-label-sm text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider">Afternoon / Evening (12:00 PM – 12:00 AM)</h4>
-<div class="flex flex-wrap gap-2">
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">12:00 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">12:30 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">1:00 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">1:30 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">2:00 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">2:30 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">3:00 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">3:30 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">4:00 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">4:30 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">5:00 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">5:30 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">6:00 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">6:30 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">7:00 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">7:30 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">8:00 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">8:30 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">9:00 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">9:30 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">10:00 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">10:30 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">11:00 PM</button>
-<button class="court-slot available px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-[#10B981]/20 transition-colors min-w-[80px]" onclick="toggleSlot(this)">11:30 PM</button>
-</div>
-</div>
-</div>
-</div>
-</div>
 <!-- Right: Booking Summary Sticky Card -->
 <div class="lg:col-span-1">
-<div class="bg-surface-container-lowest rounded-xl border border-[#2563EB]/20 shadow-[0_8px_30px_rgba(37,99,235,0.08)] sticky top-28 overflow-hidden">
+<div class="bg-surface-container-lowest rounded-2xl border border-[#2563EB]/20 shadow-xl sticky top-28 overflow-hidden">
 <div class="bg-[#0F172A] p-6 text-white">
-<h3 class="font-title-md text-title-md mb-1">Booking Summary</h3>
-<p class="font-label-sm text-label-sm opacity-80">Review your court &amp; schedule</p>
+<h3 class="font-title-md text-title-md font-bold mb-1">Booking Summary</h3>
+<p class="font-label-sm text-xs text-slate-400">Review your schedule and confirm reservation</p>
 </div>
 <div class="p-6 space-y-4">
-<div class="flex justify-between items-start pb-4 border-b border-outline-variant/30">
+<div class="space-y-3 pb-4 border-b border-slate-200 text-xs">
+  <div class="flex justify-between items-center">
+    <span class="text-slate-500 font-medium">Date:</span>
+    <span id="summary-date" class="font-bold text-slate-900">Select Date</span>
+  </div>
+  <div class="flex justify-between items-center">
+    <span class="text-slate-500 font-medium">Duration:</span>
+    <span id="summary-duration" class="font-bold text-slate-900">1 Hour</span>
+  </div>
+  <div class="flex justify-between items-center">
+    <span class="text-slate-500 font-medium">Time Slot:</span>
+    <span id="summary-slots" class="font-bold text-slate-400 italic">Not selected</span>
+  </div>
+  <div class="flex justify-between items-center">
+    <span class="text-slate-500 font-medium">Selected Court:</span>
+    <span id="summary-court" class="font-bold text-slate-400 italic">Not selected</span>
+  </div>
+</div>
+
+<div id="summary-breakdown" class="hidden space-y-1.5">
+  <p class="font-label-sm text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Slot Breakdown</p>
+  <div id="summary-breakdown-list" class="space-y-1 max-h-36 overflow-y-auto pr-1"></div>
+</div>
+
+<div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
+  <div class="flex justify-between text-slate-600">
+    <span>Standard Rate:</span>
+    <span class="font-semibold text-slate-800">₹150 / 30 mins</span>
+  </div>
+  <div class="flex justify-between items-baseline pt-2 border-t border-slate-200 text-base">
+    <span class="font-bold text-slate-900">Grand Total:</span>
+    <span id="summary-total" class="font-extrabold text-2xl text-emerald-600">₹0</span>
+  </div>
+</div>
+
+<form class="space-y-3 pt-2">
 <div>
-<p id="summary-date" class="font-label-md text-label-md text-[#0F172A]">Select Date</p>
-<p id="summary-court" class="font-label-sm text-label-sm text-on-surface-variant">Court 1 (Synthetic)</p>
-</div>
-<div class="text-right">
-<p id="summary-slots" class="font-label-md text-label-md text-[#0F172A]">No slot selected</p>
-<p id="summary-duration" class="font-label-sm text-label-sm text-[#2563EB] font-bold">0 Mins</p>
-</div>
-</div>
-<div class="flex justify-between items-center py-2">
-<span id="summary-fee-label" class="font-body-md text-body-md text-on-surface-variant">Court Fee (₹150/slot)</span>
-<span id="summary-subtotal" class="font-label-md text-label-md text-[#0F172A]">₹0</span>
-</div>
-<div class="flex justify-between items-center py-2 bg-surface-container px-3 rounded-lg">
-<span class="font-title-md text-title-md text-[#0F172A]">Total</span>
-<span id="summary-total" class="font-headline-lg text-headline-lg text-[#0F172A]">₹0</span>
-</div>
-<form class="space-y-4 pt-4 mt-4 border-t border-outline-variant/30">
-<div>
-<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1" for="name">Full Name</label>
-<input class="w-full bg-surface border border-outline-variant/50 rounded-lg px-3 py-2 font-body-md text-body-md text-[#0F172A] placeholder-outline" id="name" placeholder="Enter your name" type="text">
+<label class="block text-xs font-bold text-slate-700 mb-1" for="name">Player Full Name *</label>
+<input class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all" id="name" placeholder="Enter your name" type="text">
 </div>
 <div>
-<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1" for="phone">Phone Number</label>
+<label class="block text-xs font-bold text-slate-700 mb-1" for="phone">Phone Number (10 Digits) *</label>
 <div class="flex">
-<span class="inline-flex items-center px-3 bg-surface-container border border-r-0 border-outline-variant/50 rounded-l-lg font-body-md text-body-md text-on-surface-variant">+91</span>
-<input class="flex-1 bg-surface border border-outline-variant/50 rounded-r-lg px-3 py-2 font-body-md text-body-md text-[#0F172A] placeholder-outline" id="phone" placeholder="10-digit number" type="tel">
+<span class="inline-flex items-center px-3 bg-surface-container border border-r-0 border-slate-300 rounded-l-xl text-xs font-semibold text-slate-700">+91</span>
+<input class="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-r-xl text-xs font-medium text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all" id="phone" placeholder="10-digit number" type="tel" maxlength="10">
 </div>
 </div>
-<button class="w-full mt-4 flex items-center justify-center gap-2 text-white font-label-md text-label-md py-3 px-4 rounded-lg transition-colors shadow-sm bg-[#0F172A] hover:bg-[#2563EB]" type="button">
-<span class="material-symbols-outlined text-[18px]">sports_tennis</span> Confirm &amp; Book Court
+<button id="btn-confirm-booking" class="w-full mt-4 flex items-center justify-center gap-2 text-white font-bold text-sm py-3.5 px-4 rounded-xl transition-all shadow-md bg-emerald-600 hover:bg-emerald-500 cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed disabled:text-slate-500" type="button" disabled>
+<span class="material-symbols-outlined text-[18px]">check_circle</span> Confirm &amp; Book Court
 </button>
-<button class="w-full mt-2.5 flex items-center justify-center gap-2 text-[#2563EB] bg-[#2563EB]/10 hover:bg-[#2563EB]/20 font-label-md text-label-md py-2.5 px-4 rounded-lg border border-[#2563EB]/30 transition-colors font-semibold" type="button">
+<button id="btn-view-bookings" class="w-full mt-2.5 flex items-center justify-center gap-2 text-[#2563EB] bg-[#2563EB]/10 hover:bg-[#2563EB]/20 font-bold text-xs py-2.5 px-4 rounded-xl border border-[#2563EB]/30 transition-colors cursor-pointer" type="button">
 <span class="material-symbols-outlined text-[18px]">receipt_long</span> View Bookings
 </button>
-<button class="w-full mt-2 flex items-center justify-center gap-2 text-on-surface-variant font-label-md text-label-md py-2 px-4 rounded-lg border border-outline-variant/50 hover:bg-surface-container-high hover:text-[#BA1A1A] transition-colors" type="button">
+<button id="btn-cancel-booking" class="w-full mt-2 flex items-center justify-center gap-2 text-slate-600 hover:text-red-600 bg-slate-100 hover:bg-slate-200 font-semibold text-xs py-2 px-4 rounded-xl transition-colors cursor-pointer" type="button">
 <span class="material-symbols-outlined text-[18px]">cancel</span> Cancel existing booking
 </button>
 </form>
@@ -586,73 +547,339 @@ gurukulssportsblr@gmail.com
 
 
     <script data-purpose="live-booking-system">
-        let currentSelectedCourt = 1;
-        let selectedSlots = [];
-        let bookedSlots = [];
+        const DURATION_OPTIONS = [
+            { value: 0.5, label: '30 Mins', sublabel: '0.5 hr', slotsCount: 1 },
+            { value: 1.0, label: '1 Hour', sublabel: '60 mins', slotsCount: 2 },
+            { value: 1.5, label: '1.5 Hours', sublabel: '90 mins', slotsCount: 3 },
+            { value: 2.0, label: '2 Hours', sublabel: '120 mins', slotsCount: 4 },
+            { value: 2.5, label: '2.5 Hours', sublabel: '150 mins', slotsCount: 5 },
+            { value: 3.0, label: '3 Hours', sublabel: '180 mins', slotsCount: 6 },
+            { value: 3.5, label: '3.5 Hours', sublabel: '210 mins', slotsCount: 7 },
+            { value: 4.0, label: '4 Hours', sublabel: '240 mins', slotsCount: 8 }
+        ];
+
+        const ALL_TIME_SLOTS = [
+            '06:00 AM', '06:30 AM', '07:00 AM', '07:30 AM', '08:00 AM', '08:30 AM',
+            '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
+            '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM',
+            '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM',
+            '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM', '08:00 PM', '08:30 PM',
+            '09:00 PM', '09:30 PM', '10:00 PM', '10:30 PM', '11:00 PM', '11:30 PM'
+        ];
+
+        let selectedDuration = 1.0;
+        let selectedWindow = null;
+        let selectedCourtId = null;
+        let allBookings = [];
         let blockedSlots = [];
+        let pricingRules = [];
+        let courtsCatalog = [];
 
         function normalizeSlot(s) {
             if (!s) return '';
             return s.trim().replace(/^0/, '').toUpperCase();
         }
 
-        function selectCourt(courtNum) {
-            currentSelectedCourt = courtNum;
-            selectedSlots = [];
-            
-            document.querySelectorAll('#court-selector-grid button').forEach((btn, idx) => {
-                if (idx + 1 === courtNum) {
-                    btn.className = "py-3 px-3 rounded-xl bg-[#0F172A] text-white border border-[#0F172A] shadow-md scale-102 ring-2 ring-[#2563EB]/40 flex flex-col items-center transition-all cursor-pointer";
-                } else {
-                    btn.className = "py-3 px-3 rounded-xl bg-surface text-on-surface border border-outline-variant/50 hover:border-[#2563EB] hover:bg-surface-container flex flex-col items-center transition-all cursor-pointer";
-                }
-            });
-
-            const heading = document.getElementById('step3-court-title');
-            if (heading) heading.textContent = '3. Select Time Slots for Court ' + courtNum;
-
-            refreshSlotAvailability();
+        function parseSlotToHour(slotStr) {
+            const match = slotStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+            if (!match) return 0;
+            let hour = parseInt(match[1], 10);
+            const minutes = parseInt(match[2], 10) || 0;
+            const period = match[3].toUpperCase();
+            if (period === 'PM' && hour < 12) hour += 12;
+            if (period === 'AM' && hour === 12) hour = 0;
+            return hour + minutes / 60;
         }
 
-        function toggleSlot(btn) {
-            const slotText = btn.getAttribute('data-slot') || btn.textContent.trim();
-            const norm = normalizeSlot(slotText);
+        function formatDecimalToTime(decimalHour) {
+            if (decimalHour >= 24 || decimalHour === 0) return '12:00 AM';
+            const hours = Math.floor(decimalHour);
+            const minutes = Math.round((decimalHour - hours) * 60);
+            const period = hours >= 12 && hours < 24 ? 'PM' : 'AM';
+            let displayHour = hours % 12;
+            if (displayHour === 0) displayHour = 12;
+            const padHour = String(displayHour).padStart(2, '0');
+            const padMin = String(minutes).padStart(2, '0');
+            return `${padHour}:${padMin} ${period}`;
+        }
 
-            if (btn.disabled || btn.classList.contains('booked') || btn.classList.contains('blocked')) return;
+        function getNowInIST() {
+            const now = new Date();
+            const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+            return new Date(utc + 3600000 * 5.5);
+        }
 
-            const idx = selectedSlots.findIndex(s => normalizeSlot(s) === norm);
-            if (idx >= 0) {
-                selectedSlots.splice(idx, 1);
-            } else {
-                selectedSlots.push(slotText);
+        function isSlotPassed(slotStr, dateStr) {
+            try {
+                const istNow = getNowInIST();
+                const year = istNow.getFullYear();
+                const month = String(istNow.getMonth() + 1).padStart(2, '0');
+                const day = String(istNow.getDate()).padStart(2, '0');
+                const todayStr = `${year}-${month}-${day}`;
+
+                if (dateStr < todayStr) return true;
+                if (dateStr > todayStr) return false;
+
+                const slotHour = parseSlotToHour(slotStr);
+                const currentDecimalHour = istNow.getHours() + istNow.getMinutes() / 60;
+                return slotHour <= currentDecimalHour;
+            } catch {
+                return false;
+            }
+        }
+
+        function generateTimeWindows(durationHours) {
+            const slotsCount = Math.round(durationHours / 0.5);
+            const windows = [];
+            if (slotsCount < 1 || slotsCount > ALL_TIME_SLOTS.length) return windows;
+
+            for (let i = 0; i <= ALL_TIME_SLOTS.length - slotsCount; i++) {
+                const startSlot = ALL_TIME_SLOTS[i];
+                const startHour = parseSlotToHour(startSlot);
+                const endHour = startHour + durationHours;
+                if (endHour > 24) continue;
+
+                const endTime = formatDecimalToTime(endHour);
+                const windowSlots = ALL_TIME_SLOTS.slice(i, i + slotsCount);
+                windows.push({
+                    id: `${startSlot}-${endTime}`,
+                    startTime: startSlot,
+                    endTime: endTime,
+                    startHour: startHour,
+                    endHour: endHour,
+                    label: `${startSlot} – ${endTime}`,
+                    slots: windowSlots,
+                    isMorning: startHour < 12
+                });
+            }
+            return windows;
+        }
+
+        function isCourtAvailableForWindow(courtNumber, windowObj, dateStr) {
+            for (const slot of windowObj.slots) {
+                if (isSlotPassed(slot, dateStr)) return false;
+                const norm = normalizeSlot(slot);
+                const isBooked = allBookings.some(b => b.court_number === courtNumber && normalizeSlot(b.slot_time) === norm);
+                if (isBooked) return false;
+                const isBlocked = blockedSlots.some(b => (b.court_number === courtNumber || b.court_number === 0) && normalizeSlot(b.slot_time) === norm);
+                if (isBlocked) return false;
+            }
+            return true;
+        }
+
+        function getAvailableCourts(windowObj) {
+            const datePicker = document.getElementById('booking-date-picker');
+            const dateStr = datePicker ? datePicker.value : '';
+            return courtsCatalog.filter(c => isCourtAvailableForWindow(c.court_number, windowObj, dateStr));
+        }
+
+        function renderDurationSelector() {
+            const container = document.getElementById('duration-selector-grid');
+            if (!container) return;
+            container.innerHTML = '';
+
+            DURATION_OPTIONS.forEach(opt => {
+                const isSelected = selectedDuration === opt.value;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `py-3 px-3 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
+                    isSelected
+                        ? 'bg-[#0F172A] text-white border-[#0F172A] shadow-md ring-2 ring-[#2563EB]/40 scale-102'
+                        : 'bg-surface text-slate-800 border-outline-variant/60 hover:border-[#2563EB] hover:bg-surface-container'
+                }`;
+                btn.innerHTML = `<span class="font-bold text-sm">${opt.label}</span><span class="text-[10px] mt-0.5 font-medium ${isSelected ? 'text-slate-300' : 'text-slate-500'}">${opt.sublabel}</span>`;
+                btn.onclick = () => {
+                    selectedDuration = opt.value;
+                    selectedWindow = null;
+                    selectedCourtId = null;
+                    renderDurationSelector();
+                    renderTimeSlots();
+                    renderAvailableCourts();
+                    updateSummary();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderTimeSlots() {
+            const container = document.getElementById('time-slots-container');
+            const heading = document.getElementById('step3-title');
+            if (heading) {
+                heading.innerHTML = `<span class="w-7 h-7 rounded-full bg-[#0F172A] text-white text-xs flex items-center justify-center font-bold">3</span> Select Time Slot (${selectedDuration === 0.5 ? '30 Mins' : selectedDuration + ' Hours'})`;
+            }
+            if (!container) return;
+
+            const datePicker = document.getElementById('booking-date-picker');
+            const dateStr = datePicker ? datePicker.value : '';
+            const windows = generateTimeWindows(selectedDuration);
+
+            const morningWindows = windows.filter(w => w.isMorning);
+            const eveningWindows = windows.filter(w => !w.isMorning);
+
+            function createGrid(list) {
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5';
+
+                list.forEach(w => {
+                    const isSelected = selectedWindow && selectedWindow.id === w.id;
+                    const isPast = isSlotPassed(w.startTime, dateStr);
+                    const freeCourts = getAvailableCourts(w);
+                    const isFullyBooked = !isPast && freeCourts.length === 0;
+
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.disabled = isPast;
+                    btn.className = `p-3 rounded-xl border text-left transition-all flex flex-col justify-between ${
+                        isPast
+                            ? 'bg-slate-100 text-slate-400 border-slate-200 line-through cursor-not-allowed opacity-60'
+                            : isSelected
+                            ? 'bg-[#0F172A] text-white border-[#0F172A] ring-2 ring-[#2563EB] shadow-md scale-102 cursor-pointer'
+                            : isFullyBooked
+                            ? 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300 cursor-pointer'
+                            : 'bg-surface hover:bg-surface-container border-outline-variant/60 hover:border-[#2563EB] cursor-pointer'
+                    }`;
+
+                    btn.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-xs sm:text-sm tracking-tight">${w.label}</span>
+                            ${isSelected ? '<span class="material-symbols-outlined text-[16px] text-emerald-400">check_circle</span>' : ''}
+                        </div>
+                        <div class="mt-2 flex items-center justify-between text-[11px]">
+                            <span class="font-semibold ${isSelected ? 'text-slate-300' : 'text-slate-500'}">
+                                ${selectedDuration === 0.5 ? '30m' : selectedDuration + 'h'}
+                            </span>
+                            ${
+                                isPast
+                                    ? '<span class="text-slate-400 font-medium">Passed</span>'
+                                    : isFullyBooked
+                                    ? '<span class="text-red-500 font-bold text-[10px] uppercase">Fully Booked</span>'
+                                    : `<span class="font-bold px-1.5 py-0.5 rounded text-[10px] ${
+                                          isSelected
+                                              ? 'bg-emerald-500/20 text-emerald-300'
+                                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                      }">${freeCourts.length} ${freeCourts.length === 1 ? 'court' : 'courts'} free</span>`
+                            }
+                        </div>
+                    `;
+
+                    btn.onclick = () => {
+                        selectedWindow = w;
+                        selectedCourtId = null;
+                        renderTimeSlots();
+                        renderAvailableCourts();
+                        updateSummary();
+                        refreshServerData(true);
+                    };
+
+                    grid.appendChild(btn);
+                });
+
+                return grid;
             }
 
-            selectedSlots.sort((a, b) => {
-                const parseSlot = (str) => {
-                    const m = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
-                    if (!m) return 0;
-                    let h = parseInt(m[1], 10);
-                    const min = parseInt(m[2], 10);
-                    if (m[3].toUpperCase() === 'PM' && h < 12) h += 12;
-                    if (m[3].toUpperCase() === 'AM' && h === 12) h = 0;
-                    return h * 60 + min;
-                };
-                return parseSlot(a) - parseSlot(b);
-            });
+            container.innerHTML = `
+                <div>
+                    <h4 class="font-label-sm text-xs text-slate-500 mb-2.5 uppercase tracking-wider font-bold">Morning Sessions (06:00 AM – 12:00 PM)</h4>
+                </div>
+            `;
+            container.firstElementChild.appendChild(createGrid(morningWindows));
 
-            refreshSlotAvailability();
+            const aftDiv = document.createElement('div');
+            aftDiv.className = 'pt-3 border-t border-slate-200';
+            aftDiv.innerHTML = `<h4 class="font-label-sm text-xs text-slate-500 mb-2.5 uppercase tracking-wider font-bold">Afternoon & Evening Sessions (12:00 PM – 12:00 AM)</h4>`;
+            aftDiv.appendChild(createGrid(eveningWindows));
+            container.appendChild(aftDiv);
         }
 
-        function updateBookingSummary() {
+        function renderAvailableCourts() {
+            const container = document.getElementById('available-courts-container');
+            const verifiedBadge = document.getElementById('db-verified-badge');
+            if (!container) return;
+
+            if (!selectedWindow) {
+                if (verifiedBadge) verifiedBadge.classList.add('hidden');
+                container.innerHTML = `
+                    <div class="py-8 text-center text-slate-500 bg-surface rounded-xl border border-dashed border-outline-variant p-6">
+                        <span class="material-symbols-outlined text-[36px] text-slate-400 block mb-2">schedule</span>
+                        <p class="text-sm font-semibold text-slate-700">Please select a time slot above first</p>
+                        <p class="text-xs text-slate-500 mt-1">Available courts for your chosen duration will be queried directly from the arena schedule.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (verifiedBadge) {
+                verifiedBadge.classList.remove('hidden');
+                verifiedBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>Database Verified for ${selectedWindow.label}</span>`;
+            }
+
+            const freeCourts = getAvailableCourts(selectedWindow);
+
+            if (freeCourts.length === 0) {
+                container.innerHTML = `
+                    <div class="py-8 text-center text-red-600 bg-red-50/80 rounded-xl border border-red-200 p-6">
+                        <span class="material-symbols-outlined text-[36px] text-red-500 block mb-2">event_busy</span>
+                        <p class="text-sm font-bold text-red-800">All 11 courts are booked for ${selectedWindow.label}</p>
+                        <p class="text-xs text-red-600 mt-1">Please pick another time slot from the list above or try a different date.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <p class="text-xs text-slate-600 mb-3 font-medium">
+                    Showing <strong class="text-slate-900">${freeCourts.length} courts</strong> available for the full ${selectedDuration === 0.5 ? '30-minute' : selectedDuration + '-hour'} duration:
+                </p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            `;
+
+            freeCourts.forEach(court => {
+                const isSelected = selectedCourtId === court.id;
+                const totalFee = selectedWindow.slots.length * 150;
+
+                html += `
+                    <button type="button" onclick="selectCourtById('${court.id}')" class="p-4 rounded-xl border text-center transition-all flex flex-col items-center justify-between cursor-pointer ${
+                        isSelected
+                            ? 'bg-[#0F172A] text-white border-[#0F172A] shadow-lg ring-2 ring-[#2563EB] scale-102'
+                            : 'bg-surface hover:bg-surface-container text-slate-800 border-outline-variant/60 hover:border-[#2563EB]'
+                    }">
+                        <div class="w-full">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-bold text-sm sm:text-base">${court.name}</span>
+                                ${isSelected ? '<span class="material-symbols-outlined text-[18px] text-emerald-400">check_circle</span>' : '<span class="w-4 h-4 rounded-full border border-slate-300"></span>'}
+                            </div>
+                            <span class="text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded inline-block ${isSelected ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-700 border border-blue-200'}">
+                                ${court.surface_type || 'Synthetic'}
+                            </span>
+                        </div>
+                        <div class="mt-3 pt-2 w-full border-t border-slate-200/40 flex items-center justify-between">
+                            <span class="text-xs font-bold ${isSelected ? 'text-emerald-300' : 'text-slate-900'}">₹${totalFee}</span>
+                            <span class="text-[9px] text-slate-500 font-semibold">Standard</span>
+                        </div>
+                    </button>
+                `;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        window.selectCourtById = function(courtId) {
+            selectedCourtId = courtId;
+            renderAvailableCourts();
+            updateSummary();
+        };
+
+        function updateSummary() {
             const datePicker = document.getElementById('booking-date-picker');
             const summaryDate = document.getElementById('summary-date');
-            const summaryCourt = document.getElementById('summary-court');
-            const summarySlots = document.getElementById('summary-slots');
             const summaryDuration = document.getElementById('summary-duration');
-            const summarySubtotal = document.getElementById('summary-subtotal');
+            const summarySlots = document.getElementById('summary-slots');
+            const summaryCourt = document.getElementById('summary-court');
             const summaryTotal = document.getElementById('summary-total');
-
-            if (summaryCourt) summaryCourt.textContent = 'Court ' + currentSelectedCourt + ' (Synthetic)';
+            const breakdownSection = document.getElementById('summary-breakdown');
+            const breakdownList = document.getElementById('summary-breakdown-list');
+            const confirmBtn = document.getElementById('btn-confirm-booking');
 
             if (datePicker && summaryDate && datePicker.value) {
                 try {
@@ -663,100 +890,74 @@ gurukulssportsblr@gmail.com
                 }
             }
 
-            const totalSlots = selectedSlots.length;
-            const totalHours = totalSlots * 0.5;
-            const totalPrice = totalSlots * 150;
+            if (summaryDuration) {
+                summaryDuration.textContent = selectedDuration === 0.5 ? '30 Mins (0.5 hr)' : selectedDuration + ' Hours';
+            }
 
             if (summarySlots) {
-                if (totalSlots === 0) {
-                    summarySlots.textContent = 'No slot selected';
-                } else if (totalSlots <= 2) {
-                    summarySlots.textContent = selectedSlots.join(', ');
+                if (selectedWindow) {
+                    summarySlots.textContent = selectedWindow.label;
+                    summarySlots.className = 'font-bold text-blue-700';
                 } else {
-                    summarySlots.textContent = selectedSlots[0] + ' + ' + (totalSlots - 1) + ' more';
+                    summarySlots.textContent = 'Not selected';
+                    summarySlots.className = 'font-bold text-slate-400 italic';
                 }
             }
 
-            if (summaryDuration) {
-                summaryDuration.textContent = totalHours === 0
-                    ? '0 Mins'
-                    : totalHours === 0.5
-                    ? '30 Mins (0.5 hr)'
-                    : totalHours === 1
-                    ? '1 Hour'
-                    : totalHours + ' Hours';
+            const chosenCourt = courtsCatalog.find(c => c.id === selectedCourtId);
+
+            if (summaryCourt) {
+                if (chosenCourt) {
+                    summaryCourt.textContent = `${chosenCourt.name} (${chosenCourt.surface_type || 'Synthetic'})`;
+                    summaryCourt.className = 'font-bold text-emerald-700';
+                } else {
+                    summaryCourt.textContent = 'Not selected';
+                    summaryCourt.className = 'font-bold text-slate-400 italic';
+                }
             }
 
-            if (summarySubtotal) summarySubtotal.textContent = '₹' + totalPrice;
-            if (summaryTotal) summaryTotal.textContent = '₹' + totalPrice;
+            const totalAmount = (selectedWindow && chosenCourt) ? selectedWindow.slots.length * 150 : 0;
+            if (summaryTotal) summaryTotal.textContent = '₹' + totalAmount;
+
+            if (breakdownSection && breakdownList) {
+                if (selectedWindow && chosenCourt) {
+                    breakdownSection.classList.remove('hidden');
+                    breakdownList.innerHTML = selectedWindow.slots.map(s => `
+                        <div class="flex items-center justify-between text-xs py-1 px-2 rounded-lg bg-slate-50 border border-slate-200">
+                            <span class="font-bold text-slate-800">${s}</span>
+                            <span class="font-bold text-slate-900">₹150</span>
+                        </div>
+                    `).join('');
+                } else {
+                    breakdownSection.classList.add('hidden');
+                }
+            }
+
+            if (confirmBtn) {
+                confirmBtn.disabled = !selectedWindow || !chosenCourt;
+            }
         }
 
-        async function refreshSlotAvailability() {
+        async function refreshServerData(isBackground = false) {
             const datePicker = document.getElementById('booking-date-picker');
-            if (!datePicker) return;
-
-            const selectedDate = datePicker.value;
-            if (!selectedDate) return;
+            if (!datePicker || !datePicker.value) return;
 
             try {
-                const res = await fetch('/api/bookings?courtId=c' + currentSelectedCourt + '&date=' + selectedDate);
+                const res = await fetch('/api/bookings?allCourts=true&date=' + datePicker.value);
                 if (res.ok) {
                     const data = await res.json();
-                    bookedSlots = (data.bookedSlots || []).map(normalizeSlot);
+                    allBookings = data.allBookings || [];
                     blockedSlots = data.blockedSlots || [];
+                    pricingRules = data.pricingRules || [];
+                    if (!isBackground) {
+                        renderTimeSlots();
+                        renderAvailableCourts();
+                        updateSummary();
+                    }
                 }
             } catch (err) {
-                console.warn('API error fetching slots:', err);
+                console.warn('API error fetching bookings:', err);
             }
-
-            const now = new Date();
-            const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-            const istNow = new Date(utc + 3600000 * 5.5);
-            const year = istNow.getFullYear();
-            const month = String(istNow.getMonth() + 1).padStart(2, '0');
-            const day = String(istNow.getDate()).padStart(2, '0');
-            const todayStr = `${year}-${month}-${day}`;
-            const currentHourDecimal = istNow.getHours() + (istNow.getMinutes() / 60);
-
-            document.querySelectorAll('.court-slot').forEach(btn => {
-                const rawSlot = btn.getAttribute('data-slot') || btn.textContent.trim();
-                const norm = normalizeSlot(rawSlot);
-                const match = rawSlot.match(/(\d+):(\d+)\s*(AM|PM)/i);
-                let hour = 0;
-                if (match) {
-                    hour = parseInt(match[1], 10);
-                    const minute = parseInt(match[2], 10);
-                    if (match[3].toUpperCase() === 'PM' && hour < 12) hour += 12;
-                    if (match[3].toUpperCase() === 'AM' && hour === 12) hour = 0;
-                    hour += minute / 60;
-                }
-
-                const isPast = selectedDate < todayStr || (selectedDate === todayStr && hour <= currentHourDecimal);
-                const isBooked = bookedSlots.some(b => b === norm || b.replace(/^0/, '') === norm.replace(/^0/, ''));
-                const isBlocked = blockedSlots.some(b => (b.court_number === currentSelectedCourt || b.court_number === 0) && normalizeSlot(b.slot_time) === norm);
-                const isSelected = selectedSlots.some(s => normalizeSlot(s) === norm);
-
-                btn.disabled = isPast || isBooked || isBlocked;
-
-                if (isBlocked) {
-                    btn.className = "court-slot blocked px-3 py-2 rounded-xl text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 line-through cursor-not-allowed min-w-[90px] shadow-sm flex flex-col items-center justify-center";
-                    btn.innerHTML = '<span>' + rawSlot + '</span><span class="text-[8px] text-amber-800 font-extrabold uppercase no-underline">⚠️ Blocked</span>';
-                } else if (isBooked) {
-                    btn.className = "court-slot booked px-3 py-2 rounded-xl text-xs font-bold text-center min-w-[90px] cursor-not-allowed bg-slate-200 text-slate-500 border border-slate-300 line-through opacity-80 flex flex-col items-center justify-center shadow-inner";
-                    btn.innerHTML = '<span>' + rawSlot + '</span><span class="text-[8px] text-red-600 font-extrabold uppercase no-underline">🔒 Booked</span>';
-                } else if (isPast) {
-                    btn.className = "court-slot px-3 py-2 rounded-xl text-xs font-medium text-slate-400 bg-slate-100 border border-slate-200 line-through cursor-not-allowed min-w-[90px] text-center";
-                    btn.innerHTML = '<span>' + rawSlot + '</span>';
-                } else if (isSelected) {
-                    btn.className = "court-slot selected px-3 py-2 rounded-xl text-xs font-bold transition-all min-w-[90px] text-center flex flex-col items-center justify-center border shadow-md bg-[#0F172A] text-white ring-2 ring-blue-500 cursor-pointer";
-                    btn.innerHTML = '<span>' + rawSlot + '</span><span class="text-[10px] text-emerald-300 font-bold">₹150</span>';
-                } else {
-                    btn.className = "court-slot available px-3 py-2 rounded-xl text-xs font-bold transition-all min-w-[90px] text-center flex flex-col items-center justify-center border shadow-sm bg-emerald-50/60 hover:bg-emerald-100 text-slate-800 border-emerald-300/80 hover:border-emerald-500 cursor-pointer";
-                    btn.innerHTML = '<span>' + rawSlot + '</span><span class="text-[10px] text-slate-600 font-bold">₹150</span>';
-                }
-            });
-
-            updateBookingSummary();
         }
 
         async function handleDirectBooking() {
@@ -765,6 +966,14 @@ gurukulssportsblr@gmail.com
             const name = nameInput ? nameInput.value.trim() : '';
             const phone = phoneInput ? phoneInput.value.trim().replace(/\D/g, '') : '';
             
+            if (!selectedWindow) {
+                alert('Please select a time slot.');
+                return;
+            }
+            if (!selectedCourtId) {
+                alert('Please choose an available court.');
+                return;
+            }
             if (!name) {
                 alert('Please enter your full name.');
                 return;
@@ -773,34 +982,34 @@ gurukulssportsblr@gmail.com
                 alert('Please enter a valid 10-digit mobile number.');
                 return;
             }
-            if (selectedSlots.length === 0) {
-                alert('Please select at least one time slot.');
-                return;
-            }
 
             const datePicker = document.getElementById('booking-date-picker');
             const selectedDate = datePicker ? datePicker.value : '';
+            const chosenCourt = courtsCatalog.find(c => c.id === selectedCourtId);
+            const totalAmount = selectedWindow.slots.length * 150;
 
             try {
                 const res = await fetch('/api/bookings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        courtId: 'c' + currentSelectedCourt,
+                        courtId: selectedCourtId,
                         customerName: name,
                         customerPhone: phone,
                         bookingDate: selectedDate,
-                        selectedSlots: selectedSlots
+                        selectedSlots: selectedWindow.slots,
+                        totalAmount: totalAmount
                     })
                 });
 
                 const data = await res.json();
                 if (res.ok) {
-                    alert('🎉 Booking Confirmed!\n\nBooking Code: ' + data.booking.booking_code + '\nCourt: Court ' + currentSelectedCourt + '\nDate: ' + selectedDate + '\nSlots: ' + selectedSlots.join(', ') + '\n\nSlot is now locked in the live database.');
-                    selectedSlots = [];
+                    alert('🎉 Booking Confirmed!\n\nBooking Code: ' + data.booking.booking_code + '\nCourt: ' + (chosenCourt ? chosenCourt.name : selectedCourtId) + '\nDate: ' + selectedDate + '\nTime: ' + selectedWindow.label + '\nTotal: ₹' + totalAmount + '\n\nSlot is now locked in the live database.');
+                    selectedWindow = null;
+                    selectedCourtId = null;
                     if (nameInput) nameInput.value = '';
                     if (phoneInput) phoneInput.value = '';
-                    refreshSlotAvailability();
+                    await refreshServerData();
                 } else {
                     alert('❌ Error: ' + (data.error || 'Could not place booking'));
                 }
@@ -830,7 +1039,7 @@ gurukulssportsblr@gmail.com
                         });
                         if (cancelRes.ok) {
                             alert('✅ Booking cancelled successfully. Slots are now free!');
-                            refreshSlotAvailability();
+                            refreshServerData();
                         } else {
                             const cData = await cancelRes.json();
                             alert('❌ Error: ' + (cData.error || 'Failed to cancel'));
@@ -844,7 +1053,7 @@ gurukulssportsblr@gmail.com
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const now = new Date();
             const utc = now.getTime() + now.getTimezoneOffset() * 60000;
             const istNow = new Date(utc + 3600000 * 5.5);
@@ -852,33 +1061,80 @@ gurukulssportsblr@gmail.com
             const month = String(istNow.getMonth() + 1).padStart(2, '0');
             const day = String(istNow.getDate()).padStart(2, '0');
             const todayStr = `${year}-${month}-${day}`;
+            const tomorrowDate = new Date(istNow.getTime() + 86400000);
+            const tomorrowStr = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth() + 1).padStart(2, '0')}-${String(tomorrowDate.getDate()).padStart(2, '0')}`;
 
             const datePicker = document.getElementById('booking-date-picker');
             if (datePicker) {
                 datePicker.min = todayStr;
                 datePicker.value = todayStr;
-                datePicker.addEventListener('change', refreshSlotAvailability);
+                datePicker.addEventListener('change', () => {
+                    selectedWindow = null;
+                    selectedCourtId = null;
+                    refreshServerData();
+                });
             }
 
-            const courtButtons = document.querySelectorAll('#court-selector-grid button');
-            courtButtons.forEach((btn, idx) => {
-                btn.onclick = () => selectCourt(idx + 1);
-            });
+            const todayBtn = document.getElementById('quick-date-today');
+            const tomorrowBtn = document.getElementById('quick-date-tomorrow');
+            if (todayBtn) {
+                todayBtn.onclick = () => {
+                    if (datePicker) datePicker.value = todayStr;
+                    todayBtn.className = 'px-3 py-1 text-xs font-bold rounded-lg bg-[#0F172A] text-white transition-colors';
+                    if (tomorrowBtn) tomorrowBtn.className = 'px-3 py-1 text-xs font-bold rounded-lg bg-surface-container text-[#0F172A] hover:bg-surface-container-high transition-colors';
+                    selectedWindow = null;
+                    selectedCourtId = null;
+                    refreshServerData();
+                };
+            }
+            if (tomorrowBtn) {
+                tomorrowBtn.onclick = () => {
+                    if (datePicker) datePicker.value = tomorrowStr;
+                    tomorrowBtn.className = 'px-3 py-1 text-xs font-bold rounded-lg bg-[#0F172A] text-white transition-colors';
+                    if (todayBtn) todayBtn.className = 'px-3 py-1 text-xs font-bold rounded-lg bg-surface-container text-[#0F172A] hover:bg-surface-container-high transition-colors';
+                    selectedWindow = null;
+                    selectedCourtId = null;
+                    refreshServerData();
+                };
+            }
 
-            document.querySelectorAll('.court-slot').forEach(btn => {
-                const txt = btn.textContent.trim();
-                btn.setAttribute('data-slot', txt);
-                btn.onclick = () => toggleSlot(btn);
-            });
+            // Initialize default courts 1-11
+            courtsCatalog = Array.from({ length: 11 }, (_, i) => ({
+                id: 'c' + (i + 1),
+                court_number: i + 1,
+                name: 'Court ' + (i + 1),
+                surface_type: 'Synthetic',
+                price_per_hour: 300
+            }));
 
-            selectCourt(1);
-            setInterval(refreshSlotAvailability, 8000);
-            window.addEventListener('focus', refreshSlotAvailability);
+            // Fetch live courts if available
+            try {
+                const cRes = await fetch('/api/courts');
+                if (cRes.ok) {
+                    const cData = await cRes.json();
+                    if (cData.courts && cData.courts.length > 0) courtsCatalog = cData.courts;
+                }
+            } catch (err) {
+                console.warn('Could not fetch courts catalog:', err);
+            }
 
-            const formConfirmBtn = document.querySelector('form button:nth-of-type(1)');
+            renderDurationSelector();
+            renderTimeSlots();
+            renderAvailableCourts();
+            updateSummary();
+
+            await refreshServerData();
+
+            setInterval(() => refreshServerData(true), 8000);
+            window.addEventListener('focus', () => refreshServerData(true));
+
+            const formConfirmBtn = document.getElementById('btn-confirm-booking');
             if (formConfirmBtn) formConfirmBtn.onclick = handleDirectBooking;
 
-            const formCancelBtn = document.querySelector('form button:nth-of-type(3)');
+            const formViewBtn = document.getElementById('btn-view-bookings');
+            if (formViewBtn) formViewBtn.onclick = handleDirectCancel;
+
+            const formCancelBtn = document.getElementById('btn-cancel-booking');
             if (formCancelBtn) formCancelBtn.onclick = handleDirectCancel;
         });
     </script>

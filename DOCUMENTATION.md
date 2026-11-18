@@ -346,3 +346,34 @@ The platform has transitioned from 18 1-hour slots to 36 30-minute slots (`06:00
 - **Court Scope Selection**: Administrators can now apply pricing rules to specific individual courts, subsets (e.g. Courts 1–5, Court 3 only, Court 11 only), or all 11 courts.
 - **Precedence Logic**: Specific court rules override general `ALL` rules, enabling special promotional pricing on designated courts while maintaining standard rates on others.
 - **Rule Scope Helper Functions**: `isCourtInRuleScope` and `formatCourtScopeLabel` guarantee consistent discount application across API endpoints, Next.js React app, and the standalone admin portal.
+
+---
+
+## 11. Overhaul: Menu-Driven Booking Flow with Duration & Real-Time Availability Verification
+
+### 1. Motivation & Problem Statement
+The previous booking workflow required users to pick an individual court first and then click multiple individual 30-minute slot buttons to build a booking. For multi-hour reservations, users had to manually inspect courts one-by-one to find consecutive available slots.
+
+### 2. Implemented Sequential Menu Flow
+The booking experience has been restructured into an intuitive 5-step menu-driven workflow:
+1. **Step 1: Select Date**
+   - Quick "Today" / "Tomorrow" toggle buttons or custom calendar date selection (`min=today`).
+2. **Step 2: Select Duration**
+   - Pill menu selector with 8 preset options: **30 Mins (0.5 hr)**, **1 Hour (1.0 hr)**, **1.5 Hours (1 hr 30m)**, **2 Hours (2.0 hrs)**, **2.5 Hours (2 hr 30m)**, **3 Hours (3.0 hrs)**, **3.5 Hours (3 hr 30m)**, and **4 Hours (4.0 hrs)**.
+3. **Step 3: Select Time Slot (Start Time – End Time)**
+   - Automatically computes all valid start-to-end windows (e.g. `06:00 AM – 07:30 AM`) fitting within opening hours (06:00 AM to 12:00 AM Midnight).
+   - Groups slots into **Morning (06:00 AM – 12:00 PM)** and **Afternoon & Evening (12:00 PM – 12:00 AM)**.
+   - Shows live preview badges indicating how many courts are available (e.g., `8 courts free` or `Fully Booked`).
+4. **Step 4: Check Database & List Available Courts**
+   - When a time slot is selected, the webapp queries live database records (`booking_slots` and `blocked_slots` for that date).
+   - Evaluates consecutive availability for all sub-slots in the window.
+   - Displays **ONLY the courts that are 100% available** for that continuous duration with surface type and total fee (including active promotional discounts).
+5. **Step 5: Select Court & Confirm Booking**
+   - User chooses their preferred court from the verified available courts.
+   - Real-time Booking Summary displays date, time window, duration, court, and pricing breakdown.
+   - User enters Name and 10-digit Phone, submits reservation, and receives instant confirmation receipt with confetti.
+
+### 3. Files Updated
+- [`src/lib/constants.ts`](file:///home/jeremy/projects/GurukulSprots/src/lib/constants.ts): Added `DURATION_OPTIONS`, `TimeWindow` interface, `formatDecimalToTime()`, and `generateTimeWindows()`.
+- [`src/components/BookingSystem.tsx`](file:///home/jeremy/projects/GurukulSprots/src/components/BookingSystem.tsx): Completely redesigned to implement the 5-step sequential menu workflow in React.
+- [`index.html`](file:///home/jeremy/projects/GurukulSprots/index.html): Replaced booking section markup and JavaScript with the new menu-driven selection and live database filtering.
